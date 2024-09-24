@@ -1,0 +1,1 @@
+# plugins-qa-heatmap-analytics
