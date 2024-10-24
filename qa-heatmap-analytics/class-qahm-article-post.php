@@ -89,8 +89,8 @@ class QAHM_Article_Post extends QAHM_File_Base {
 
 		// db更新
 		$table_name = $wpdb->prefix . 'qa_pages';
-		$query      = 'select page_id from ' . $table_name . ' where url_hash=%s';
-		$qa_pages   = $wpdb->get_results( $wpdb->prepare( $query, hash( 'fnv164', $url ) ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+		$qa_pages   = $wpdb->get_results( $wpdb->prepare( "SELECT page_id FROM " . esc_sql($table_name) . " WHERE url_hash = %s", hash( 'fnv164', $url ) ) );
 
 		// qa_pagesがこの時点で存在しなければINSERT
 		// インサートはひとつずつループで行うと失敗する可能性があるので、バルクで行うよう処理を変更する必要あり
@@ -99,6 +99,7 @@ class QAHM_Article_Post extends QAHM_File_Base {
 			// url_hashで検索しているのでこの方法で良い
 			$page_id = (int) $qa_pages[0]->page_id;
 		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct database call is necessary in this case due to the complexity of the SQL query.
 			$wpdb->insert(
 				$table_name,
 				array(
@@ -127,9 +128,23 @@ class QAHM_Article_Post extends QAHM_File_Base {
 		if ( $page_id ) {
 			// 最新バージョンを調べる。存在しなければバージョン1作成
 			// 存在していれば全デバイスそのバージョンを作成＆新規バージョン追加
-			$table_name           = $wpdb->prefix . 'qa_page_version_hist';
-			$query                = 'select version_id,device_id,version_no from ' . $table_name . ' where page_id=%d and version_no=(select max(version_no) from ' . $table_name . ' where page_id=%d)';
-			$qa_page_version_hist = $wpdb->get_results( $wpdb->prepare( $query, $page_id, $page_id ) );
+			$table_name = $wpdb->prefix . 'qa_page_version_hist';
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+			$qa_page_version_hist = $wpdb->get_results(
+					$wpdb->prepare( "
+						SELECT version_id, device_id, version_no
+						FROM " . esc_sql( $table_name ) . "
+						WHERE page_id = %d
+						AND version_no = (
+							SELECT MAX(version_no)
+							FROM " . esc_sql( $table_name ) . "
+							WHERE page_id = %d
+						)
+					",
+					$page_id,
+					$page_id
+					)
+				);
 
 			$dev_id_ary = array();
 			$cur_ver_no = 0;
@@ -144,8 +159,15 @@ class QAHM_Article_Post extends QAHM_File_Base {
 			// 今のバージョンは全デバイス分データを作成
 			foreach ( QAHM_DEVICES as $qahm_dev ) {
 				$dev_name  = $this->device_id_to_device_name( $qahm_dev['id'] );
-				$options   = $this->get_stream_options( $dev_name );
-				$base_html = file_get_contents( $url, false, stream_context_create( $options ) );
+				$response = $this->wrap_remote_get( $url, $dev_name );
+				if ( is_wp_error( $response ) ) {
+					continue;
+				} elseif( $response['response']['code'] !== 200 ) {
+					continue;
+				} else {
+					$base_html = $response['body'];
+				}
+
                 if ( $this->is_zip( $base_html ) ) {
                     $temphtml = gzdecode( $base_html );
                     if ( $temphtml !== false ) {
@@ -165,7 +187,8 @@ class QAHM_Article_Post extends QAHM_File_Base {
 
 					// 現行バージョンで作られていないデバイスのversion histを作成
 					if ( ! $find ) {
-						$wpdb->insert(
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct database call is necessary in this case due to the complexity of the SQL query.
+							$wpdb->insert(
 							$table_name,
 							array(
 								'page_id'         => $page_id,
@@ -188,6 +211,7 @@ class QAHM_Article_Post extends QAHM_File_Base {
 				}
 
 				// バージョン追加
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct database call is necessary in this case due to the complexity of the SQL query.
 				$wpdb->insert(
 					$table_name,
 					array(
@@ -261,7 +285,7 @@ class QAHM_Article_Post extends QAHM_File_Base {
     ?>
 		<div class="qahm_meta-box">
 			<div class="qahm-meta-icon">
-				<div class="qahm-meta-q-logo"><img src="<?php echo $qahm_q_logo; ?>" alt="qa-logo"></div>
+				<div class="qahm-meta-q-logo"><img src="<?php echo esc_url( $qahm_q_logo ); ?>" alt="qa-logo"></div>
 				<?php //echo $svg_icon; ?>
 			</div>
 
@@ -275,34 +299,34 @@ class QAHM_Article_Post extends QAHM_File_Base {
 		<?php
 	}
 
-	//*Saves the custom meta input
+	//* Saves the custom meta input
 	public function qahm_save_postmeta( $post_id, $post, $update ) {
 		// Checks save status
-    $is_autosave = wp_is_post_autosave( $post_id );
-    $is_revision = wp_is_post_revision( $post_id );
-    $is_valid_nonce = ( isset( $_POST[ 'qahm_meta_nonce' ] ) && wp_verify_nonce( $_POST[ 'qahm_meta_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
- 
-    // Exits script depending on save status
-    if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
-        return;
-    }
+		$is_autosave = wp_is_post_autosave( $post_id );
+		$is_revision = wp_is_post_revision( $post_id );
+		$is_valid_nonce = ( isset( $_POST['qahm_meta_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['qahm_meta_nonce'] ) ), basename( __FILE__ ) ) ) ? 'true' : 'false';
+
+		// Exits script depending on save status
+		if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
+			return;
+		}
 
 		// Checks post status
-		$post_status = get_post_status($post_id);
-		if ( $post_status == 'publish' && $update == true ) { 
+		$post_status = get_post_status( $post_id );
+		if ( $post_status == 'publish' && $update == true ) {
 			// Checks for input and saves if needed
-			if( isset( $_POST[ 'qahm_meta-save_pagever' ] ) ) {
+			if ( isset( $_POST['qahm_meta-save_pagever'] ) ) {
 				update_post_meta(
-						$post_id,
-						'_qahm_meta_key',
-						$_POST['qahm_meta-save_pagever']
+					$post_id,
+					'_qahm_meta_key',
+					sanitize_text_field( wp_unslash( $_POST['qahm_meta-save_pagever'] ) )
 				);
 			} else {
 				update_post_meta(
 					$post_id,
 					'_qahm_meta_key',
 					''
-			);
+				);
 			}
 		}
 	}

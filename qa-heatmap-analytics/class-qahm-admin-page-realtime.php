@@ -57,12 +57,12 @@ class QAHM_Admin_Page_Realtime extends QAHM_Admin_Page_Base {
 
 		// enqueue script
 		$this->common_enqueue_script();
-		wp_enqueue_style( QAHM_NAME . '-admin-page-home-common-css', $css_dir_url . 'admin-page-home-common.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_style( QAHM_NAME . '-admin-page-home-realtime-css', $css_dir_url. 'admin-page-home-realtime.css', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-admin-page-home-common-css', $css_dir_url . 'admin-page-home-common.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_style( QAHM_NAME . '-admin-page-home-realtime-css', $css_dir_url. 'admin-page-home-realtime.css', null, QAHM_PLUGIN_VERSION, false );
 
-		wp_enqueue_script( QAHM_NAME . '-admin-page-realtime', $js_dir_url . 'admin-page-realtime.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-admin-page-realtime', $js_dir_url . 'admin-page-realtime.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-chart', $js_dir_url . 'lib/chart/chart.min.js', null, QAHM_PLUGIN_VERSION, false );
 
 		// inline script
@@ -103,8 +103,10 @@ class QAHM_Admin_Page_Realtime extends QAHM_Admin_Page_Base {
 		$localize['calender_ok'] 			= esc_html_x( 'Apply', 'a word in a date range picker', 'qa-heatmap-analytics' );
 		$localize['calender_kara']			= esc_html_x( '-', 'a connector between dates in a date range picker', 'qa-heatmap-analytics' );
 
+		/* translators: placeholders represent the start and end dates for the download */
 		$localize['download_msg1']			= esc_html__( 'Download the data from %1$s to %2$s.', 'qa-heatmap-analytics' );
 		$localize['download_msg2']			= esc_html__( '*If the data size is too large, depending on the server, it may not be possible to download. In that case, try shortening the date range.', 'qa-heatmap-analytics' );
+		/* translators: placeholders represent the start and end dates for the download */
 		$localize['download_done_nodata']	= esc_html__( 'No data between %1$s and %2$s.', 'qa-heatmap-analytics' );
 		$localize['download_error1']		= esc_html__( 'A communication error occurred when acquiring data.', 'qa-heatmap-analytics' );
 		$localize['download_error2']		= esc_html__( 'It may be acquired too much data. Please shorten the date range and try again. (It depends on the server, but in general, it would be better to make the total number of PVs for the period less than 10,000.)', 'qa-heatmap-analytics' );
@@ -118,8 +120,10 @@ class QAHM_Admin_Page_Realtime extends QAHM_Admin_Page_Base {
 		$localize['ds_cyusyutsu_cyu'] 		= esc_html_x( 'Filtering...', 'value of the button in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_cyusyutsu_error1'] 	= esc_html_x( ': NO data found.', 'error message1 in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_cyusyutsu_error2'] 	= esc_html_x( 'A communication error occurred when acquiring data. It may be acquired too much data. Please narrow down the condition and try again.', 'error message2 in narrow-down-data-section', 'qa-heatmap-analytics' );
+		/* translators: placeholders represent the number of days for displaying report data */
 		$localize['ds_cyusyutsu_error3'] 	= esc_html_x( 'Showing for the last %d day(s) data because of too many data.', 'error message1 in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_free_plan_msg1']	 	= esc_html_x( 'Would like to see the data of all pages?', 'a message appears if only one page can be measured.', 'qa-heatmap-analytics' );
+		/* translators: placeholders are for the link */
 		$localize['ds_free_plan_msg2']	 	= esc_html_x( '%1$s Get Upgrade Options %2$s, have event data collected without page limit.', 'a message appears if only one page can be measured.', 'qa-heatmap-analytics' );
 
 
@@ -168,24 +172,27 @@ class QAHM_Admin_Page_Realtime extends QAHM_Admin_Page_Base {
 
 		$lang_set = get_bloginfo('language');
 		if ( $lang_set == 'ja' ) {
-			$upgrade_link_atag = '<a href="https://quarka.org/plan/" target="_blank" rel="noopener">'; 
-			$referral_link_atag = '<a href="https://quarka.org/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/plan/') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/referral-program/') . '" target="_blank" rel="noopener">';
 		} else {
-			$upgrade_link_atag = '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">';
-			$referral_link_atag = '<a href="https://quarka.org/en/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/en/#plans') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/en/referral-program/') . '" target="_blank" rel="noopener">';
 		}
 ?>
-		<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap">
 				<h1>QA <?php esc_html_e( 'Realtime View', 'qa-heatmap-analytics' ); ?></h1>
 
 				<?php 
 				$is_subscribed = $this->is_subscribed();
 				if ( ! $is_subscribed ) {
-                    $msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';
-                    $msg_yuryouikaga .=	sprintf( esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>' );
+					$msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';
+					$msg_yuryouikaga .= sprintf( 
+						/* translators: placeholders are for the link */
+						esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>'
+					);
                     $msg_yuryouikaga .= '</span></div>';
-                    echo $msg_yuryouikaga;
+                    echo wp_kses_post($msg_yuryouikaga);
 				}
 				?>
 
@@ -346,7 +353,7 @@ class QAHM_Admin_Page_Realtime extends QAHM_Admin_Page_Base {
 
 			if ( ! empty( $referrer ) ) {
 				if ( 0 === strncmp( $referrer, 'http', 4 ) ) {
-					$parse_url          = parse_url( $referrer );
+					$parse_url          = wp_parse_url( $referrer );
 					$ref_host           = $parse_url['host'];
 					$source_domain      = mb_strimwidth( $ref_host, 0, $domain_width, $ellipsis );
 					$source_domain_html = '<a href="' . esc_url( $referrer ) . '" target="_blank" class="qahm-tooltip" data-qahm-tooltip="'. esc_url( $referrer ) . '">' . esc_html( $source_domain ) . '</a>';

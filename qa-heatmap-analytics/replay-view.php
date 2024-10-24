@@ -1,15 +1,15 @@
 <?php
 try {
+	$wp_load_path = dirname( __FILE__, 4 ) . '/wp-load.php';
+	
+    if ( file_exists( $wp_load_path ) ) {
+        require_once( $wp_load_path );
+    } else {
+        exit('wp-load.php could not be found at the following path: ' . '<br>' . esc_html( $wp_load_path ) );
+    }
+
 	$work_base_name    = filter_input( INPUT_GET, 'work_base_name' );
 	$replay_id         = (int) filter_input( INPUT_GET, 'replay_id' );
-	$temp_dir          = dirname( __FILE__ ) . '/temp/';
-	$wp_load_temp_path = $temp_dir . 'wp-load-path.php';
-	$wp_load_rel_path  = file_get_contents( $wp_load_temp_path );
-	if ( ! $wp_load_rel_path ) {
-		throw new Exception( 'Error loading wp_load.php' );
-	}
-
-	require_once $wp_load_rel_path;
 
 	// GETパラメーター判定
 	if ( ! $work_base_name || ! $replay_id ) {
@@ -30,7 +30,7 @@ try {
 
 	// アクセス権限判定
 	if ( ! $qahm_view_replay->check_qahm_access_cap( 'qahm_view_reports' ) ) {
-		throw new Exception( esc_html__( 'You do not have access privileges.' ) );
+		throw new Exception( esc_html( 'You do not have access privileges.' ) );
 	}
 
 	// 翻訳ファイルの読み込み
@@ -165,7 +165,7 @@ try {
 
 	if ( $user_ref ) {
 		if ( 0 === strncmp( $user_ref, 'http', 4 ) ) {
-			$parse_url = parse_url( $user_ref );
+			$parse_url = wp_parse_url( $user_ref );
 			$user_ref  = $parse_url['host'];
 		}
 	} else {
@@ -251,10 +251,12 @@ try {
 	$html_device_info .= '<li class="qahm-tooltip-bottom" data-qahm-tooltip="' . __( 'Browser', 'qa-heatmap-analytics' ) . '">' . $user_browser_icon . $user_browser . '</li>';
 	$html_device_info .= '</ul>';
 
+	//add_action( 'wp_enqueue_scripts', array( $qahm_view_replay, 'enqueue_scripts' ), 100 );
+
 } catch ( Exception $e ) {
 	echo '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>';
 	echo '<p>Error : ' . esc_html( $e->getMessage() ) . '</p>';
-	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html__( 'HELP' ) . '</a></p>';
+	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html( 'HELP' ) . '</a></p>';
 	echo '</body></html>';
 	exit();
 }
@@ -269,16 +271,22 @@ try {
 
 		<title>QA Replay View</title>
 
-		<link rel="stylesheet" type="text/css" href="./css/doctor-reset.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-		<link rel="stylesheet" type="text/css" href="./css/replay-view.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-		<link rel="stylesheet" type="text/css" href="./css/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
+		<?php //wp_head(); ?>
 
-		<script src="./js/lib/jquery/jquery-3.6.0.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/lib/sweet-alert-2/sweetalert2.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/alert-message.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/lib/font-awesome/all.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
+		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
+		<link rel="stylesheet" type="text/css" href="./css/doctor-reset.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/replay-view.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<?php // phpcs:enable ?>
+
+		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
+		<script src="./js/lib/jquery/jquery-3.6.0.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/lib/sweet-alert-2/sweetalert2.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/alert-message.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/lib/font-awesome/all.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<?php // phpcs:enable ?>
 	</head>
 	<body class="qa_is_sideOpen">
 		        
@@ -286,7 +294,7 @@ try {
 			
 			<div id="url-container">
 				<p id="url-replay">
-					URL: <a href="<?php echo $info_ary['base_url']; ?>" target="_blank"><?php echo urldecode( $info_ary['base_url'] ); ?></a>
+					URL: <a href="<?php echo esc_url( $info_ary['base_url'] ); ?>" target="_blank"><?php echo esc_html( urldecode( $info_ary['base_url'] ) ); ?></a>
 				</p>
 			</div>
 
@@ -295,9 +303,9 @@ try {
 				<div id="screen-overlay"></div>
 				<div id="screen-container-inner">
 					<canvas id="screen-canvas"></canvas>
-					<iframe id="screen-iframe" src="<?php echo $cap_url; ?>" scrolling="no" frameborder="0"></iframe>
+					<iframe id="screen-iframe" src="<?php echo esc_url( $cap_url ); ?>" scrolling="no" frameborder="0"></iframe>
 				</div>
-				<div id="next-replay-container" style="display:none;"><?php echo $html_next_replay; ?></div>
+				<div id="next-replay-container" style="display:none;"><?php echo wp_kses_post( $html_next_replay ); ?></div>
 			</div>
 
 			<div id="seekbar-container">
@@ -319,7 +327,7 @@ try {
 				<div class="video-timer">
 					<span class="video-timer-now">00:00</span>
 						/ 
-					<span class="video-timer-last"><?php echo $event_last_time; ?></span>
+					<span class="video-timer-last"><?php echo esc_html( $event_last_time ); ?></span>
 				</div>
 			</div>
 		</div>
@@ -328,23 +336,23 @@ try {
 			<div class="qa-player-description-inner">
 
 				<div>
-					<p class="title"><?php _e( 'User information', 'qa-heatmap-analytics' ); ?></p>
-					<?php echo $html_user_info; ?>
+					<p class="title"><?php esc_html_e( 'User information', 'qa-heatmap-analytics' ); ?></p>
+					<?php echo wp_kses_post( $html_user_info ); ?>
 				</div>
 				<hr>
 				<div>
-					<p class="title"><?php _e( 'Access information', 'qa-heatmap-analytics' ); ?></p>
-					<?php echo $html_access_info; ?>
+					<p class="title"><?php esc_html_e( 'Access information', 'qa-heatmap-analytics' ); ?></p>
+					<?php echo wp_kses_post( $html_access_info ); ?>
 				</div>
 				<hr>
 				<div>
-					<p class="title"><?php _e( 'Device information', 'qa-heatmap-analytics' ); ?></p>
-					<?php echo $html_device_info; ?>
+					<p class="title"><?php esc_html_e( 'Device information', 'qa-heatmap-analytics' ); ?></p>
+					<?php echo wp_kses_post( $html_device_info ); ?>
 				</div>
 				<hr>
 				<div>
-					<p class="title"><?php _e( 'the Page(s) viewed by this user', 'qa-heatmap-analytics' ); ?></p>
-					<?php echo $html_playlist; ?>
+					<p class="title"><?php esc_html_e( 'the Page(s) viewed by this user', 'qa-heatmap-analytics' ); ?></p>
+					<?php echo wp_kses_post( $html_playlist ); ?>
 				</div>
 				<!--
 				<div>
@@ -357,42 +365,45 @@ try {
 		</div>
 
 		<script>
-			var qahm = {
-				'ajax_url':'<?php echo $ajax_url; ?>',
-				'data_type':'<?php echo $info_ary["data_type"]; ?>',
-				'const_debug_level':<?php echo $debug_level; ?>,
-				'const_debug':<?php echo $debug; ?>,
-				'event_ary':'<?php echo $event_ary_json; ?>',
-				'work_base_name':'<?php echo $work_base_name; ?>',
-				'access_time':'<?php echo $user_access_time; ?>',
-				'reader_id':'<?php echo $info_ary["reader_id"]; ?>',
-				'replay_id':<?php echo $replay_id; ?>,
-				'replay_id_max':<?php echo $replay_id_max; ?>,
-				'data_col_head':'<?php echo $data_col_head; ?>',
-				'data_col_body':'<?php echo $data_col_body; ?>',
-				'data_row_win_w':'<?php echo $data_row_win_w; ?>',
-				'data_row_win_h':'<?php echo $data_row_win_h; ?>',
-				'data_row_type':'<?php echo $data_row_type; ?>',
-				'data_row_time':'<?php echo $data_row_time; ?>',
-				'data_row_click_x':'<?php echo $data_row_click_x; ?>',
-				'data_row_click_y':'<?php echo $data_row_click_y; ?>',
-				'data_row_mouse_x':'<?php echo $data_row_mouse_x; ?>',
-				'data_row_mouse_y':'<?php echo $data_row_mouse_y; ?>',
-				'data_row_scroll_y':'<?php echo $data_row_scroll_y; ?>',
-				'data_row_resize_x':'<?php echo $data_row_resize_x; ?>',
-				'data_row_resize_y':'<?php echo $data_row_resize_y; ?>',
-			};
+		var qahm = {
+			'ajax_url': '<?php echo esc_js( esc_url( $ajax_url ) ); ?>',
+			'data_type': '<?php echo esc_js( $info_ary["data_type"] ); ?>',
+			'const_debug_level': <?php echo intval( $debug_level ); ?>,
+			'const_debug': <?php echo intval( $debug ); ?>,
+			'event_ary': '<?php echo wp_json_encode( $event_ary ); ?>',
+			'work_base_name': '<?php echo esc_js( $work_base_name ); ?>',
+			'access_time': '<?php echo esc_js( $user_access_time ); ?>',
+			'reader_id': '<?php echo esc_js( $info_ary["reader_id"] ); ?>',
+			'replay_id': <?php echo intval( $replay_id ); ?>,
+			'replay_id_max': <?php echo intval( $replay_id_max ); ?>,
+			'data_col_head': '<?php echo esc_js( $data_col_head ); ?>',
+			'data_col_body': '<?php echo esc_js( $data_col_body ); ?>',
+			'data_row_win_w': '<?php echo esc_js( $data_row_win_w ); ?>',
+			'data_row_win_h': '<?php echo esc_js( $data_row_win_h ); ?>',
+			'data_row_type': '<?php echo esc_js( $data_row_type ); ?>',
+			'data_row_time': '<?php echo esc_js( $data_row_time ); ?>',
+			'data_row_click_x': '<?php echo esc_js( $data_row_click_x ); ?>',
+			'data_row_click_y': '<?php echo esc_js( $data_row_click_y ); ?>',
+			'data_row_mouse_x': '<?php echo esc_js( $data_row_mouse_x ); ?>',
+			'data_row_mouse_y': '<?php echo esc_js( $data_row_mouse_y ); ?>',
+			'data_row_scroll_y': '<?php echo esc_js( $data_row_scroll_y ); ?>',
+			'data_row_resize_x': '<?php echo esc_js( $data_row_resize_x ); ?>',
+			'data_row_resize_y': '<?php echo esc_js( $data_row_resize_y ); ?>',
+		};
 
-			var qahml10n = {
-				'event_data_not_found':'<?php echo esc_attr__( 'There is no data to replay. The (thinkable) major reason would be: \n - A visitor quickly moved on to the next page.\n - No event happened and time passed.', 'qa-heatmap-analytics' ); ?>',
-				'page_change_failed':'<?php esc_attr_e( 'Failed to switch pages.', 'qa-heatmap-analytics' ); ?>',
-
-			};
+		var qahml10n = {
+			'event_data_not_found': '<?php echo esc_html( __( 'There is no data to replay. The (thinkable) major reason would be: \n - A visitor quickly moved on to the next page.\n - No event happened and time passed.', 'qa-heatmap-analytics' ) ); ?>',
+			'page_change_failed': '<?php echo esc_html( __( 'Failed to switch pages.', 'qa-heatmap-analytics' ) ); ?>',
+		};
 		</script>
 		
+		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
 		<script type="text/javascript" src="./js/common.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
 		<script type="text/javascript" src="./js/load-screen.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
 		<script type="text/javascript" src="./js/replay-class.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
 		<script type="text/javascript" src="./js/replay-view.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
+		<?php // phpcs:enable ?>
+
+		<?php //wp_footer(); ?>
 	</body>
 </html>

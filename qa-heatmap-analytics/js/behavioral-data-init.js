@@ -5,7 +5,6 @@ qahm.readersName      = null;
 qahm.readersBodyIndex = 0;
 qahm.rawName          = null;
 qahm.speedMsec        = 0;
-qahm.useMyAjax        = true;
 
 //QA_ID保存域
 qahm.qa_id            = null;
@@ -180,40 +179,7 @@ qahm.init = function() {
 				throw new Error();
 			}
 		} catch (e) {
-			// admin-ajax通信
-			qahm.useMyAjax = false;
-			action  = 'action=qahm_ajax_init_session_data';
-			sendStr = action + nonce + tracking_hash + url + title + wp_qa_type + wp_qa_id + referrer + country + is_new_user + is_reject;;
-			if( qa_id_obj.value != '' ){
-				sendStr += '&qa_id=' + encodeURIComponent( qa_id_obj.value );
-			}
-
-			xhr = new XMLHttpRequest();
-			xhr.open( 'POST', qahm.ajax_url, true );
-			xhr.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-			xhr.send( sendStr );
-			xhr.onload = function () {
-				try {
-					let data = JSON.parse( xhr.response );
-					if ( data && data.readers_name ) {
-						qahm.readersName      = data.readers_name;
-						qahm.readersBodyIndex = data.readers_body_index;
-						qahm.rawName          = data.raw_name;
-						qahm.initBehData      = true;
-						qahm.qa_id            = data.qa_id;
-						if(!qahm.cookieMode){ //同意モード以外なら有無を言わさずqa_idをセット
-							qahm.setQaid();
-						}else{
-							qahm.updateQaidCookie();
-						}
-						console.log( 'qa: init success.' );
-					} else {
-						throw new Error( 'qa: init failed. HttpStatus: ' + xhr.statusText );
-					}
-				} catch (e) {
-					console.error( e.message );
-				}
-			}
+			console.error( e.message );
 		}
 	}
 

@@ -21,9 +21,6 @@ class QAHM_Log extends QAHM_Base {
 	// ログを削除する際に残す最大行数
 	const DELETE_LINE  = 10000;
 
-	// wp-content直下のdebug.logにログを保存するフラグ。falseならプラグインのdataディレクトリ内
-	const USE_WP_DEBUG_LOG = false;
-
 	/**
 	 * ログファイルのパスを取得
 	 */
@@ -49,16 +46,13 @@ class QAHM_Log extends QAHM_Base {
 	 * 一定の行数まで溜まったログを削除
 	 */
 	public function delete() {
-		if ( self::USE_WP_DEBUG_LOG ) {
-			return;
-		}
-
+		global $wp_filesystem;
 		$path_log = $this->get_log_file_path();
-		if ( ! file_exists( $path_log ) ) {
+		if ( ! $wp_filesystem->exists( $path_log ) ) {
 			return;
 		}
 
-		$log_contents = file_get_contents( $path_log );
+		$log_contents = $wp_filesystem->get_contents( $path_log );
 		$log_ary      = explode( PHP_EOL, $log_contents );
 
 		if ( self::DELETE_LINE >= count( $log_ary ) ) {
@@ -67,7 +61,7 @@ class QAHM_Log extends QAHM_Base {
 
 		array_splice( $log_ary, self::DELETE_LINE );
 		$log_contents = implode( PHP_EOL, $log_ary );
-		file_put_contents( $path_log, $log_contents, LOCK_EX );
+		$wp_filesystem->put_contents( $path_log, $log_contents );
 	}
 
 	/**
@@ -78,6 +72,7 @@ class QAHM_Log extends QAHM_Base {
 			return '';
 		}
 		
+		global $wp_filesystem;
 		$path_log = $this->get_log_file_path();
 		$path_key = $this->get_key_file_path();
 
@@ -104,34 +99,24 @@ class QAHM_Log extends QAHM_Base {
 
 		// ログが配列なら文字列化
 		if ( is_array( $log ) ){
-			$log = print_r( $log, true );
+			$log = $this->array_to_string( $log );
 		}
 
-		if ( self::USE_WP_DEBUG_LOG ) {
-			$log = sprintf( '%s, %s, %s:%s, %s', $level, QAHM_PLUGIN_VERSION, $file, $line, $log );
-			error_log( $log );
+		global $qahm_time;
+		if( method_exists( $qahm_time, 'now_str' ) ) {
+			$time = '[' . $qahm_time->now_str() . ']';
 		} else {
-			global $qahm_time;
-			if( method_exists( $qahm_time, 'now_str' ) ) {
-				$time = '[' . $qahm_time->now_str() . ']';
-			} else {
-				$time = '[Unknown time]';
-			}
-			// maruyama:crypted only log messege not PHP_EOL
-//			$log  = sprintf( '%s %s, %s:%s, %s' . PHP_EOL, $time, $level, $file, $line, $log );
-			$log  = sprintf( '%s %s, %s, %s:%s, %s', $time, $level, QAHM_PLUGIN_VERSION, $file, $line, $log );
+			$time = '[Unknown time]';
+		}
+		$log  = sprintf( '%s %s, %s, %s:%s, %s', $time, $level, QAHM_PLUGIN_VERSION, $file, $line, $log );
 
-			if ( QAHM_DEBUG >= QAHM_DEBUG_LEVEL['debug'] || ( defined( 'QAHM_CONFIG_VIEW_LOG' ) && QAHM_CONFIG_VIEW_LOG === true ) ) {
-				$this->file_put_contents_prepend( $path_log, $log.PHP_EOL );
-				//file_put_contents( $path_log, $log.PHP_EOL, FILE_APPEND | LOCK_EX );
-			} else {
-				$key  = file_get_contents( $path_key );
-				openssl_public_encrypt( $log, $crypted, $key );
-				// maruyama:base 64 encode for crypted binary
-				$crypted = base64_encode( $crypted );
-				$this->file_put_contents_prepend( $path_log, $crypted.PHP_EOL );
-				//file_put_contents( $path_log, $crypted.PHP_EOL, FILE_APPEND | LOCK_EX );
-			}
+		if ( QAHM_DEBUG >= QAHM_DEBUG_LEVEL['debug'] || ( defined( 'QAHM_CONFIG_VIEW_LOG' ) && QAHM_CONFIG_VIEW_LOG === true ) ) {
+			$this->file_put_contents_prepend( $path_log, $log.PHP_EOL );
+		} else {
+			$key  = $wp_filesystem->get_contents( $path_key );
+			openssl_public_encrypt( $log, $crypted, $key );
+			$crypted = base64_encode( $crypted );
+			$this->file_put_contents_prepend( $path_log, $crypted.PHP_EOL );
 		}
 		return $log;
 	}
@@ -140,25 +125,25 @@ class QAHM_Log extends QAHM_Base {
 	 * 先頭行にログを追加
 	 */
 	private function file_put_contents_prepend( $path, $data ) {
-		if (!$fp = fopen($path, 'c+b')) { return false; }
+		global $wp_filesystem;
 
-		flock($fp, LOCK_EX);
-		$data = $data . stream_get_contents($fp);
-		rewind($fp);
+		if ( ! $wp_filesystem->exists( $path ) ) {
+			$wp_filesystem->put_contents( $path, $data );
+			return;
+		}
 
-		$result = fwrite($fp, $data);
-		fflush($fp);
-		flock($fp, LOCK_UN);
-		fclose($fp);
+		$contents = $wp_filesystem->get_contents( $path );
+		$new_data = $data . $contents;
 
-		return $result;
+		$wp_filesystem->put_contents( $path, $new_data );
 	}
 
 	/**
 	 * errorレベルのログを出力
 	 */
 	public function error( $log ) {
-		$log = $this->log( $log, self::ERROR, debug_backtrace() );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- This function is retained due to its low logging frequency and its importance in providing essential debugging information for ongoing maintenance and troubleshooting.
+		$log = $this->log( $log, self::ERROR, debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 ) );
 		return $log;
 	}
 
@@ -166,7 +151,8 @@ class QAHM_Log extends QAHM_Base {
 	 * warningレベルのログを出力
 	 */
 	public function warning( $log ) {
-		$log = $this->log( $log, self::WARN, debug_backtrace() );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- This function is retained due to its low logging frequency and its importance in providing essential debugging information for ongoing maintenance and troubleshooting.
+		$log = $this->log( $log, self::WARN, debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 ) );
 		return $log;
 	}
 
@@ -174,7 +160,8 @@ class QAHM_Log extends QAHM_Base {
 	 * infoレベルのログを出力
 	 */
 	public function info( $log ) {
-		$log = $this->log( $log, self::INFO, debug_backtrace() );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- This function is retained due to its low logging frequency and its importance in providing essential debugging information for ongoing maintenance and troubleshooting.
+		$log = $this->log( $log, self::INFO, debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 ) );
 		return $log;
 	}
 
@@ -182,7 +169,33 @@ class QAHM_Log extends QAHM_Base {
 	 * debugレベルのログを出力
 	 */
 	public function debug( $log ) {
-		$log = $this->log( $log, self::DEBUG, debug_backtrace() );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- This function is retained due to its low logging frequency and its importance in providing essential debugging information for ongoing maintenance and troubleshooting.
+		$log = $this->log( $log, self::DEBUG, debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 ) );
 		return $log;
+	}
+
+	/**
+	 * 配列を文字列に変換
+	 * print_rではなく自作している理由はPlugin Check対策
+	 */
+	private function array_to_string( $array, $indent = 0 ) {
+		$output = '';
+		$prefix = str_repeat( ' ', $indent * 4 ); // インデントをスペースで作成
+
+		foreach ( $array as $key => $value ) {
+			// キーを出力
+			$output .= $prefix . '[' . $key . '] => ';
+
+			// 値が配列の場合は再帰的に処理
+			if ( is_array( $value ) ) {
+				$output .= "Array\n";
+				$output .= array_to_string( $value, $indent + 1 ); // 再帰呼び出しでネストに対応
+			} else {
+				// 値が配列以外の場合はそのまま出力
+				$output .= $value . "\n";
+			}
+		}
+
+		return $output;
 	}
 }

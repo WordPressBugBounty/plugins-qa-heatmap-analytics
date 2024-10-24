@@ -48,10 +48,54 @@ class QAHM_Load extends QAHM_File_Base {
 			$upgrade_link_atag = '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">';
 			$referral_link_atag = '<a href="https://quarka.org/en/referral-program/" target="_blank" rel="noopener">';
 		}
+		// create_qa_announce_html用
+		// 許可するHTMLタグと属性のリスト
+		$qa_announce_allowed_tags = array(
+			'div' => array(
+				'class' => array(),
+				'style' => array(),
+			),
+			'span' => array(
+				'class' => array(),
+				'style' => array(),
+			),
+			'p' => array(
+				'class' => array(),
+				'style' => array(),
+			),
+			'br' => array(),
+			'blockquote' => array(),
+			'ul' => array(),
+			'ol' => array(),
+			'li' => array(),
+			'strong' => array(),
+			'em' => array(),
+			'b' => array(),
+			'i' => array(),
+			// リンクタグ
+			'a' => array(
+				'href' => array(),
+				'title' => array(),
+				'target' => array(),
+				'rel' => array(),
+			),
+			// 画像タグ
+			'img' => array(
+				'src' => array(),
+				'alt' => array(),
+				'width' => array(),
+				'height' => array(),
+				'class' => array(),
+			),
+		);
 		if ( $pv_limit_rate >= 100 ) {
-			echo $this->create_qa_announce_html( sprintf( esc_html__( 'Limit Reached: Data collection paused due to reaching the page view capacity limit for this month. %1$sUpgrade your plan%2$s for continuous tracking, or %3$srefer friends%4$s to increase your capacity for free.', 'qa-heatmap-analytics' ), $upgrade_link_atag, '</a>', $referral_link_atag, '</a>' ), 'error' );
+			/* translators: placeholders are for the link */
+			$qa_announce_html= $this->create_qa_announce_html( sprintf( esc_html__( 'Limit Reached: Data collection paused due to reaching the page view capacity limit for this month. %1$sUpgrade your plan%2$s for continuous tracking, or %3$srefer friends%4$s to increase your capacity for free.', 'qa-heatmap-analytics' ), $upgrade_link_atag, '</a>', $referral_link_atag, '</a>' ), 'error' );
+			echo wp_kses( $qa_announce_html, $qa_announce_allowed_tags );
 		} else if ( $pv_limit_rate >= 80 ) {
-			echo $this->create_qa_announce_html( sprintf( esc_html__( 'Attention: Your site has reached 80%% of its page view capacity for this month. To ensure uninterrupted service, %1$srefer friends%2$s or consider %3$supgrading your plan%4$s.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>' ), 'error' );
+			/* translators: placeholders are for the link */
+			$qa_announce_html = $this->create_qa_announce_html( sprintf( esc_html__( 'Attention: Your site has reached 80%% of its page view capacity for this month. To ensure uninterrupted service, %1$srefer friends%2$s or consider %3$supgrading your plan%4$s.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>' ), 'error' );
+			echo wp_kses( $qa_announce_html, $qa_announce_allowed_tags );
 		}
 	}
 
@@ -137,13 +181,13 @@ class QAHM_Load extends QAHM_File_Base {
 		} else {
 			// 一般ユーザー データ測定用
 			// enqueue script
-			wp_enqueue_script( QAHM_NAME . '-polyfill-object-assign',  $js_dir_url . 'polyfill/object_assign.js', null, QAHM_PLUGIN_VERSION );
+			wp_enqueue_script( QAHM_NAME . '-polyfill-object-assign',  $js_dir_url . 'polyfill/object_assign.js', null, QAHM_PLUGIN_VERSION, false );
 			if( $cookie_mode ){
-				wp_enqueue_script( QAHM_NAME . '-cookie-consent-obj',  $js_dir_url . 'cookie-consent-obj.js', null, QAHM_PLUGIN_VERSION );
-				wp_enqueue_script( QAHM_NAME . '-cookie-consent-qtag', plugin_dir_url( __FILE__ ). 'cookie-consent-qtag.php?cookie_consent='.$cb_init_consent, QAHM_PLUGIN_VERSION );
+				wp_enqueue_script( QAHM_NAME . '-cookie-consent-obj',  $js_dir_url . 'cookie-consent-obj.js', null, QAHM_PLUGIN_VERSION, false );
+				wp_enqueue_script( QAHM_NAME . '-cookie-consent-qtag', plugin_dir_url( __FILE__ ). 'cookie-consent-qtag.php?cookie_consent='.$cb_init_consent, null, QAHM_PLUGIN_VERSION, false );
 			}
-			wp_enqueue_script( QAHM_NAME . '-behavioral-data-init',  $js_dir_url . 'behavioral-data-init.js', array( QAHM_NAME . '-polyfill-object-assign' ), QAHM_PLUGIN_VERSION );
-			wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery', QAHM_NAME . '-behavioral-data-init' ), QAHM_PLUGIN_VERSION );
+			wp_enqueue_script( QAHM_NAME . '-behavioral-data-init',  $js_dir_url . 'behavioral-data-init.js', array( QAHM_NAME . '-polyfill-object-assign' ), QAHM_PLUGIN_VERSION, false );
+			wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery', QAHM_NAME . '-behavioral-data-init' ), QAHM_PLUGIN_VERSION, false );
 			wp_enqueue_script( QAHM_NAME . '-behavioral-data-record',  $js_dir_url . 'behavioral-data-record.js', array( QAHM_NAME . '-common', QAHM_NAME . '-behavioral-data-init' ), QAHM_PLUGIN_VERSION, true );
 
 			// inline script

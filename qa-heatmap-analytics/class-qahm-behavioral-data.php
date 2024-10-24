@@ -16,71 +16,14 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 	 * コンストラクタ
 	 */
 	public function __construct() {
-		$this->regist_ajax_func( 'ajax_init_session_data' );
-		$this->regist_ajax_func( 'ajax_update_msec' );
-		$this->regist_ajax_func( 'ajax_record_behavioral_data' );
-		
 		add_action( 'init', array( $this, 'init_wp_filesystem' ) );
 	}
 
 
+
 	/**
-	 * 初期化
+	 * セッションデータの初期化
 	 */
-	public function ajax_init_session_data() {
-		try {
-			if ( $this->is_maintenance() ) {
-				throw new Exception( 'It is under maintenance.' );
-			}
-
-			$nonce = $this->wrap_filter_input( INPUT_POST, 'nonce' );
-			if ( ! wp_verify_nonce( $nonce, self::NONCE_INIT ) ) {
-				throw new Exception( 'The nonce value is invalid.' );
-			}
-
-			//$qa_id         = $this->wrap_filter_input( INPUT_COOKIE, 'qa_id' );
-			$posted_qa_id = $this->wrap_filter_input( INPUT_POST, 'qa_id' );
-			if ( empty( $posted_qa_id ) ){
-				$anontrack = $this->wrap_get_option( 'anontrack' );
-				if( $anontrack == 1 ){
-					$qa_id = $this->create_qa_id( $ip_address, $ua, $tracking_hash );
-				}else{
-					$qa_id = $this->create_qa_id( $ip_address, $ua, '' );
-				}
-			}else{
-				$qa_id = $posted_qa_id;
-			}
-
-			$wp_qa_type    = $this->wrap_filter_input( INPUT_POST, 'wp_qa_type' );
-			$wp_qa_id      = $this->wrap_filter_input( INPUT_POST, 'wp_qa_id' );
-			$title         = $this->wrap_filter_input( INPUT_POST, 'title' );
-			$url           = $this->wrap_filter_input( INPUT_POST, 'url' );
-			$ref           = $this->wrap_filter_input( INPUT_POST, 'referrer' );
-			$country       = $this->wrap_filter_input( INPUT_POST, 'country' );
-			$is_new_user   = (int)$this->wrap_filter_input( INPUT_POST, 'is_new_user' );
-			$is_reject     = $this->wrap_filter_input( INPUT_POST, 'is_reject' );
-			$is_reject     = ( $is_reject === 'true' ) ? true : false;
-
-			$ua            = $this->wrap_filter_input( INPUT_SERVER, 'HTTP_USER_AGENT' );
-			if ( empty( $ref ) ) {
-				$ref = 'direct';
-			}
-			$url = mb_strtolower( $url );
-			$ref = mb_strtolower( $ref );
-
-			//init
-			$data = $this->init_session_data( $qa_id, $wp_qa_type, $wp_qa_id, $title, $url, $ref, $country, $ua, $is_new_user, $is_reject ) ;
-			echo json_encode($data);
-
-		} catch ( Exception $e ) {
-			http_response_code( 500 );
-			echo $e->getMessage();
-
-		} finally {
-			exit;
-		}
-	}
-
 	public function init_session_data( $qa_id, $wp_qa_type, $wp_qa_id, $title, $url, $ref, $country, $ua, $is_new_user, $is_cookie_reject ) {
 
 		global $qahm_time;
@@ -93,7 +36,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 		$user_original_id = '';
 
 		// utm_***の設定＆urlの一部パラメーターを削除して保存できるよう対応
-		$parse_url = parse_url( $url, PHP_URL_QUERY );
+		$parse_url = wp_parse_url( $url, PHP_URL_QUERY );
 		if ( $parse_url ) {
 			parse_str( $parse_url, $query_ary );
 			
@@ -285,32 +228,11 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 
 		return $data;
 	}
+
+
 	/**
 	 * msecを更新
 	 */
-	public function ajax_update_msec() {
-		try {
-			$nonce = $this->wrap_filter_input( INPUT_POST, 'nonce' );
-			if ( ! wp_verify_nonce( $nonce, self::NONCE_BEHAVIORAL ) ) {
-				throw new Exception( 'The nonce value is invalid.' );
-			}
-
-			$readers_name       = $this->wrap_filter_input( INPUT_POST, 'readers_name' );
-			$readers_body_index = (int) $this->wrap_filter_input( INPUT_POST, 'readers_body_index' );
-			$speed_msec         = (int) $this->wrap_filter_input( INPUT_POST, 'speed_msec' );
-			
-			$this->update_msec( $readers_name, $readers_body_index, $speed_msec );
-
-		} catch ( Exception $e ) {
-			http_response_code( 500 );
-			echo $e->getMessage();
-
-		} finally {
-			die();
-		}
-	}
-
-
 	public function update_msec( $readers_name, $readers_body_index, $speed_msec ) {
 		$readers_temp_dir = $this->get_data_dir_path( 'readers/temp/' );
 		$readers_data_ary = $this->wrap_unserialize( $this->wrap_get_contents( $readers_temp_dir . $readers_name . '.php' ) );
@@ -410,47 +332,6 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 	/**
 	 * 行動データ作成
 	 */
-	public function ajax_record_behavioral_data() {
-		try {
-			if ( $this->is_maintenance() ) {
-				throw new Exception( 'It is under maintenance.' );
-			}
-
-			$nonce = $this->wrap_filter_input( INPUT_POST, 'nonce' );
-			if ( ! wp_verify_nonce( $nonce, self::NONCE_BEHAVIORAL ) ) {
-				throw new Exception( 'The nonce value is invalid.' );
-			}
-
-			$is_pos   = $this->wrap_filter_input( INPUT_POST, 'is_pos' );
-			$is_pos   = ( $is_pos === 'true' ) ? true : false;
-			$is_click = $this->wrap_filter_input( INPUT_POST, 'is_click' );
-			$is_click = ( $is_click === 'true' ) ? true : false;
-			$is_event = $this->wrap_filter_input( INPUT_POST, 'is_event' );
-			$is_event = ( $is_event === 'true' ) ? true : false;
-
-			$raw_name       = $this->wrap_filter_input( INPUT_POST, 'raw_name' );
-			$readers_name   = $this->wrap_filter_input( INPUT_POST, 'readers_name' );
-			$type           = $this->wrap_filter_input( INPUT_POST, 'type' );
-			$id             = $this->wrap_filter_input( INPUT_POST, 'id' );
-			$ua             = $this->wrap_filter_input( INPUT_POST, 'ua' );
-			$is_reject = $this->wrap_filter_input( INPUT_POST, 'is_reject' );
-			$is_reject = ( $is_reject === 'true' ) ? true : false;
-			if( ! $ua ) {
-				$ua = $_SERVER['HTTP_USER_AGENT'];
-			}
-			
-			$output = $this->record_behavioral_data( $is_pos, $is_click, $is_event, $raw_name, $readers_name, $type, $id, $ua, $is_reject );
-			echo $output;
-
-		} catch ( Exception $e ) {
-			http_response_code( 500 );
-			echo $e->getMessage();
-
-		} finally {
-			die();
-		}
-	}
-
 	public function record_behavioral_data($is_pos, $is_click, $is_event, $raw_name, $readers_name, $type, $id, $ua, $is_cookie_reject) {
 		try {
 			global $qahm_time;
@@ -704,7 +585,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 
 		} catch ( Exception $e ) {
 			http_response_code( 500 );
-			echo $e->getMessage();
+			echo esc_html($e->getMessage());
 		}
 	}
 
@@ -751,7 +632,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
         global $wp_filesystem;
         global $qahm_time;
         $now_utime = $qahm_time->now_unixtime();
-        $newhash   = hash( 'fnv164', (string)mt_rand() );
+		$newhash   = hash( 'fnv164', (string)wp_rand() );
         if ( $wp_filesystem->exists( $thash_file ) ) {
             $th_serial = $this->wrap_get_contents( $thash_file );
             $thash_ary = $this->wrap_unserialize( $th_serial );

@@ -6,15 +6,15 @@
  */
 
 /*
-Plugin Name: QA Analytics - Web Analytics Tool with Heatmaps & Session Replay Across All Pages
+Plugin Name: QA Analytics - with Heatmaps & Replay, Privacy Friendly
 Plugin URI: https://quarka.org/en/
 Description: Collects, records and visualizes visits data. You can own precise data and analyze them with stats, heatmap, session replay, and more.
 Author: QuarkA
 Author URI: https://quarka.org/en/
-Version: 4.1.1.1
+Version: 4.1.2.0
 Text Domain: qa-heatmap-analytics
 Requires at least: 5.6
-Tested up to: 6.5.0
+Tested up to: 6.6.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -105,13 +105,10 @@ require_once dirname( __FILE__ ) . '/class-qahm-db.php';
 require_once dirname( __FILE__ ) . '/class-qahm-license.php';
 require_once dirname( __FILE__ ) . '/class-qahm-update.php';
 require_once dirname( __FILE__ ) . '/class-qahm-behavioral-data.php';
-require_once dirname( __FILE__ ) . '/class-qahm-rec-term.php';
 require_once dirname( __FILE__ ) . '/class-qahm-article-post.php';
-require_once dirname( __FILE__ ) . '/class-qahm-article-list.php';
 require_once dirname( __FILE__ ) . '/class-qahm-view-base.php';
 require_once dirname( __FILE__ ) . '/class-qahm-view-heatmap.php';
 require_once dirname( __FILE__ ) . '/class-qahm-view-replay.php';
-require_once dirname( __FILE__ ) . '/class-qahm-view-page-data.php';
 require_once dirname( __FILE__ ) . '/class-qahm-google-api.php';
 require_once dirname( __FILE__ ) . '/class-qahm-cron-proc.php';
 require_once dirname( __FILE__ ) . '/class-qahm-data-api.php';

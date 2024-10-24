@@ -107,6 +107,10 @@ class QAHM_Data_Api extends QAHM_Db {
 			http_response_code( 400 );
 			die( 'nonce error' );
 		}
+		if ( ! $this->check_qahm_access_cap( 'qahm_manage_settings' ) ) {
+			http_response_code( 400 );
+			die( 'cap error' );
+		}
 		global $qahm_time;
 
 		$target_customer = $this->alltrim( $this->wrap_filter_input( INPUT_POST, 'target_customer' ) );
@@ -130,7 +134,7 @@ class QAHM_Data_Api extends QAHM_Db {
 			'goalday' =>  $goalday,
 			'goaldaysession' =>  $goaldaysession,
 			];
-		$siteinfo_json_new = json_encode( $siteinfo_ary );
+		$siteinfo_json_new = wp_json_encode( $siteinfo_ary );
 		$savestatus = $this->wrap_update_option('siteinfo', $siteinfo_json_new );
 		header("Content-type: application/json; charset=UTF-8");
 		echo( '{"success":true}' );
@@ -158,8 +162,11 @@ class QAHM_Data_Api extends QAHM_Db {
 			http_response_code( 400 );
 			die( 'nonce error' );
 		}
-
-
+		if ( ! $this->check_qahm_access_cap( 'qahm_manage_settings' ) ) {
+			http_response_code( 400 );
+			die( 'cap error' );
+		}
+		
 		$gid         = $this->alltrim( $this->wrap_filter_input( INPUT_POST,      'gid' ) ) ;
 		$gtitle      = $this->alltrim( $this->wrap_filter_input( INPUT_POST,   'gtitle' ) ) ;
 		$gnum_scale  = $this->alltrim( $this->wrap_filter_input( INPUT_POST, 'gnum_scale' ) ) ;
@@ -260,7 +267,7 @@ class QAHM_Data_Api extends QAHM_Db {
 				}
 				if ( $correct_regex === false ) {
 					header("Content-type: application/json; charset=UTF-8");
-					echo( json_encode('wrong_delimiter') );
+					echo( wp_json_encode('wrong_delimiter') );
 					die();
 				}
 				break;
@@ -269,7 +276,7 @@ class QAHM_Data_Api extends QAHM_Db {
 				$pageid_ary = $this->url_to_page_id( $g_clickpage, false );
 				if( ! $pageid_ary ) {
 					header("Content-type: application/json; charset=UTF-8");
-					echo( json_encode('no_page_id') );
+					echo( wp_json_encode('no_page_id') );
 					die();
 				}
 				break;
@@ -283,7 +290,7 @@ class QAHM_Data_Api extends QAHM_Db {
 				$pageid_ary = $this->url_to_page_id( $g_goalpage, $match_prefix );
 				if( ! $pageid_ary ) {
 					header("Content-type: application/json; charset=UTF-8");
-					echo( json_encode('no_page_id') );
+					echo( wp_json_encode('no_page_id') );
 					die();
 				}
 				break;
@@ -294,7 +301,7 @@ class QAHM_Data_Api extends QAHM_Db {
 		$save_goal_ary = $goals_json_ary[$gid];
 		$goals_json_ary[ $gid ] = $goal_ary;
 
-		$goals_json_new = json_encode( $goals_json_ary );
+		$goals_json_new = wp_json_encode( $goals_json_ary );
 		$savestatus = $this->wrap_update_option('goals', $goals_json_new );
 		if ( $savestatus ) {
 			// 目標条件が変更されていたら直近2ヶ月のサマリーファイルを作ってしまい、クライアントに件数を返す。
@@ -344,7 +351,7 @@ class QAHM_Data_Api extends QAHM_Db {
 				$session_count = count( $session_ary[$gid] );
 			}
 			header("Content-type: application/json; charset=UTF-8");
-			echo( '{"count":"'. $session_count . '"}' );
+			echo wp_json_encode( array( 'count' => esc_html( $session_count ) ) );
 			die();
 		} else {
 			http_response_code( 500 );
@@ -357,6 +364,10 @@ class QAHM_Data_Api extends QAHM_Db {
 		if ( ! wp_verify_nonce( $nonce, self::NONCE_API ) || $this->is_maintenance() ) {
 			http_response_code( 400 );
 			die( 'nonce error' );
+		}
+		if ( ! $this->check_qahm_access_cap( 'qahm_manage_settings' ) ) {
+			http_response_code( 400 );
+			die( 'cap error' );
 		}
 		$gid  = $this->alltrim( $this->wrap_filter_input( INPUT_POST, 'gid' ) );
 		if ( is_numeric( $gid ) ) {
@@ -390,7 +401,7 @@ class QAHM_Data_Api extends QAHM_Db {
 				$nary[$iii - 1] = $gary[$iii];
 			}
 		}
-		$goals_json_new = json_encode( $nary );
+		$goals_json_new = wp_json_encode( $nary );
 		$savestatus = $this->wrap_update_option('goals', $goals_json_new );
 		if ( $savestatus ) {
 			$this->delete_goal_X_file( $gid );
@@ -902,10 +913,10 @@ class QAHM_Data_Api extends QAHM_Db {
 			if ( $prefix_match ) {
 				echo wp_json_encode( $res );
 			} else {
-				echo wp_json_encode( $res[0]['page_id'].'id' );
+				echo wp_json_encode( esc_html( $res[0]['page_id'] ) . 'id' );
 			}
 		} else {
-			echo $res . 'error';
+			echo wp_json_encode( esc_html( $res ) . 'error' );
 		}
 		die();
 	}
@@ -1110,7 +1121,14 @@ class QAHM_Data_Api extends QAHM_Db {
 
         // new/repeat device report
 		$maxcnt = count( $sad_ary );
-		$domain = $_SERVER[ 'HTTP_HOST' ];
+
+		// HTTP_HOSTが存在するか確認し、必要な処理を行う
+		$domain = '';
+		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
+			// wp_unslash()でスラッシュを除去し、sanitize_text_field()でサニタイズ
+			$domain = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) );
+		}
+
 		for ( $iii = 0; $iii < $maxcnt; $iii++ ) {
 
 			//channel report
@@ -1377,7 +1395,13 @@ class QAHM_Data_Api extends QAHM_Db {
 
     	//make chanell array
 		$lps_ary = [];
-		$domain = $_SERVER[ 'HTTP_HOST' ];
+
+		// HTTP_HOSTが存在するかチェックし、必要な処理を行う
+		$domain = '';
+		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
+			// wp_unslash()でスラッシュを除去し、sanitize_text_field()でサニタイズ
+			$domain = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) );
+		}
 
 		global $qahm_db;
 		$lp_ary = $qahm_db->summary_days_landingpages( $dateterm );
@@ -1525,7 +1549,13 @@ class QAHM_Data_Api extends QAHM_Db {
 	public function get_gw_data( $dateterm )
 	{
 		global $qahm_db;
-		$domain = $_SERVER[ 'HTTP_HOST' ];
+		// HTTP_HOSTが存在するか確認し、安全に取得する
+		$domain = '';
+		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
+			// スラッシュを解除し、テキスト用にサニタイズ
+			$domain = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) );
+		}
+
 		$gw_ary = $qahm_db->summary_days_growthpages( $dateterm );
 		$retary = [];
 		foreach ( $gw_ary as $line_ary ) {
@@ -1810,7 +1840,7 @@ class QAHM_Data_Api extends QAHM_Db {
 		}
 		if ( $is_err ) {
 			http_response_code( 408 );
-			die( $aday . $bday . 'date_or_id error' );
+			die( esc_html( $aday ) . esc_html( $bday ) . 'date_or_id error' );
 		}
 
 		if ( $count ) {
@@ -1902,6 +1932,8 @@ class QAHM_Data_Api extends QAHM_Db {
 		return str_replace(' ', '', $string);
 	}
 
+	/*
+	Plugin Checkでnonceがないということで引っかかった。そのためコメントアウト
 	private function get_all_parameter() {
 		$postarray = array();
 		if ( isset( $_POST ) && count( $_POST ) ) {
@@ -1948,6 +1980,7 @@ class QAHM_Data_Api extends QAHM_Db {
 		}
 		return $paramarray;
 	}
+	*/
 
 
 	/**
@@ -1990,17 +2023,7 @@ class QAHM_Data_Api extends QAHM_Db {
 			die();
 		}
 
-		// 通信元により特殊な処理を適用する場合
-		switch( $type ) {
-			case 'google_data_studio':
-				if ( ! $this->get_license_plan( 'api_google_data_studio' ) ) {
-					echo 'エラー' + ': ' + 'Googleデータポータルと連携するためのライセンスを契約していません。';
-					die();
-				}
-				break;
-		}
-
-		echo wp_create_nonce( self::NONCE_API );
+		echo esc_html(wp_create_nonce( self::NONCE_API ) );
 		die();
 	}
 }

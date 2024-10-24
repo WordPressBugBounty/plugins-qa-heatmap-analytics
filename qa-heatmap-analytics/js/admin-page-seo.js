@@ -12,10 +12,10 @@ qahm.initRewriteTable = function() {
 	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['url'],type: 'string',hasFilter:true,colParm:'style="width: 10%;"',tdHtml:'<span>%!me</span>'});
 	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['total_num'],type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!me</span>'});
 	qahm.gscRewriteTable.dataObj.body.header.push({isHide:true});
-	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['change_rate'] + '<span class="qahm-tooltip" data-qahm-tooltip="' + qahml10n['change_rate_tooltip'] + '"><i class="far fa-question-circle"></i></span>',type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!04</span>'});
+	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['change_rate'],type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!04</span>'});
 	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['total_num'],type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!me</span>'});
 	qahm.gscRewriteTable.dataObj.body.header.push({isHide:true});
-	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['change_rate'] + '<span class="qahm-tooltip" data-qahm-tooltip="' + qahml10n['change_rate_tooltip'] + '"><i class="far fa-question-circle"></i></span>',type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!07</span>'});
+	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['change_rate'],type: 'number',hasFilter:true,colParm:'style="width: 5%;"',tdHtml:'<span>%!07</span>'});
 	qahm.gscRewriteTable.dataObj.body.header.push({title:qahml10n['edit'],type: 'string',hasFilter:false,colParm:'style="width: 5%;"',tdHtml:'<a href="' + qahm.site_url + '/wp-admin/post.php?post=%!me&action=edit" target="_blank" rel="noopener noreferrer">' + qahml10n['edit'] + '</a>'});
 
 	qahm.gscRewriteTable.visibleSort.index = 1;

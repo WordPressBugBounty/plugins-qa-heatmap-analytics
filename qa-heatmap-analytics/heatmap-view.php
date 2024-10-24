@@ -1,16 +1,15 @@
 <?php
 try {
-	$version_id        = (int) filter_input( INPUT_GET, 'version_id' );
-	$temp_dir          = dirname( __FILE__ ) . '/temp/';
-	$wp_load_temp_path = $temp_dir . 'wp-load-path.php';
-	$wp_load_rel_path  = file_get_contents( $wp_load_temp_path );
-	if ( ! $wp_load_rel_path ) {
-		throw new Exception( 'Error loading wp_load.php' );
-	}
-
-	require_once $wp_load_rel_path;
+    $wp_load_path = dirname( __FILE__, 4 ) . '/wp-load.php';
+	
+    if ( file_exists( $wp_load_path ) ) {
+        require_once( $wp_load_path );
+    } else {
+        exit('wp-load.php could not be found at the following path: ' . '<br>' . esc_html( $wp_load_path ) );
+    }
 
 	// GETパラメーター判定
+	$version_id   = (int) filter_input( INPUT_GET, 'version_id' );
 	if ( ! $version_id ) {
 		throw new Exception( 'Query string has no value.' );
 	}
@@ -60,7 +59,7 @@ try {
 
 	// アクセス権限判定
 	if ( ! $qahm_view_heatmap->check_qahm_access_cap( 'qahm_view_reports' ) ) {
-		throw new Exception( esc_html__( 'You do not have access privileges.' ) );
+		throw new Exception( esc_html( 'You do not have access privileges.' ) );
 	}
 
 	// 翻訳ファイルの読み込み
@@ -107,7 +106,7 @@ try {
 		$heat_map_tooltip = esc_attr__( 'Indicates "where the users are clicking." The place a user clicks is likely to be the point of interest. The parts that have been clicked a lot are displayed in red.', 'qa-heatmap-analytics' );
 		$heat_map_icon    = '<img src="' . $qahm_view_heatmap->get_img_dir_url() . 'click-heat-map.svg">';
 
-		// クリックカウントマップ		
+		// クリックカウントマップ
 		$count_map_title   = esc_html__( 'Click Count Map', 'qa-heatmap-analytics' );
 		$count_map_tooltip = esc_attr__( 'Indicates "how many times this button or link has been pressed." You can see trends such as banner clicks.', 'qa-heatmap-analytics' );
 		$count_map_icon    = '<img src="' . $qahm_view_heatmap->get_img_dir_url() . 'click-count-map.svg">';
@@ -169,10 +168,12 @@ try {
 	$html_bar_mobile .= '</ul>';
 	$plugin_version   = QAHM_PLUGIN_VERSION;
 
+	//add_action( 'wp_enqueue_scripts', array( $qahm_view_heatmap, 'enqueue_scripts' ), 100 );
+
 } catch ( Exception $e ) {
 	echo '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>';
 	echo '<p>Error : ' . esc_html( $e->getMessage() ) . '</p>';
-	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html__( 'HELP' ) . '</a></p>';
+	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html( 'HELP' ) . '</a></p>';
 	echo '</body></html>';
 	exit();
 }
@@ -186,47 +187,56 @@ try {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<title>QA Heatmap View</title>
-
-		<link rel="stylesheet" type="text/css" href="./css/doctor-reset.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-		<link rel="stylesheet" type="text/css" href="./css/heatmap-view.css?ver=<?php esc_attr_e( $plugin_version ); ?>">
-
-		<script src="./js/lib/jquery/jquery-3.6.0.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/lib/sweet-alert-2/sweetalert2.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/alert-message.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		<script src="./js/lib/font-awesome/all.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
 		
+		<?php //wp_head(); ?>
+
+		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
+		<link rel="stylesheet" type="text/css" href="./css/doctor-reset.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/heatmap-view.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<?php // phpcs:enable ?>
+
+		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
+		<script src="./js/lib/jquery/jquery-3.6.0.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/lib/sweet-alert-2/sweetalert2.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/alert-message.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="./js/lib/font-awesome/all.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<?php // phpcs:enable ?>
 
 		<?php if ( $is_heatmap ) { ?>
 			<script>
 				var qahm = qahm || {};
 				let qahmObj = {
-					'ajax_url':'<?php echo $ajax_url; ?>',
-					'type':'<?php echo $wp_qa_type; ?>',
-					'id':<?php echo $wp_qa_id; ?>,
-					'ver':<?php echo $version_no; ?>,
-					'dev':'<?php echo $device_name; ?>',
-					'version_id':<?php echo $version_id; ?>,
-					'attention_limit_time':<?php echo QAHM_View_Heatmap::ATTENTION_LIMIT_TIME; ?>,
+					'ajax_url': '<?php echo esc_js( $ajax_url ); ?>',
+					'type': '<?php echo esc_js( $wp_qa_type ); ?>',
+					'id': <?php echo intval( $wp_qa_id ); ?>,
+					'ver': <?php echo intval( $version_no ); ?>,
+					'dev': '<?php echo esc_js( $device_name ); ?>',
+					'version_id': <?php echo intval( $version_id ); ?>,
+					'attention_limit_time': <?php echo intval( QAHM_View_Heatmap::ATTENTION_LIMIT_TIME ); ?>,
 				};
-				qahm = Object.assign( qahm, qahmObj );
+				qahm = Object.assign(qahm, qahmObj);
 
 				var qahml10n = {
-					'people':'<?php echo esc_html_x( 'people', 'counting number (unit) of people', 'qa-heatmap-analytics' ); ?>',
+					'people': '<?php echo esc_js( esc_html_x( 'people', 'counting number (unit) of people', 'qa-heatmap-analytics' ) ); ?>',
 				};
 			</script>
-			<script src="./js/common.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/load-screen.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/cap-create.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/lib/heatmap/heatmap.min.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/heatmap-view.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/heatmap-bar.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-			<script src="./js/heatmap-main.js?ver=<?php esc_attr_e( $plugin_version ); ?>"></script>
-		
+
+			<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript  -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
+			<script src="./js/common.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/load-screen.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/cap-create.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/lib/heatmap/heatmap.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/heatmap-view.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/heatmap-bar.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<script src="./js/heatmap-main.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+			<?php // phpcs:enable ?>
+
 			<script>
-				jQuery(function(){
-					jQuery( '#heatmap-iframe' ).on( 'load', function() {
-						jQuery( '#heatmap-iframe' ).contents().find('head').append(
+				jQuery(function () {
+					jQuery('#heatmap-iframe').on('load', function () {
+						jQuery('#heatmap-iframe').contents().find('head').append(
+							<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
 							'<link rel="stylesheet" href="<?php echo esc_url( plugin_dir_url( __FILE__ ) ); ?>css/heatmap-frame.css?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>" type="text/css" />'
 						);
 					});
@@ -234,51 +244,101 @@ try {
 			</script>
 		<?php } else { ?>
 			<script>
-				alert( '<?php echo esc_attr__( 'You have no valid data to display Heatmap.', 'qa-heatmap-analytics' ); ?>' );
+				alert('<?php esc_html_e( 'You have no valid data to display Heatmap.', 'qa-heatmap-analytics' ); ?>');
 			</script>
 		<?php } ?>
 	</head>
 	<body>
-		<?php
-			$html = <<< EOT
-				<div id="heatmap-bar">
-					<div id="heatmap-bar-inner">
-						<nav id="heatmap-nav">
-							{$html_bar}
-						</nav>
-						<nav id="heatmap-mobile-nav">
-							{$html_bar_mobile}
-						</nav>
+		<div id="heatmap-bar">
+			<div id="heatmap-bar-inner">
+				<nav id="heatmap-nav">
+					<?php 
+					echo wp_kses( $html_bar, array(
+						'ul'   => array(),
+						'li'   => array( 'id' => array() ),
+						'label' => array( 'class' => array() ),
+						'span' => array( 
+							'class' => array(), 
+							'data-qahm-tooltip' => array(),
+						),
+						'img' => array( 
+							'src' => array(), 
+							'alt' => array(),
+						),
+						'input' => array( 
+							'class' => array(), 
+							'type' => array(), 
+							'checked' => array(), 
+							'disabled' => array(),
+						),
+						'div' => array( 'class' => array() ),
+						'i' => array( 'class' => array() ),
+						'a' => array(
+							'href' => array(),
+							'target' => array(),
+							'rel' => array(),
+						),
+					) ); 
+					?>
+				</nav>
+				<nav id="heatmap-mobile-nav">
+					<?php 
+					echo wp_kses( $html_bar_mobile, array(
+						'ul'   => array(),
+						'li'   => array( 'id' => array() ),
+						'label' => array( 'class' => array() ),
+						'span' => array( 
+							'class' => array(), 
+							'data-qahm-tooltip' => array(),
+						),
+						'img' => array( 
+							'src' => array(), 
+							'alt' => array(),
+						),
+						'input' => array( 
+							'class' => array(), 
+							'type' => array(), 
+							'checked' => array(), 
+							'disabled' => array(),
+						),
+						'div' => array( 'class' => array() ),
+						'i' => array( 'class' => array() ),
+						'a' => array(
+							'href' => array(),
+							'target' => array(),
+							'rel' => array( 'noopener', 'noreferrer' ),
+						),
+					) ); 
+					?>
+				</nav>
+			</div>
+		</div>
+		<div id="heatmap-iframe-container" class="frame">
+			<iframe id="heatmap-iframe" src="<?php echo esc_attr( $heatmap_view_work_url . $version_id . '-cap.php' ); ?>" width="100%" height="100%"></iframe>
+		</div>
+		<div id="heatmap-container" class="frame">
+			<div id="heatmap-content">
+				<div id="heatmap-click-heat" class="qahm-hide">
+					<div id="heatmap-click-heat-0"></div>
+					<div id="heatmap-click-heat-1"></div>
+				</div>
+				<div id="heatmap-click-count" class="qahm-hide">
+					<div id="heatmap-click-count-0"></div>
+					<div id="heatmap-click-count-1"></div>
+				</div>
+				<div id="heatmap-attention-scroll">
+					<div id="heatmap-scroll-tooltip" class="qahm-hide"><span id="heatmap-scroll-data-num"></span></div>
+					<div id="heatmap-scroll" class="qahm-hide">
+						<div id="heatmap-scroll-0"></div>
+						<div id="heatmap-scroll-1"></div>
+					</div>
+					<div id="heatmap-attention" class="qahm-hide">
+						<div id="heatmap-attention-0"></div>
+						<div id="heatmap-attention-1"></div>
 					</div>
 				</div>
-				<div id="heatmap-iframe-container" class="frame">
-					<iframe id="heatmap-iframe" src="{$heatmap_view_work_url}{$version_id}-cap.php" width="100%" height="100%"></iframe>
-				</div>
-				<div id="heatmap-container" class="frame">
-					<div id="heatmap-content">
-						<div id="heatmap-click-heat" class="qahm-hide">
-							<div id="heatmap-click-heat-0"></div>
-							<div id="heatmap-click-heat-1"></div>
-						</div>
-						<div id="heatmap-click-count" class="qahm-hide">
-							<div id="heatmap-click-count-0"></div>
-							<div id="heatmap-click-count-1"></div>
-						</div>
-						<div id="heatmap-attention-scroll">
-							<div id="heatmap-scroll-tooltip" class="qahm-hide"><span id="heatmap-scroll-data-num"></span></div>
-							<div id="heatmap-scroll" class="qahm-hide">
-								<div id="heatmap-scroll-0"></div>
-								<div id="heatmap-scroll-1"></div>
-							</div>
-							<div id="heatmap-attention" class="qahm-hide">
-								<div id="heatmap-attention-0"></div>
-								<div id="heatmap-attention-1"></div>
-							</div>
-						</div>
-					</div>
-				</div>
-EOT;
-			echo $html;
-		?>
+			</div>
+		</div>
+		<?php //wp_footer(); ?>
 	</body>
 </html>

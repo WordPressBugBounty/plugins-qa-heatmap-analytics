@@ -142,7 +142,7 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
       }
     </style>
 
-		<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap">
 				<h1><?php esc_html_e( 'Looker Studio Connector', 'qa-heatmap-analytics' ); ?></h1>
             <div class="whitediv-ls">
@@ -170,7 +170,7 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                         <p>2. <?php esc_html_e( 'Click "Authorize".', 'qa-heatmap-analytics' ); ?></p>
                       </div>
                       <div class="ls-stepimg">
-                        <img src="<?php echo $img_dir_url ?>lookerstudio1.jpg" alt="lookerstudio1">
+                        <img src="<?php echo esc_attr($img_dir_url . 'lookerstudio1.jpg'); ?>" alt="lookerstudio1">
                       </div>
                     </div>
                     <div class="ls-steprow">
@@ -180,8 +180,8 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                         <p>5. <?php esc_html_e( 'After allowing access to your Google account, you should return to the connector page.', 'qa-heatmap-analytics' ); ?></p>
                       </div>
                       <div class="ls-stepimg smallimg">
-                        <img src="<?php echo $img_dir_url ?>lookerstudio2.jpg" alt="lookerstudio4">
-                        <img src="<?php echo $img_dir_url ?>lookerstudio4.jpg" alt="lookerstudio4">
+                        <img src="<?php echo esc_attr($img_dir_url . 'lookerstudio2.jpg'); ?>" alt="lookerstudio4">
+                        <img src="<?php echo esc_attr($img_dir_url . 'lookerstudio4.jpg'); ?>" alt="lookerstudio4">
                       </div>
                     </div>
                     <div class="ls-steprow">
@@ -199,14 +199,14 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                             </tr>
                             <tr>
                               <th>ajax url</th>
-                              <td><?php esc_html_e( '(Copy and paste below.)', 'qa-heatmap-analytics' ); ?><p><?php echo admin_url( 'admin-ajax.php' ); ?></p></td>
+                              <td><?php esc_html_e( '(Copy and paste below.)', 'qa-heatmap-analytics' ); ?><p><?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?></p></td>
                             </tr>
                           </tbody>
                         </table>
                         <p>7. <?php esc_html_e( 'Then, click "Connect".', 'qa-heatmap-analytics' ); ?></p>
                       </div>
                       <div class="ls-stepimg">
-                        <img src="<?php echo $img_dir_url ?>lookerstudio5.jpg" alt="lookerstudio5">
+                        <img src="<?php echo esc_attr($img_dir_url . 'lookerstudio5.jpg'); ?>" alt="lookerstudio5">
                       </div>
                     </div>
                     <div class="ls-steprow">
@@ -214,7 +214,7 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                         <p>8. <?php esc_html_e( 'All done! Your data source is now ready to use.', 'qa-heatmap-analytics' ); ?></p>
                       </div>
                       <div class="ls-stepimg">
-                        <img src="<?php echo $img_dir_url ?>lookerstudio6.jpg" alt="lookerstudio6">
+                        <img src="<?php echo esc_attr($img_dir_url . 'lookerstudio6.jpg'); ?>" alt="lookerstudio6">
                       </div>
 
                   </div>
@@ -226,7 +226,7 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                 <div class="ls-sec">
                   <h3 class="el_underlineTitle"><?php esc_html_e( 'Possible Encounters with Data Set Configuration Errors', 'qa-heatmap-analytics' ); ?></h3>
                   <p><?php esc_html_e( 'There may be instances where you encounter errors preventing a successful data set configuration, resulting in the data source being unusable.', 'qa-heatmap-analytics' ); ?></p>
-                  <p><img class="el_manualimg" width="400px" src="<?php echo $img_dir_url ?>ls-dataset-error.jpg" /></p>
+                  <p><img class="el_manualimg" width="400px" src="<?php echo esc_attr($img_dir_url . 'ls-dataset-error.jpg'); ?>" /></p>
                   <p><?php esc_html_e( 'When using the QA Analytics Connector, your WordPress site connects to Looker Studio from the U.S. ', 'qa-heatmap-analytics' ); ?><br>
                   <?php esc_html_e( 'However, this process may encounter errors primarily due to security and server performance considerations, such as:', 'qa-heatmap-analytics' ); ?></p>
                   <ul style="list-style: disc; padding: 0 2em;">
@@ -238,10 +238,35 @@ class QAHM_Admin_Page_Dataportal extends QAHM_Admin_Page_Base {
                   </ul>
 
                   <p><?php esc_html_e( 'Please note that we are unable to address inquiries related to your plugins, hosting server, or other environmental factors, nor can we offer guidance on Looker Studio. We recommend consulting Google\'s official documentation or your hosting provider before attempting to use this data connector.', 'qa-heatmap-analytics' ); ?></p>
+                  
+                  <p><?php
+						
+						$msg = sprintf(
+							/* translators: placeholders are for the link */
+              esc_html__( 'Essentially, the concept aligns with that of the MySQL connector. Therefore, you may find useful guidance in Looker Studio Help under "%1$sConnect to MySQL%2$s."', 'qa-heatmap-analytics' ),
+							'<a href="' . esc_url( 'https://support.google.com/looker-studio/answer/7088031' ) . '">',
+							'</a>'
+						);
+						echo wp_kses( $msg, array(
+							'a' => array(
+								'href' => array(),
+							),
+						));
+                  ?></p>
 
-                  <p><?php $msg = sprintf( esc_html__( 'Essentially, the concept aligns with that of the MySQL connector. Therefore, you may find useful guidance in Looker Studio Help under "%1$sConnect to MySQL%2$s."', 'qa-heatmap-analytics' ), '<a href="https://support.google.com/looker-studio/answer/7088031">', '</a>'); echo $msg; ?></p>
-
-                  <p><?php $msg = sprintf( esc_html__( 'If you encounter any insights regarding the connection, such as compatibility issues with other plugins or recommended adjustments, please share them with us on our %1$splugin support forum%2$s. Your feedback is invaluable and will help us improve the system and develop a comprehensive user guide.', 'qa-heatmap-analytics' ),'<a href="https://wordpress.org/support/plugin/qa-heatmap-analytics/">','</a>'); echo $msg;  ?></p>
+                  <p><?php						
+						$msg = sprintf(
+              /* translators: placeholders are for the link */
+							esc_html__( 'If you encounter any insights regarding the connection, such as compatibility issues with other plugins or recommended adjustments, please share them with us on our %1$splugin support forum%2$s. Your feedback is invaluable and will help us improve the system and develop a comprehensive user guide.', 'qa-heatmap-analytics' ),
+							'<a href="' . esc_url( 'https://wordpress.org/support/plugin/qa-heatmap-analytics/' ) . '">',
+							'</a>'
+						);
+						echo wp_kses( $msg, array(
+							'a' => array(
+								'href' => array(),
+							),
+						));
+                  ?></p>
                 </div>
             </div>
 			</div>

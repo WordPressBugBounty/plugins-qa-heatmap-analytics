@@ -39,7 +39,7 @@ class QAHM_Activate extends QAHM_File_Base {
 		if ( ! isset( $schedules['2min'] ) ) {
 			$schedules['2min'] = array(
 				'interval' => 2 * 60,
-				'display'  => __( 'Once every 2 minutes' ),
+				'display'  => 'Once every 2 minutes',
 			);
 		}
 		return $schedules;
@@ -49,16 +49,11 @@ class QAHM_Activate extends QAHM_File_Base {
 	 * プラグイン有効化時の処理
 	 */
 	public function activation() {
-		set_time_limit( 60 * 10 );
-
 		$this->wrap_mkdir( $this->get_data_dir_path( 'readers' ) );
 		$this->wrap_mkdir( $this->get_data_dir_path( 'heatmap-view-work' ) );
 
 		// 念のため
 		$this->deactivation();
-
-		// クエリの実行 -maru 20201114
-		//$this->exec_database_query();
 
 		// wp_optionsの初期値設定
 		foreach ( QAHM_OPTIONS as $key => $value ) {
@@ -84,9 +79,6 @@ class QAHM_Activate extends QAHM_File_Base {
 				'qahm_view_reports' 	=> true,
 			)
 		);
-
-		// イベントを登録
-		//$this->set_schedule_event_list();
 	}
 
 	/**
@@ -121,20 +113,12 @@ class QAHM_Activate extends QAHM_File_Base {
 	private function set_schedule_event( $recurrence, $hook ) {
 		if ( ! wp_next_scheduled( $hook ) ) {
 			$timestamp = time();
-			$timezone  = date_default_timezone_get();
 
-			// WordPressのタイムゾーンを取得して適用
-			$timezone_wp = get_option( 'timezone_string' );
-			if ( $timezone_wp ) {
-				date_default_timezone_set( $timezone_wp );
-			}
+			// WordPressのタイムゾーンを考慮してスケジュールイベントを登録
+			$gmt_timestamp = current_time( 'timestamp', true );
+
 			// スケジュールイベントを登録
-			wp_schedule_event( $timestamp, $recurrence, $hook );
-
-			// 元のタイムゾーンに戻す
-			date_default_timezone_set( $timezone );
+			wp_schedule_event( $gmt_timestamp, $recurrence, $hook );
 		}
 	}
-
-
 }

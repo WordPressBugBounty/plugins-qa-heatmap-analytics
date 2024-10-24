@@ -39,7 +39,7 @@ class QAHM_Dashboard_Widjet extends QAHM_Admin_Page_Base {
 		$this->maintenance_widget_msg = '';
 		if( $this->is_maintenance() ) {
 			//if under maintenance, show message instead.
-			$this->maintenance_widget_msg = esc_html_x( 'Data is currently under maintenance.', 'a maintenance notice in QA widget', 'qa-heatmap-analytics' );
+			$this->maintenance_widget_msg = _x( 'Data is currently under maintenance.', 'a maintenance notice in QA widget', 'qa-heatmap-analytics' );
 
 		} else {
 			//usual enqueue
@@ -163,7 +163,7 @@ class QAHM_Dashboard_Widjet extends QAHM_Admin_Page_Base {
 			</div>
 <?php
 		} else {
-			echo $this->maintenance_widget_msg;
+			echo esc_html($this->maintenance_widget_msg);
 		}
 	} //end function dashboard_widget_realtime
 	
@@ -198,7 +198,7 @@ class QAHM_Dashboard_Widjet extends QAHM_Admin_Page_Base {
 			</div>
 <?php
 		} else {
-			echo $this->maintenance_widget_msg;
+			echo esc_html($this->maintenance_widget_msg);
 		}
 	} //end function dashboard_widget_growing
 
@@ -238,7 +238,7 @@ class QAHM_Dashboard_Widjet extends QAHM_Admin_Page_Base {
 			</div>
 <?php
 		} else {
-			echo $this->maintenance_widget_msg;
+			echo esc_html($this->maintenance_widget_msg);
 		}
 	} //end function dashboard_widget_visits
 

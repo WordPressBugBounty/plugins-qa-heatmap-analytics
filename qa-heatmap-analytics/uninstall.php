@@ -16,6 +16,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	die;
 }
 
+// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- The uninstall process may involve complex operations that could take time, so the execution time is extended to ensure completion without timeouts.
 set_time_limit( 60 * 30 );
 
 require_once dirname( __FILE__ ) . '/qahm-const.php';
@@ -47,37 +48,48 @@ foreach( $users as $user ){
 // qahm tableの削除
 global $wpdb;
 $table_name = $wpdb->prefix . QAHM_RECTERM_TABLE;
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . QAHM_NAME . '_recrefresh';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_pages';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_page_version_hist';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_pv_log';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_readers';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_search_log';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_utm_campaigns';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_utm_media';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_utm_sources';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 $table_name = $wpdb->prefix . 'qa_gsc_query_log';
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Direct queries are required for table cleanup, and caching is unnecessary since the tables are being removed.
+$wpdb->query( $wpdb->prepare( "DROP TABLE IF EXISTS %s", $table_name ) );
 
 
 // dataディレクトリの削除

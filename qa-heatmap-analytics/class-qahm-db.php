@@ -170,6 +170,8 @@ class QAHM_Db extends QAHM_File_Data {
 	 */
 	public function prepare( $query, ...$args ) {
 		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- This code simply wraps $wpdb->prepare.
 		return $wpdb->prepare( $query, ...$args );
 	}
 
@@ -211,6 +213,7 @@ class QAHM_Db extends QAHM_File_Data {
 		} elseif( preg_match('/from ' . $tb_vr_summary_landingpage . ' /i', $query ) ) {
 			return $this->get_results_vr_summary_landingpage( $query );
         } else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This code simply wraps $wpdb->get_results.Caching cannot be used because the arguments change depending on the situation.
 			return $wpdb->get_results( $query, $output );
 		}
 	}
@@ -730,6 +733,7 @@ class QAHM_Db extends QAHM_File_Data {
 
 	public function query( $query ) {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This code simply wraps $wpdb->query.Caching cannot be used because the arguments change depending on the situation.
 		$result = $wpdb->query( $query );
 		$this->insert_id  = $wpdb->insert_id;
 		$this->last_error = $wpdb->last_error;
@@ -751,6 +755,7 @@ class QAHM_Db extends QAHM_File_Data {
 		} elseif ( preg_match('/from ' . $tb_view_ver . '/i', $query ) ) {
 			return $this->get_results_view_page_version_hist( $query );
 		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This code simply wraps $wpdb->get_var.Caching cannot be used because the arguments change depending on the situation.
 			return $wpdb->get_var( $query, $x, $y );
 		}
 	}
@@ -779,7 +784,10 @@ class QAHM_Db extends QAHM_File_Data {
 					}
 				}
 				if ($is_table) {
-					$res = $wpdb->get_results(' columns from '.$tablename);
+					// 20241018 imai Plugin Checkの結果を見ている最中に、ここのコードがまともに動いていない可能性があると気付いたので修正。ただし未テスト
+					//$res = $wpdb->get_results(' columns from '.$tablename);
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$res = $wpdb->get_results( $wpdb->prepare('SHOW COLUMNS FROM %s', $tablename), ARRAY_A );
 					foreach ($res as $line) {
 						$retary[] = $line['Field'];
 					}
@@ -1169,7 +1177,7 @@ class QAHM_Db extends QAHM_File_Data {
 			$tmpary = $this->wrap_unserialize( $this->wrap_get_contents( $verhist_dir . $filename ) );
 			
 			// stdClassから連想配列にキャスト変換
-			$tmpary = json_decode(json_encode($tmpary), true);
+			$tmpary = json_decode(wp_json_encode($tmpary), true);
 
 			//データは連想配列に入っている
 			//取得するデータによって処理をわける
@@ -1214,7 +1222,7 @@ class QAHM_Db extends QAHM_File_Data {
 					$tmpary = $this->wrap_unserialize( $this->wrap_get_contents( $verhist_dir . $filename ) );
 					
 					// stdClassから連想配列にキャスト変換
-					$tmpary = json_decode(json_encode($tmpary), true);
+					$tmpary = json_decode(wp_json_encode($tmpary), true);
 
 					//データは連想配列に入っている
 					//取得するデータによって処理をわける
@@ -3231,7 +3239,7 @@ class QAHM_Db extends QAHM_File_Data {
 				$s_datetime = $save_yearx . '-' . $save_month . '-01 00:00:00';
 			}
 		}
-		echo $s_datetime . 'sdate<br>';
+		echo esc_html( $s_datetime ) . 'sdate<br>';
 
 		//search どの日付から変更するべきか
 		$start_idx = 0;
@@ -3320,8 +3328,8 @@ class QAHM_Db extends QAHM_File_Data {
 										}
 									}
 								}
-								echo $lp_name_1mon . '<br>';
-								echo $sap_name_1mon . '<br>';
+								echo esc_html( $lp_name_1mon ) . '<br>';
+								echo esc_html( $sap_name_1mon ) . '<br>';
 
 								//write 1mon access
 								//							$this->wrap_put_contents( $vw_summary_dir . $lp_name_1mon, $this->wrap_serialize( $sl_1mon_ary ) );

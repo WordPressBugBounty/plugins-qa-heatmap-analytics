@@ -95,13 +95,12 @@ class QAHM_View_Base extends QAHM_File_Data {
 
 		// 置き換えを実行
 		$html = preg_replace($pattern, $replacement, $html);
-		$html = str_replace(
-			'</head>',
-			'<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/reset.css', __FILE__ ) . '">' .
-			'<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/style.css', __FILE__ ) . '">' .
-			'</head>',
-			$html
-		);
+
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet --  This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site.
+		$css_reset = '<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/reset.css', __FILE__ ) . '">';
+		$css_style = '<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/style.css', __FILE__ ) . '">';
+		// phpcs:enable
+		$html = str_replace( '</head>', $css_reset . $css_style . '</head>', $html );
 
 		return $html;
 	}

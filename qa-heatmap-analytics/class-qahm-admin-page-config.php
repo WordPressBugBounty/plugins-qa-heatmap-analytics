@@ -13,8 +13,11 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 	const SLUG = QAHM_NAME . '-config';
 
 	// nonce
-	const NONCE_ACTION = self::SLUG . '-nonce-action';
-	const NONCE_NAME   = self::SLUG . '-nonce-name';
+	//const NONCE_ACTION = self::SLUG . '-nonce-action';
+	//const NONCE_NAME   = self::SLUG . '-nonce-name';
+    const NONCE_ACTION_GA = self::SLUG . '-nonce-action-googleapi';
+	const NONCE_NAME_GA   = self::SLUG . '-nonce-name-googleapi';
+    const NONCE_ACTION_QAOP = self::SLUG . '-nonce-action-qahm-options';
 
 	private static $error_msg = array();
 	private $localize_ary;
@@ -44,18 +47,18 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 
 		// nonceで設定したcredentialのチェック
 		// 設定画面
-		if ( isset( $_POST[ self::NONCE_NAME ] ) && $_POST[ self::NONCE_NAME ] && check_admin_referer( self::NONCE_ACTION, self::NONCE_NAME ) ) {
-			// フォームから値が送信されていればDBに保存
-			$client_id     = $this->wrap_filter_input( INPUT_POST, 'client_id' );
-			$client_secret = $this->wrap_filter_input( INPUT_POST, 'client_secret' );
-			$qahm_google_api->set_credentials( $client_id, $client_secret, null );
-
-			$qahm_google_api->init(
-				'Google API Integration',
-				$scope,
-				admin_url( 'admin.php?page=qahm-config' ),
-				true
-			);
+		if ( isset( $_POST[ self::NONCE_NAME_GA ] ) && check_admin_referer( self::NONCE_ACTION_GA, self::NONCE_NAME_GA ) ) { 
+            // フォームから値が送信されていればDBに保存
+            $client_id     = sanitize_text_field( wp_unslash( $this->wrap_filter_input( INPUT_POST, 'client_id' ) ) );
+            $client_secret = sanitize_text_field( wp_unslash( $this->wrap_filter_input( INPUT_POST, 'client_secret' ) ) );            
+            $qahm_google_api->set_credentials( $client_id, $client_secret, null );
+        
+            $qahm_google_api->init(
+                'Google API Integration',
+                $scope,
+                admin_url( 'admin.php?page=qahm-config' ),
+                true
+            );
 		} else {
 			$qahm_google_api->init(
 				'Google API Integration',
@@ -107,7 +110,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 
 		// enqueue_style
 		$this->common_enqueue_style();
-		wp_enqueue_script( QAHM_NAME . '-admin-page-config', $js_dir . 'admin-page-config.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-admin-page-config', $js_dir . 'admin-page-config.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_style( QAHM_NAME . '-admin-page-base-css', $css_dir_url . 'admin-page-base.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
 		wp_enqueue_style( QAHM_NAME . '-admin-page-config-css', $css_dir_url . 'admin-page-config.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
 		if ( $license_plan ) {
@@ -151,8 +154,10 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
         $localize['settings_saved']            = esc_attr__( 'Settings saved.', 'qa-heatmap-analytics' );
         $localize['goal_saved']                = esc_attr__( 'Goal saved.', 'qa-heatmap-analytics' );
         $localize['cnv_couldnt_saved']         = esc_html__( 'Could not be saved. The value is same as before or is incorrect.', 'qa-heatmap-analytics' );
+        /* translators: placeholders are for a goal ID */
         $localize['cnv_delete_title']          = esc_html__( 'Delete Goal %d', 'qa-heatmap-analytics' );
         $localize['cnv_delete_confirm']        = esc_html__( 'Are you sure to delete this goal?', 'qa-heatmap-analytics' );
+        /* translators: placeholders are for a goal ID */
         $localize['cnv_success_delete']        = esc_html__( 'Goal %d deleted.', 'qa-heatmap-analytics' );
         $localize['cnv_couldnt_delete']        = esc_html__( 'Could not delete. The value is incorrect.', 'qa-heatmap-analytics' );
         $localize['cnv_page_set_alert']        = esc_html__( 'You are trying to set all the pages as a goal.', 'qa-heatmap-analytics' );
@@ -161,6 +166,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
         $localize['cnv_saving']                = esc_attr__( 'Saving...', 'qa-heatmap-analytics' );
         $localize['cnv_load_page']             = esc_html__( 'Load the Page', 'qa-heatmap-analytics' );
         $localize['cnv_loading']               = esc_html__( 'Loading...', 'qa-heatmap-analytics' );
+        /* translators: placeholders are for a goal ID */
         $localize['cnv_saved_1']               = esc_html__( 'Goal %d saved successfully.', 'qa-heatmap-analytics' );
         $localize['cnv_saved_2']               = esc_html__( 'Due to data processing, it may take a few minutes to about 30 minutes for the data to be displayed in the conversion report.', 'qa-heatmap-analytics' );
         $localize['nothing_page_id']           = esc_html__( 'Sorry, a post or page that is either newly created or never visited cannot be set as a goal. Please allow at least one day.', 'qa-heatmap-analytics' );
@@ -175,8 +181,10 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
         $localize['alert_message_success']     = esc_html__( 'Success', 'qa-heatmap-analytics' );
 		$localize['alert_message_failed']      = esc_html__( 'Failed to update settings', 'qa-heatmap-analytics' );
 
-        wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
+        // nonce for saving plugin options
+        $localize['nonce_qahm_options'] = wp_create_nonce( self::NONCE_ACTION_QAOP );
 
+        wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
 		$this->localize_ary = $localize;
 
 	}
@@ -280,9 +288,9 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
         $lang_ja['month_later'] = esc_html__( 'month(s) later, reaching', 'qa-heatmap-analytics' );
         $lang_ja['session_goal'] = esc_html__( 'sessions/month is the goal.', 'qa-heatmap-analytics' );
 
-        $goal        = esc_html__( 'Goal', 'qa-heatmap-analytics' );
+        $goal_noun   = esc_html__( 'Goal', 'qa-heatmap-analytics' );
         $goal_title  = esc_html__( 'Goal Name', 'qa-heatmap-analytics' );
-        $required    = esc_html_x( '*', 'A mark that indicates it is required item.', 'qa-heatmap-analytics' );
+        //$required_mark    = esc_html_x( '*', 'A mark that indicates it is required item.', 'qa-heatmap-analytics' );
         $goal_number = esc_html__( 'Completions Target in a Month', 'qa-heatmap-analytics' );
         $num_scale   = esc_html__( 'completion(s)', 'qa-heatmap-analytics' );
         $goal_value  = esc_html__( 'Goal Value (avg. monetary amount per goal)', 'qa-heatmap-analytics' );
@@ -333,6 +341,47 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 		if ( $credentials && isset($credentials['token']) && isset($credentials['token']['access_token']) ) {
 			$access_token = $credentials['token']['access_token'];
 		}
+
+        // create_qa_announce_html用
+        // 許可するHTMLタグと属性のリスト
+        $qa_announce_allowed_tags = array(
+            'div' => array(
+                'class' => array(),
+                'style' => array(),
+            ),
+            'span' => array(
+                'class' => array(),
+                'style' => array(),
+            ),
+            'p' => array(
+                'class' => array(),
+                'style' => array(),
+            ),
+            'br' => array(),
+            'blockquote' => array(),
+            'ul' => array(),
+            'ol' => array(),
+            'li' => array(),
+            'strong' => array(),
+            'em' => array(),
+            'b' => array(),
+            'i' => array(),
+            'a' => array(
+                'href' => array(),
+                'title' => array(),
+                'target' => array(),
+                'rel' => array(),
+            ),
+            'img' => array(
+                'src' => array(),
+                'alt' => array(),
+                'width' => array(),
+                'height' => array(),
+                'class' => array(),
+            ),
+        );
+        
+        
 ?>
 
 		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
@@ -341,10 +390,12 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 				<?php
 				if ( $this->wrap_get_option( 'google_is_redirect' ) ) {
 					if ( $qahm_google_api->is_auth() ) {
-						echo $this->create_qa_announce_html( esc_html( __( 'Connected with Google API successfully.', 'qa-heatmap-analytics' ) ), 'success' );
+                        $qa_announce = $this->create_qa_announce_html( esc_html( __( 'Connected with Google API successfully.', 'qa-heatmap-analytics' ) ), 'success' );
+						echo wp_kses( $qa_announce, $qa_announce_allowed_tags );
 					} else {
-						echo $this->create_qa_announce_html( esc_html( __( 'Failed to connect with Google API.', 'qa-heatmap-analytics' ) ), 'error' );
-					}
+						$qa_announce = $this->create_qa_announce_html( esc_html( __( 'Failed to connect with Google API.', 'qa-heatmap-analytics' ) ), 'error' );
+                        echo wp_kses( $qa_announce, $qa_announce_allowed_tags );
+                    }
 					$this->wrap_update_option( 'google_is_redirect', false );
 				}
 				
@@ -359,7 +410,8 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 					$err_text .= '<br>';
 					$err_text .= 'error code: ' . $err_ary['code'] . '<br>';
 					$err_text .= 'error message: ' . $err_ary['message'];
-					echo $this->create_qa_announce_html( $err_text, 'error' );
+					$qa_announce_err = $this->create_qa_announce_html( $err_text, 'error' );
+                    echo wp_kses( $qa_announce_err, $qa_announce_allowed_tags );
 				}
 				?>
 				<div class="tabs">
@@ -412,7 +464,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
                                 </div>
 
                                 <div class="mail_config_section">
-									<h2><?php echo esc_html( __( 'Cookie Banner Compatibility Mode', 'qa-heatmap-analytics' ) ); ?><span class="qahm-tooltip" data-qahm-tooltip="You may want to configure your cookie banner tool. Click to view the guide."><a href="https://mem.quarka.org/en/manual/about-cookie-banner-tool/" target="_blank" rel="noopener" style="color: #1d2327; margin-left: 0.5em;"><i class="far fa-question-circle"></i></a></span></h2>
+									<h2><?php echo esc_html( __( 'Cookie Banner Compatibility Mode', 'qa-heatmap-analytics' ) ); ?><span class="qahm-tooltip" data-qahm-tooltip="<?php echo esc_attr__('You may want to configure your cookie banner tool. Click to view the guide.', 'qa-heatmap-analytics'); ?>"><a href="https://mem.quarka.org/en/manual/about-cookie-banner-tool/" target="_blank" rel="noopener" style="color: #1d2327; margin-left: 0.5em;"><i class="far fa-question-circle"></i></a></span></h2>
 									<div class="mail_config_inputpart">
 										<p><?php echo esc_html( __( 'Please check this box if your site is using a cookie banner. If left unchecked, the plugin will utilize cookie-based tracking for web traffic measurement.', 'qa-heatmap-analytics' ) ); ?></p>
 										<p><input type="checkbox" name="cb_sup_mode" id="cb_sup_mode"<?php echo esc_attr( $cb_sup_mode_checked ); ?>></p>
@@ -451,7 +503,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 							<a href="https://mem.quarka.org/en/manual/connect-to-gsc/" target="_blank" rel="noopener"><?php echo esc_html( __( 'How to connect with API', 'qa-heatmap-analytics' ) ); ?><span class="qahm_link-mark"><i class="fas fa-external-link-alt"></i></span></a>
 						</p>
 						<form method="post" action="">
-							<?php wp_nonce_field( self::NONCE_ACTION, self::NONCE_NAME, false ); ?>
+							<?php wp_nonce_field( self::NONCE_ACTION_GA, self::NONCE_NAME_GA, false ); ?>
 
 							<table class="form-table">
 								<tbody>
@@ -462,7 +514,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 											</label>
 										</th>
 										<td>
-											<input name="client_id" type="text" id="client_id" value="<?php echo esc_attr( $qahm_google_api->get_client_id() ); ?>" class="regular-text"<?php echo $form_google_disabled; ?>>
+											<input name="client_id" type="text" id="client_id" value="<?php echo esc_attr( $qahm_google_api->get_client_id() ); ?>" class="regular-text"<?php echo esc_attr($form_google_disabled); ?>>
 										</td>
 									</tr>
 
@@ -473,7 +525,7 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 											</label>
 										</th>
 										<td>
-											<input name="client_secret" type="text" id="client_secret" value="<?php echo esc_attr( $qahm_google_api->get_client_secret() ); ?>" class="regular-text"<?php echo $form_google_disabled; ?>>
+											<input name="client_secret" type="text" id="client_secret" value="<?php echo esc_attr( $qahm_google_api->get_client_secret() ); ?>" class="regular-text"<?php echo esc_attr($form_google_disabled); ?>>
 											<?php
 											if ( $form_google_disabled !== '' ) {
 												echo '<span id="client_info_disabled_text" style="font size: 0.9em; color: #2271b1; cursor: pointer; text-decoration: underline;">&nbsp;' . esc_html( __( 'Unlock the button\'s disabled' , 'qa-heatmap-analytics' ) ) . '</span>';
@@ -532,135 +584,126 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
                              
                             <div id="step2">
 
-                        <?php
-                        $gtype_iframe_display  = array_fill(1, $GOALMAX,  'style="display: none"' );
-                        for ( $iii = 1; $iii <= $GOALMAX; $iii++ ) {
-                            $gtitle = isset( $goals_ary[$iii]['gtitle'] ) ? urldecode( $goals_ary[$iii]['gtitle'] ) : '';
-                            $gnum_scale = isset( $goals_ary[$iii]['gnum_scale'] ) ? urldecode( $goals_ary[$iii]['gnum_scale'] ) : 0;
-                            $gnum_value = isset( $goals_ary[$iii]['gnum_value'] ) ? urldecode( $goals_ary[$iii]['gnum_value'] ) : 0;
-                            $gtype = isset( $goals_ary[$iii]['gtype'] ) ? urldecode( $goals_ary[$iii]['gtype'] ) : 'gtype_page';
-                            $g_goalpage = isset( $goals_ary[$iii]['g_goalpage'] ) ? urldecode( $goals_ary[$iii]['g_goalpage'] ) : '';
-                            $g_pagematch = isset( $goals_ary[$iii]['g_pagematch'] ) ? urldecode( $goals_ary[$iii]['g_pagematch'] ) : '';
-                            $g_clickpage = isset( $goals_ary[$iii]['g_clickpage'] ) ? urldecode( $goals_ary[$iii]['g_clickpage'] ) : '';
-                            $g_eventtype = isset( $goals_ary[$iii]['g_eventtype'] ) ? urldecode( $goals_ary[$iii]['g_eventtype'] ) : '';
-                            $g_clickselector = isset( $goals_ary[$iii]['g_clickselector'] ) ? urldecode( $goals_ary[$iii]['g_clickselector'] ) : '';
-                            $g_eventselector = isset( $goals_ary[$iii]['g_eventselector'] ) ? urldecode( $goals_ary[$iii]['g_eventselector'] ) : '';
+                            <?php
+                            $gtype_iframe_display = array_fill(1, $GOALMAX, 'display: none');
+                            for ($iii = 1; $iii <= $GOALMAX; $iii++) {
+                                $gtitle = isset($goals_ary[$iii]['gtitle']) ? esc_html(urldecode($goals_ary[$iii]['gtitle'])) : '';
+                                $gnum_scale = isset($goals_ary[$iii]['gnum_scale']) ? esc_attr(urldecode($goals_ary[$iii]['gnum_scale'])) : 0;
+                                $gnum_value = isset($goals_ary[$iii]['gnum_value']) ? esc_attr(urldecode($goals_ary[$iii]['gnum_value'])) : 0;
+                                $gtype = isset($goals_ary[$iii]['gtype']) ? esc_attr(urldecode($goals_ary[$iii]['gtype'])) : 'gtype_page';
+                                $g_goalpage = isset($goals_ary[$iii]['g_goalpage']) ? esc_url(urldecode($goals_ary[$iii]['g_goalpage'])) : '';
+                                $g_pagematch = isset($goals_ary[$iii]['g_pagematch']) ? esc_attr(urldecode($goals_ary[$iii]['g_pagematch'])) : '';
+                                $g_clickpage = isset($goals_ary[$iii]['g_clickpage']) ? esc_url(urldecode($goals_ary[$iii]['g_clickpage'])) : '';
+                                $g_eventtype = isset($goals_ary[$iii]['g_eventtype']) ? esc_attr(urldecode($goals_ary[$iii]['g_eventtype'])) : '';
+                                $g_clickselector = isset($goals_ary[$iii]['g_clickselector']) ? esc_attr(urldecode($goals_ary[$iii]['g_clickselector'])) : '';
+                                $g_eventselector = isset($goals_ary[$iii]['g_eventselector']) ? esc_attr(urldecode($goals_ary[$iii]['g_eventselector'])) : '';
 
+                                $gtype_checked = array_fill(0, 3, '');
+                                $gtype_required = array_fill(0, 3, '');
+                                $pagematch_checked = array_fill(0, 2, '');
+                                //$gtype_display = array_fill(0, 3, 'style="display: none"');
+                                $gtype_display = array_fill(0, 3, 'display: none');
 
-                            $gtype_checked  = array_fill(0, 3, '');
-                            $gtype_required = array_fill(0, 3, '');
-                            $pagematch_checked  = array_fill(0, 2, '');
-                            $gtype_display  = array_fill(0, 3, 'style="display: none"');
+                                if (!$g_clickpage) {
+                                    $g_clickpage = esc_url($click_iframe_url);
+                                }
 
-                            //set default
-                            if ( ! $g_clickpage ) {
-                                $g_clickpage = $click_iframe_url;
-                            }
-                            switch ($gtype) {
-                                case 'gtype_click':
-                                    $gtype_checked[1]  ='checked';
-                                    $gtype_required[1] = 'required';
-                                    $gtype_iframe_display[$iii]  = '';
-                                    $gtype_display[1] = '';
-                                    break;
+                                switch ($gtype) {
+                                    case 'gtype_click':
+                                        $gtype_checked[1] = 'checked';
+                                        $gtype_required[1] = 'required';
+                                        $gtype_iframe_display[$iii] = '';
+                                        $gtype_display[1] = '';
+                                        break;
+                                    case 'gtype_event':
+                                        $gtype_checked[2] = 'checked';
+                                        $gtype_required[2] = 'required';
+                                        $gtype_display[2] = '';
+                                        break;
+                                    default:
+                                    case 'gtype_page':
+                                        $gtype_checked[0] = 'checked';
+                                        $gtype_required[0] = 'required';
+                                        $gtype_display[0] = '';
+                                        break;
+                                }
 
-                                case 'gtype_event':
-                                    $gtype_checked[2]  ='checked';
-                                    $gtype_required[2] = 'required';
-                                    $gtype_display[2] = '';
-                                    break;
+                                switch ($g_pagematch) {
+                                    case 'pagematch_prefix':
+                                        $pagematch_checked[1] = 'checked';
+                                        break;
+                                    default:
+                                    case 'pagematch_complete':
+                                        $pagematch_checked[0] = 'checked';
+                                        break;
+                                }
+                            ?>
+                            <div class="bl_goalbox" id="<?php echo esc_attr( 'g'.$iii.'_goalbox' ); ?>">
+                                <h3><?php echo esc_html( $goal_noun . $iii ); ?></h3>
+                                <form id="<?php echo esc_attr( 'g'.$iii.'_form' ); ?>" onsubmit="saveChanges(this);return false">
+                                <table>
+                                    <colgroup>
+                                        <col style="width: 15%">
+                                        <col style="width: 65%">
+                                        <col style="width: 20%">
+                                    </colgroup>
+                                    <tbody>
+                                    <tr>
+                                        <td><?php echo esc_html( $goal_title ); ?><span class="el_attention">*</span></td>
+                                        <td><input type="text" name="<?php echo esc_attr( 'g'.$iii.'_title' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_title' ); ?>" required value="<?php echo esc_attr( $gtitle ); ?>" size="30"></td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo esc_html( $goal_number ); ?></td>
+                                        <td><input type="number" name="<?php echo esc_attr( 'g'.$iii.'_num' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_num' ); ?>" value="<?php echo esc_attr( $gnum_scale ); ?>" onchange="calcSales(this)"><?php echo esc_html( $num_scale ); ?></td>
+                                        <td>&nbsp;&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo esc_html( $goal_value ); ?></td>
+                                        <td><input type="number" name="<?php echo esc_attr( 'g'.$iii.'_val' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_val' ); ?>" value="<?php echo esc_attr( $gnum_value ); ?>" onchange="calcSales(this)"><?php echo esc_html( $val_scale ); ?>&nbsp;<p class="right"><?php echo esc_html( $goal_sales ); ?> = <span id="<?php echo esc_attr( 'g'.$iii.'_calcsales' ); ?>">0</span> <?php echo esc_html( $val_scale ); ?></p></td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo esc_html( $goal_type ); ?><span class="el_attention">*</span>&nbsp;<span class="el_loading">Loading<span></span></span></td>
+                                        <td class="td_gtype_save" style="opacity: 0">
+                                            <input type="radio" name="<?php echo esc_attr( 'g'.$iii.'_type' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_type_page' ); ?>" value="gtype_page" <?php echo esc_attr( $gtype_checked[0] ); ?>><label for="<?php echo esc_attr( 'g'.$iii.'_type_page' ); ?>"><?php echo esc_html( $goal_type_page ); ?></label>
+                                            <input type="radio" name="<?php echo esc_attr( 'g'.$iii.'_type' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_type_click' ); ?>" value="gtype_click" <?php echo esc_attr( $gtype_checked[1] ); ?>><label for="<?php echo esc_attr( 'g'.$iii.'_type_click' ); ?>"><?php echo esc_html( $goal_type_click ); ?></label>&nbsp;
+                                            <span><input type="radio" name="<?php echo esc_attr( 'g'.$iii.'_type' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_type_event' ); ?>" value="gtype_event" <?php echo esc_attr( $gtype_checked[2] ); ?>><label for="<?php echo esc_attr( 'g'.$iii.'_type_event' ); ?>"><?php echo esc_html( $goal_type_event ); ?></label></span>&nbsp;
+                                            <br>
+                                            <div id="<?php echo esc_attr( 'g'.$iii.'_page_goal' ); ?>" style="<?php echo esc_attr( $gtype_display[0] ); ?>" class="bl_eachGtypeBox">
+                                                <label><?php echo esc_html( $goal_page ); ?></label><br>
+                                                <input type="radio" name="<?php echo esc_attr( 'g'.$iii.'_pagematch' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_pagematch_prefix' ); ?>" value="pagematch_prefix" <?php echo esc_attr( $pagematch_checked[1] ); ?>><label for="<?php echo esc_attr( 'g'.$iii.'_pagematch_prefix' ); ?>"><?php echo esc_html( $pagematch_prefix ); ?></label>
+                                                <input type="radio" name="<?php echo esc_attr( 'g'.$iii.'_pagematch' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_pagematch_complete' ); ?>" value="pagematch_complete" <?php echo esc_attr( $pagematch_checked[0] ); ?>><label for="<?php echo esc_attr( 'g'.$iii.'_pagematch_complete' ); ?>"><?php echo esc_html( $pagematch_complete ); ?></label><br>
+                                                <input type="text" name="<?php echo esc_attr( 'g'.$iii.'_goalpage' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_goalpage' ); ?>" value="<?php echo esc_attr( $g_goalpage ); ?>" <?php echo esc_attr( $gtype_required[0] ); ?> size="60">
+                                                &nbsp;
+                                            </div>
+                                            <div id="<?php echo esc_attr( 'g'.$iii.'_click_goal' ); ?>" style="<?php echo esc_attr( $gtype_display[1] ); ?>" class="bl_eachGtypeBox">
+                                                <label><?php echo esc_html( $click_page ); ?></label><input type="text" name="<?php echo esc_attr('g'.$iii.'_clickpage'); ?>" id="<?php echo esc_attr('g'.$iii.'_clickpage'); ?>" value="<?php echo esc_url($g_clickpage); ?>" <?php echo esc_attr($gtype_required[1]); ?> placeholder="<?php echo esc_url($click_iframe_url); ?>" size="40">
 
-                                default:
-                                case 'gtype_page':
-                                    $gtype_checked[0]  ='checked';
-                                    $gtype_required[0] = 'required';
-                                    $gtype_display[0] = '';
-                                    break;
-                            }
-                            switch ($g_pagematch) {
-                                case 'pagematch_prefix':
-                                    $pagematch_checked[ 1 ] = 'checked';
-                                    break;
-
-                                default:
-                                case 'pagematch_complete':
-                                    $pagematch_checked[ 0 ] = 'checked';
-                                    break;
-                            }
-
-                            //when goal type = "click", select box for limited event-measuring page.
-                            $clicktype_page_input = '<input type="text" name="g'.$iii.'_clickpage" id="g'. $iii.'_clickpage" value="'.$g_clickpage.'" '. $gtype_required[1].' placeholder="'.$click_iframe_url.'" size="40">';
-                            $attention_only_measuring_page = '';
-
-
-
-                            $goalbox = <<<EOL
-                                <div class="bl_goalbox" id="g{$iii}_goalbox">
-                                    <h3>{$goal}{$iii}</h3>
-                                    <form id="g{$iii}_form" onsubmit="saveChanges(this);return false">
-                                    <table>
-                                        <colgroup>
-                                            <col style="width: 15%">
-                                            <col style="width: 65%">
-                                            <col style="width: 20%">
-                                        <tbody>
-                                        <tr>
-                                            <td>{$goal_title}<span class="el_attention">{$required}</span></td>
-                                            <td><input type="text" name="g{$iii}_title" id="g{$iii}_title" required value="{$gtitle}" size="30"></td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{$goal_number}</td>
-                                            <td><input type="number" name="g{$iii}_num" id="g{$iii}_num" value="{$gnum_scale}" onchange="calcSales(this)">{$num_scale}</td>
-                                            <td>&nbsp&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{$goal_value}</td>
-                                            <td><input type="number" name="g{$iii}_val" id="g{$iii}_val" value="{$gnum_value}" onchange="calcSales(this)">{$val_scale}&nbsp;<p class="right">{$goal_sales} = <span id="g{$iii}_calcsales">0</span> {$val_scale}</p></td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{$goal_type}<span class="el_attention">{$required}</span>&nbsp;<span class="el_loading">Loading<span></span></span></td>
-                                            <td class="td_gtype_save" style="opacity: 0">
-                                                <input type="radio" name="g{$iii}_type" id="g{$iii}_type_page" value="gtype_page" {$gtype_checked[0]}><label for="g{$iii}_type_page">{$goal_type_page}</label>
-                                                <input type="radio" name="g{$iii}_type" id="g{$iii}_type_click" value="gtype_click" {$gtype_checked[1]}><label for="g{$iii}_type_click">{$goal_type_click}</label>&nbsp;
-                                                <span><input type="radio" name="g{$iii}_type" id="g{$iii}_type_event" value="gtype_event" {$gtype_checked[2]}><label for="g{$iii}_type_event">{$goal_type_event}</label></span>&nbsp;
-                                                <br>
-                                                <div id="g{$iii}_page_goal" ${gtype_display[0]} class="bl_eachGtypeBox">
-                                                    <label>{$goal_page}</label><br>
-                                                    <input type="radio" name="g{$iii}_pagematch" id="g{$iii}_pagematch_prefix" value="pagematch_prefix" {$pagematch_checked[1]}><label for="g{$iii}_pagematch_prefix">{$pagematch_prefix}</label>
-                                                    <input type="radio" name="g{$iii}_pagematch" id="g{$iii}_pagematch_complete" value="pagematch_complete" {$pagematch_checked[0]}><label for="g{$iii}_pagematch_complete">{$pagematch_complete}</label><br>
-                                                    <input type="text" name="g{$iii}_goalpage" id="g{$iii}_goalpage" value="{$g_goalpage}" {$gtype_required[0]} size="60">
-                                                    &nbsp;
-                                                </div>
-                                                <div id="g{$iii}_click_goal" ${gtype_display[1]} class="bl_eachGtypeBox">
-
-                                                    <label>{$click_page}</label>{$clicktype_page_input}
-                                                    <button id="g{$iii}_click_pageload" class="button button-secondary" type="button">{$click_sel_load}</button><br>
-                                                    {$attention_only_measuring_page}
-                                                    <label>{$clickselector}</label><br><input type="text" name="g{$iii}_clickselector" id="g{$iii}_clickselector" disabled value="{$g_clickselector}" {$gtype_required[1]} size="60">
-                                                    <div id="g{$iii}_event-iframe-tooltip-right" class="event-iframe-tooltip-right">{$click_sel_set}</div>
-                                                </div>
-                                                <div id="g{$iii}_event_goal" ${gtype_display[2]} class="bl_eachGtypeBox">
-                                                    <label>{$eventtype}</label><select name="g{$iii}_eventtype" id="g{$iii}_eventtype"><option value="onclick">{$event_click}</option></select> <br><br>
-                                                    <label>{$eventselector}</label><br><input type="text" name="g{$iii}_eventselector" id="g{$iii}_eventselector" value="{$g_eventselector}" {$gtype_required[2]} size="80">
-                                                    <div style="background-color: #eee; padding: 0 10px;"><p>{$example}<br>/.*ad-link.*/<br>/\/my-goal-link\//</p></div>
-                                                </div>
-                                            </td>
-                                            <td class="td_gtype_save" style="opacity: 0"><input type="submit" name="submit" id="g{$iii}_submit" value="{$savegoal}" class="button button-primary"><p class="el_right"><a href="#g{$iii}_goalbox" onclick="deleteGoalX({$iii})">{$unset_goal}</a></p></td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <div id="g{$iii}_event-iframe-containar" class=".event-iframe-containar" {$gtype_iframe_display[$iii]}>
-                                        <iframe id="g{$iii}_event-iframe" class="event-iframe" src="{$g_clickpage}" frameborder="0" width="1200" height="400" scrolling="yes"></iframe>
-                                    </div>
-                                    </form>
+                                                <button id="<?php echo esc_attr( 'g'.$iii.'_click_pageload' ); ?>" class="button button-secondary" type="button"><?php echo esc_html( $click_sel_load ); ?></button><br>
+                                                <label><?php echo esc_html( $clickselector ); ?></label><br><input type="text" name="<?php echo esc_attr( 'g'.$iii.'_clickselector' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_clickselector' ); ?>" disabled value="<?php echo esc_attr( $g_clickselector ); ?>" <?php echo esc_attr( $gtype_required[1] ); ?> size="60">
+                                                <div id="<?php echo esc_attr( 'g'.$iii.'_event-iframe-tooltip-right' ); ?>" class="event-iframe-tooltip-right"><?php echo esc_html( $click_sel_set ); ?></div>
+                                            </div>
+                                            <div id="<?php echo esc_attr( 'g'.$iii.'_event_goal' ); ?>" style="<?php echo esc_attr( $gtype_display[2] ); ?>" class="bl_eachGtypeBox">
+                                                <label><?php echo esc_html( $eventtype ); ?></label><select name="<?php echo esc_attr( 'g'.$iii.'_eventtype' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_eventtype' ); ?>"><option value="onclick"><?php echo esc_html( $event_click ); ?></option></select> <br><br>
+                                                <label><?php echo esc_html( $eventselector ); ?></label><br><input type="text" name="<?php echo esc_attr( 'g'.$iii.'_eventselector' ); ?>" id="<?php echo esc_attr( 'g'.$iii.'_eventselector' ); ?>" value="<?php echo esc_attr( $g_eventselector ); ?>" <?php echo esc_attr( $gtype_required[2] ); ?> size="80">
+                                                <div style="background-color: #eee; padding: 0 10px;"><p><?php echo esc_html( $example ); ?><br>/.*ad-link.*/<br>/\/my-goal-link\//</p></div>
+                                            </div>
+                                        </td>
+                                        <td class="td_gtype_save" style="opacity: 0"><input type="submit" name="submit" id="<?php echo esc_attr( 'g'.$iii.'_submit' ); ?>" value="<?php echo esc_html( $savegoal ); ?>" class="button button-primary"><p class="el_right"><a href="#<?php echo esc_attr( 'g'.$iii.'_goalbox' ); ?>" onclick="deleteGoalX(<?php echo esc_attr( $iii ); ?>)"><?php echo esc_html( $unset_goal ); ?></a></p></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div id="<?php echo esc_attr( 'g'.$iii.'_event-iframe-containar' ); ?>" class=".event-iframe-containar" style="<?php echo esc_attr( $gtype_iframe_display[$iii] ); ?>">
+                                    <iframe id="<?php echo esc_attr( 'g'.$iii.'_event-iframe' ); ?>" class="event-iframe" src="<?php echo esc_attr( $g_clickpage ); ?>" frameborder="0" width="1200" height="400" scrolling="yes"></iframe>
                                 </div>
-EOL;
-                                echo $goalbox;
-                        }
-                        //end for
-                        ?>
+                                </form>
+                            </div>
+
+                            <?php
+                            }  //end for
+                            ?>
+
 
                             </div>
                         </div>
@@ -680,109 +723,139 @@ EOL;
                                 <form id="siteinfo_form" onsubmit="siteinfoChanges(this);return false">
                                 <h3>{$lang_ja['target_user_question']}</h3>
 EOL;
-                                echo $formtags[0];
+                                echo wp_kses($formtags[0], array(
+                                    'form' => array('id' => array(), 'onsubmit' => array()),
+                                    'h3' => array(),
+                                ));
 
                                 $target_ary = ['target_individual', 'target_corporation'];
-                                foreach ( $target_ary as $target ) {
+                                foreach ($target_ary as $target) {
                                     $checked = '';
-                                    if ( isset( $siteinfo_ary['target_customer'] ) ) {
-                                        if ( $target === $siteinfo_ary['target_customer'] ) {
-                                            $checked = 'checked';
-                                        }
+                                    if (isset($siteinfo_ary['target_customer']) && $target === $siteinfo_ary['target_customer']) {
+                                        $checked = 'checked';
                                     }
-                                    $radio_target = <<< EOL
+                                    $radio_target = <<<EOL
                                     <input type="radio" name="target_customer" id="{$target}" value="{$target}" $checked><label for="{$target}">{$lang_ja[$target]}</label>
 EOL;
-                                    echo $radio_target;
+                                    echo wp_kses($radio_target, array(
+                                        'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'value' => array(), 'checked' => array()),
+                                        'label' => array('for' => array()),
+                                    ));
                                 }
 
                                 $formtags[1] = <<<EOL
                                 <h3>{$lang_ja['select_sitetype_question']}</h3>
                                 <table>
                                     <thead>
-                                    <th>{$lang_ja['general']}</th>
-                                    <th>{$lang_ja['media']}</th>
-                                    <th>{$lang_ja['service']}</th>
-                                    <th>{$lang_ja['ec_mall']}</th>
+                                        <th>{$lang_ja['general']}</th>
+                                        <th>{$lang_ja['media']}</th>
+                                        <th>{$lang_ja['service']}</th>
+                                        <th>{$lang_ja['ec_mall']}</th>
                                     </thead>
                                     <tbody>
                                         <tr>
 EOL;
-                                echo $formtags[1];
-                                foreach ( $sitetype_ary as $lpcnt => $sitetype ) {
+                                echo wp_kses($formtags[1], array(
+                                    'h3' => array(),
+                                    'table' => array(),
+                                    'thead' => array(),
+                                    'tbody' => array(),
+                                    'tr' => array(),
+                                    'th' => array(),
+                                ));
+
+                                foreach ($sitetype_ary as $lpcnt => $sitetype) {
                                     $checked = '';
-                                    if ( isset( $siteinfo_ary['sitetype'] ) ) {
-                                        if ( $sitetype === $siteinfo_ary['sitetype'] ) {
-                                            $checked = 'checked';
-                                        }
+                                    if (isset($siteinfo_ary['sitetype']) && $sitetype === $siteinfo_ary['sitetype']) {
+                                        $checked = 'checked';
                                     }
-                                    $radio_sitetype = <<< EOL
+                                    $radio_sitetype = <<<EOL
                                     <td><input type="radio" name="sitetype" id="{$sitetype}" value="{$sitetype}" $checked><label for="{$sitetype}">{$lang_ja[$sitetype]}</label></td>
 EOL;
+                                    echo wp_kses($radio_sitetype, array(
+                                        'td' => array(),
+                                        'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'value' => array(), 'checked' => array()),
+                                        'label' => array('for' => array()),
+                                    ));
+
                                     $nowtd = $lpcnt + 1;
-                                    if ( $nowtd === 14 ) {
-                                        echo '<td>&nbsp;</td>' . PHP_EOL;
+                                    if ($nowtd === 14) {
+                                        echo wp_kses('<td>&nbsp;</td>' . PHP_EOL, array('td' => array()));
                                     }
-                                    if ( 14 <= $nowtd ) {
+                                    if (14 <= $nowtd) {
                                         $nowtd++;
                                     }
-                                    echo $radio_sitetype;
-
-                                    if ( $nowtd % 4 === 0 ) {
-                                        echo '</tr>' . PHP_EOL;
-                                        if ( $nowtd !== 16 ) {
-                                            echo '<tr>' . PHP_EOL;
+                                    if ($nowtd % 4 === 0) {
+                                        echo wp_kses('</tr>' . PHP_EOL, array('tr' => array()));
+                                        if ($nowtd !== 16) {
+                                            echo wp_kses('<tr>' . PHP_EOL, array('tr' => array()));
                                         }
                                     }
                                 }
-                                $formtags[2] = <<< EOL
-                                    </tbody>
+
+                                $formtags[2] = <<<EOL
+                                </tbody>
                                 </table>
                                 <h3>{$lang_ja['membership_question']}</h3>
 EOL;
-                                echo $formtags[2];
+                                echo wp_kses($formtags[2], array(
+                                    'h3' => array(),
+                                    'table' => array(),
+                                    'tbody' => array(),
+                                    'tr' => array(),
+                                ));
+
                                 $membership_ary = ['membership_no', 'membership_yes'];
-                                foreach ( $membership_ary as $membership ) {
+                                foreach ($membership_ary as $membership) {
                                     $checked = '';
-                                    if ( isset( $siteinfo_ary['membership'] ) ) {
-                                        if ( $membership === $siteinfo_ary['membership'] ) {
-                                            $checked = 'checked';
-                                        }
+                                    if (isset($siteinfo_ary['membership']) && $membership === $siteinfo_ary['membership']) {
+                                        $checked = 'checked';
                                     }
-                                    $radio_membership = <<< EOL
+                                    $radio_membership = <<<EOL
                                     <input type="radio" name="membership" id="{$membership}" value="{$membership}" $checked><label for="{$membership}">{$lang_ja[$membership]}</label>
 EOL;
-                                    echo $radio_membership;
+                                    echo wp_kses($radio_membership, array(
+                                        'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'value' => array(), 'checked' => array()),
+                                        'label' => array('for' => array()),
+                                    ));
                                 }
 
-                                $formtags[3] = <<< EOL
+                                $formtags[3] = <<<EOL
                                 <h3>{$lang_ja['payment_question']}</h3>
 EOL;
-                                echo $formtags[3];
+                                echo wp_kses($formtags[3], array('h3' => array()));
+
                                 $payment_ary = ['payment_no', 'payment_yes', 'payment_cart'];
-                                foreach ( $payment_ary as $payment ) {
+                                foreach ($payment_ary as $payment) {
                                     $checked = '';
-                                    if ( isset( $siteinfo_ary['payment'] ) ) {
-                                        if ( $payment === $siteinfo_ary['payment'] ) {
-                                            $checked = 'checked';
-                                        }
+                                    if (isset($siteinfo_ary['payment']) && $payment === $siteinfo_ary['payment']) {
+                                        $checked = 'checked';
                                     }
-                                    $radio_payment = <<< EOL
+                                    $radio_payment = <<<EOL
                                     <input type="radio" name="payment" id="{$payment}" value="{$payment}" $checked><label for="{$payment}">{$lang_ja[$payment]}</label>
 EOL;
-                                    echo $radio_payment;
+                                    echo wp_kses($radio_payment, array(
+                                        'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'value' => array(), 'checked' => array()),
+                                        'label' => array('for' => array()),
+                                    ));
                                 }
 
-                                $month_later  = isset( $siteinfo_ary['month_later'] )? $siteinfo_ary['month_later'] : '';
-                                $session_goal = isset( $siteinfo_ary['session_goal'] )? $siteinfo_ary['session_goal'] : '';
-                                $formtags[4] = <<< EOL
+                                $month_later = isset($siteinfo_ary['month_later']) ? esc_attr($siteinfo_ary['month_later']) : '';
+                                $session_goal = isset($siteinfo_ary['session_goal']) ? esc_attr($siteinfo_ary['session_goal']) : '';
+                                $formtags[4] = <<<EOL
                                 <h3>{$lang_ja['goal_monthly_access_question']}</h3>
                                 <input type="number" name="month_later" id="month_later" value="{$month_later}"><label for="month_later">{$lang_ja['month_later']}</label>&nbsp;
                                 <input type="number" name="session_goal" id="session_goal" value="{$session_goal}"><label for="session_goal">{$lang_ja['session_goal']}</label>
                                 <p><input type="submit" value="{$lang_ja['save']}"></p>
                                 </form>
 EOL;
-                                echo $formtags[4];
+                                echo wp_kses($formtags[4], array(
+                                    'h3' => array(),
+                                    'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'value' => array(), 'checked' => array()),
+                                    'label' => array('for' => array()),
+                                    'p' => array(),
+                                    'form' => array(),
+                                ));
                             ?>
                         </div>
                     </div><!-- endof #tab_attribute_content -->
@@ -799,6 +872,15 @@ EOL;
 	 * 設定画面の項目をデータベースに保存する
 	 */
 	public function ajax_save_plugin_config() {
+
+        if ( !check_ajax_referer( self::NONCE_ACTION_QAOP, 'security', false ) ) {
+            wp_send_json_error('Invalid nonce');
+            wp_die();
+        }
+        if ( !$this->check_qahm_access_cap('qahm_manage_settings') ) {
+            wp_send_json_error('Permission denied');
+            wp_die();
+        }
 		$data_retention_dur = (int) $this->wrap_filter_input( INPUT_POST, 'data_retention_dur' );
 		$cb_sup_mode        = $this->wrap_filter_input( INPUT_POST, 'cb_sup_mode' );
 		if ( $cb_sup_mode === 'true' ) {
@@ -812,4 +894,5 @@ EOL;
 		$this->wrap_update_option( 'cb_sup_mode', $cb_sup_mode );
 		$this->wrap_update_option( 'send_email_address', $send_email_address );
 	}
+
 } // end of class

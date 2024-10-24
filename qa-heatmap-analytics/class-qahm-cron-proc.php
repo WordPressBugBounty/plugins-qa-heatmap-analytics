@@ -161,7 +161,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 			$status = 'Cron start';
 		}
 		if ( QAHM_DEBUG >= QAHM_DEBUG_LEVEL['debug'] ) {
-			print 'get:' . $status . '<br>';
+			print 'get:' . esc_html($status) . '<br>';
 		}
 		return $status;
 	}
@@ -185,14 +185,14 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 		*/
 		global $wp_filesystem;
 		if ( ! $wp_filesystem->put_contents( $this->get_cron_status_path(), $nextstatus ) ) {
-			throw new Exception( $nextstatus . 'のセットでcronステータスファイルの書込に失敗しました。終了します。' );
+			throw new Exception( esc_html( $nextstatus ) . 'のセットでcronステータスファイルの書込に失敗しました。終了します。' );
 		}
 	}
 
 	public function backup_prev_status( $prevstatus ) {
 		global $wp_filesystem;
 		if ( ! $wp_filesystem->put_contents( $this->get_cron_backup_path(), $prevstatus ) ) {
-			throw new Exception( $prevstatus . 'のセットでcronバックアップファイルの書込に失敗しました。終了します。' );
+			throw new Exception( esc_html( $prevstatus ) . 'のセットでcronバックアップファイルの書込に失敗しました。終了します。' );
 		}
 	}
 
@@ -362,12 +362,6 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 		$cache_heatmap_list_file        = $cache_dir . 'heatmap_list.php';
 		$cache_heatmap_list_temp_file   = $cache_dir . 'heatmap_list_temp.php';
 		$cache_heatmap_list_idx_temp_file = $cache_dir . 'heatmap_list_idx_temp.php';
-		$cache_post_list_file           = $cache_dir . 'post_list.php';
-		$cache_page_list_file           = $cache_dir . 'page_list.php';
-		$cache_custom_list_file         = $cache_dir . 'custom_list.php';
-		$cache_post_list_file30         = $cache_dir . 'post_list30.php';
-		$cache_page_list_file30         = $cache_dir . 'page_list30.php';
-		$cache_custom_list_file30       = $cache_dir . 'custom_list30.php';
         $summary_days_access_file       = $vw_summary_dir . 'days_access.php';
 		$summary_days_access_detail_file = $vw_summary_dir . 'days_access_detail.php';
 		// loop count max
@@ -396,7 +390,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 
 	// PHP7未満用 エラーハンドラ
 	public function cron_error_handler($errno, $errstr, $errfile, $errline) {
-        throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+        throw new ErrorException( esc_html( $errstr ), 0, (int)$errno, esc_html( $errfile ), esc_html( (string) $errline ) );
     }
 
 	// cron処理
@@ -451,10 +445,12 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 				$memory_size = (int)$php_memory_limit;
 			}
 			if ( QAHM_MEMORY_LIMIT_MIN * 1000000  > $memory_size ) {
+				// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- ini_set() is required here to adjust runtime configuration dynamically for specific functionality.
 				ini_set( 'memory_limit', QAHM_MEMORY_LIMIT_MIN . 'M' );
 			}
 		}
 
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- set_time_limit() is necessary here to ensure long-running operations complete without timing out.
 		set_time_limit( 60 * 10 );
 
 		// ----------
@@ -515,12 +511,6 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 		$cache_heatmap_list_file        = $cache_dir . 'heatmap_list.php';
 		$cache_heatmap_list_temp_file   = $cache_dir . 'heatmap_list_temp.php';
 		$cache_heatmap_list_idx_temp_file = $cache_dir . 'heatmap_list_idx_temp.php';
-		$cache_post_list_file           = $cache_dir . 'post_list.php';
-		$cache_page_list_file           = $cache_dir . 'page_list.php';
-		$cache_custom_list_file         = $cache_dir . 'custom_list.php';
-		$cache_post_list_file30         = $cache_dir . 'post_list30.php';
-		$cache_page_list_file30         = $cache_dir . 'page_list30.php';
-		$cache_custom_list_file30       = $cache_dir . 'custom_list30.php';
         $summary_days_access_file       = $vw_summary_dir . 'days_access.php';
 		$summary_days_access_detail_file = $vw_summary_dir . 'days_access_detail.php';
 		// loop count max
@@ -554,7 +544,8 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 			if ( 6 > $cron_retry ) {
 				$wp_filesystem->put_contents( $this->get_cron_lock_path(), $cron_retry );
 				// exit
-				throw new Exception( QAHM_NAME . ' cronは既に' . $cron_retry . '回稼働しています。終了します。' );
+				$cron_retry_str = (string) $cron_retry;
+				throw new Exception( esc_html( QAHM_NAME ) . ' cronは既に' . esc_html( $cron_retry_str ) . '回稼働しています。終了します。' );
 			} else {
 				// 異常終了しているはず。確認して強制継続
 				// check cron status
@@ -569,7 +560,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							// おそらく10分間でも完了しないほどのファイル数で異常事態。ログファイルに記入してcron lockを削除して強制終了
 							// delete cron lock
 							if ( ! $wp_filesystem->delete( $this->get_cron_lock_path() ) ) {
-								throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . $this->get_cron_lock_path() );
+								throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . esc_html( $this->get_cron_lock_path() ) );
 							}
 							throw new Exception( 'Dayの処理が異常終了しました。終了します。' );
 							break;
@@ -610,7 +601,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 				}
 				// delete cron lock
 				if ( ! $wp_filesystem->delete( $this->get_cron_lock_path() ) ) {
-					throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . $this->get_cron_lock_path() );
+					throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . esc_html( $this->get_cron_lock_path() ) );
 				}
 			}
 		} else {
@@ -770,7 +761,10 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
                         if ( defined( 'NONCE_SALT' ) && NONCE_SALT !== '' ) {
                             $seed = NONCE_SALT;
                         } else {
-                            $seed = $_SERVER['SERVER_ADDR'];
+							if ( isset( $_SERVER['SERVER_ADDR'] ) ) {
+                            	//$seed = $_SERVER['SERVER_ADDR'];
+								$seed = sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) );
+							}
                         }
 
                         // シード値をハッシュ化して数値に変換
@@ -838,7 +832,10 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
                     if (defined('NONCE_SALT') && NONCE_SALT !== '') {
                         $seed = NONCE_SALT;
                     } else {
-                        $seed = $_SERVER['SERVER_ADDR'];
+						if ( isset( $_SERVER['SERVER_ADDR'] ) ) {
+                        	//$seed = $_SERVER['SERVER_ADDR'];
+							$seed = sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) );
+						}
                     }
 
                     // シード値をハッシュ化して数値に変換
@@ -907,6 +904,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									$referral_link = 'https://quarka.org/en/referral-program/';
 								}
 								$subject  = __( 'Page View Limit Reached: Upgrade or Earn Extra Capacity', 'qa-heatmap-analytics' );
+								/* translators: placeholders are for the site name */
 								$message  = sprintf( __( 'This is to inform you that the page view capacity limit for QA Analytics on your site, %s, has been reached.', 'qa-heatmap-analytics' ), get_bloginfo('name') ) . PHP_EOL;
 								$message .= __( 'As a result, data collection has been temporarily paused until the beginning of the next month. This means that analytics data will not be recorded during this period.', 'qa-heatmap-analytics' ) . PHP_EOL;
 								$message .= __( 'Check your QA Analytics Dashboard:', 'qa-heatmap-analytics' ) . PHP_EOL;
@@ -1005,6 +1003,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 										$referral_link = 'https://quarka.org/en/referral-program/';
 									}
 									$subject  = __( 'Page View Capacity Reached 80%: Consider Upgrading or Earning Extra Capacity', 'qa-heatmap-analytics' );
+									/* translators: placeholders are for the site name */
 									$message  = sprintf( __( 'The page view capacity for QA Analytics on your site, %s, has reached 80%%.', 'qa-heatmap-analytics' ), get_bloginfo('name') ) . PHP_EOL;
 									$message .= __( 'Once the page view capacity is reached, data collection will be paused until the next month.', 'qa-heatmap-analytics' ) . PHP_EOL;
 									$message .= __( 'Check your QA Analytics Dashboard:', 'qa-heatmap-analytics' ) . PHP_EOL;
@@ -1473,7 +1472,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $referer == 'direct') {
 									$source_domain = 'direct';
 								} else {
-									$parse_url     = parse_url( $referer );
+									$parse_url     = wp_parse_url( $referer );
 									if ($parse_url['host']) {
 										$ref_host      = $parse_url['host'];
 										$source_domain = $ref_host;
@@ -1627,6 +1626,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									'ON DUPLICATE KEY UPDATE ' .
 									'original_id = VALUES(original_id), update_date = CURDATE()';
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -1670,6 +1670,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								'(utm_medium) ' .
 								'VALUES ' . join( ',', $place_holders );
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -1729,8 +1730,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( ! empty( $medium ) ) {
 								$table_name = $wpdb->prefix . 'qa_utm_media';
 								$query      = 'SELECT medium_id FROM ' . $table_name . ' WHERE utm_medium = %s';
-								$preobj     = $wpdb->prepare( $query, $medium );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $medium );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $medium ) );
 								$medium_id  = $result[0]->medium_id;
 							}
 
@@ -1744,7 +1746,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 											break;
 										} else {
 											// other search engine. check keyword
-											$parse_ref  = parse_url( $referer );
+											$parse_ref  = wp_parse_url( $referer );
 											if ( array_key_exists( 'query', $parse_ref ) ) {
 												$query_perm = $parse_ref['query'];
 												$keyword_perm_ary = explode( ',', $se['QUERY_PERM'] );
@@ -1802,12 +1804,14 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( $is_uniq_source ) {
 								$table_name = $wpdb->prefix . 'qa_utm_sources';
 								$query      = 'SELECT source_id FROM ' . $table_name . ' WHERE source_domain= %s';
-								$preobj     = $wpdb->prepare( $query, $source_domain );
-								$resids     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $source_domain );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$resids     = $wpdb->get_results( $wpdb->prepare( $query, $source_domain ) );
 								foreach ( $resids as $ids ) {
 									$query      = 'SELECT utm_source,referer,medium_id,utm_term FROM ' . $table_name . ' WHERE source_id= %d';
-									$preobj     = $wpdb->prepare( $query, $ids->source_id );
-									$res        = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $ids->source_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$res        = $wpdb->get_results( $wpdb->prepare( $query, $ids->source_id ) );
 									foreach ( $res as $raw ) {
 										if ($raw->utm_source == $source && $raw->medium_id == $medium_id) {
 											if ($raw->utm_term == $utm_term && $raw->referer == $referer) {
@@ -1852,6 +1856,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								'(utm_source, referer, source_domain, medium_id, utm_term, keyword) ' .
 								'VALUES ' . join( ',', $place_holders );
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -1897,6 +1902,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								'(utm_campaign) ' .
 								'VALUES ' . join( ',', $place_holders );
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -1988,8 +1994,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( ! empty( $url_hash ) && ! empty( $type ) && ! empty( $id ) ) {
 								$table_name = $wpdb->prefix . 'qa_pages';
 								$query      = 'SELECT page_id,url,url_hash,title FROM ' . $table_name . ' WHERE url_hash = %s';
-								$preobj     = $wpdb->prepare( $query, $url_hash );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $url_hash );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $url_hash ) );
 								if ( ! empty( $result ) ) {
 									foreach ( $result as $raw ) {
 										if ( $page_url == $raw->url ) {
@@ -2018,8 +2025,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( $update_page_id !== 0 ) {
 								$table_name = $wpdb->prefix . 'qa_pages';
 								$query      = 'UPDATE ' . $table_name . ' set wp_qa_type = %s, wp_qa_id = %s, title = %s, update_date = CURDATE() WHERE page_id = %d';
-								$preobj     = $wpdb->prepare( $query, $type, $id, $page_title, $update_page_id );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $type, $id, $page_title, $update_page_id );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $type, $id, $page_title, $update_page_id ) );
 							}
 						}
 						if ( ! empty( $arrayValues ) ) {
@@ -2028,6 +2036,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							$sql = 'INSERT INTO ' . $table_name . ' ' .
 								'(tracking_id, wp_qa_type, wp_qa_id, url, url_hash, title, update_date) ' .
 								'VALUES ' . join( ',', $place_holders );
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -2085,8 +2094,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( ! empty( $qa_id ) ) {
 									$table_name = $wpdb->prefix . 'qa_readers';
 									$query      = 'SELECT reader_id FROM ' . $table_name . ' WHERE qa_id=%s';
-									$preobj     = $wpdb->prepare( $query, $qa_id );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $qa_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $qa_id ) );
 									if ( ! empty( $result ) ) {
 										$reader_id = $result[0]->reader_id;
 									}
@@ -2096,8 +2106,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( ! empty( $url_hash ) ) {
 									$table_name = $wpdb->prefix . 'qa_pages';
 									$query      = 'SELECT page_id,url FROM ' . $table_name . ' WHERE url_hash=%s';
-									$preobj     = $wpdb->prepare( $query, $url_hash );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $url_hash );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $url_hash ) );
 									if ( ! empty( $result ) ) {
 										foreach ( $result as $raw ) {
 											if ( $page_url == $raw->url ) {
@@ -2113,8 +2124,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( ! empty( $medium ) ) {
 									$table_name = $wpdb->prefix . 'qa_utm_media';
 									$query      = 'SELECT medium_id FROM ' . $table_name . ' WHERE utm_medium=%s';
-									$preobj     = $wpdb->prepare( $query, $medium );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $medium );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $medium ) );
 									foreach ( $result as $raw ) {
 										$medium_id = $raw->medium_id;
 									}
@@ -2163,8 +2175,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $source_id == 0 ) {
 									$table_name = $wpdb->prefix . 'qa_utm_sources';
 									$query      = 'SELECT source_id,utm_source,referer,medium_id,utm_term,keyword FROM ' . $table_name . ' WHERE source_domain= %s';
-									$preobj     = $wpdb->prepare( $query, $source_domain );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $source_domain );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $source_domain ) );
 									foreach ( $result as $raw ) {
 										if ( $raw->utm_source == $source && $raw->medium_id == $medium_id ) {
 											if ( $raw->utm_term == $utm_term && $raw->referer == $referer ) {
@@ -2178,8 +2191,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( ! empty( $campaign ) ) {
 									$table_name = $wpdb->prefix . 'qa_utm_campaigns';
 									$query      = 'SELECT campaign_id FROM ' . $table_name . ' WHERE utm_campaign = %s';
-									$preobj     = $wpdb->prepare( $query, $campaign );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $campaign );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $campaign ) );
 									if ( ! empty( $result ) ) {
 										$campaign_id = $result[0]->campaign_id;
 									}
@@ -2216,6 +2230,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								'VALUES ' . join( ',', $place_holders );
 
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 
 
@@ -2267,8 +2282,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( ! empty( $qa_id ) ) {
 									$table_name = $wpdb->prefix . 'qa_readers';
 									$query      = 'SELECT reader_id FROM ' . $table_name . ' WHERE qa_id = %s';
-									$preobj     = $wpdb->prepare( $query, $qa_id );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $qa_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $qa_id ) );
 									$reader_id  = $result[0]->reader_id;
 								}
 
@@ -2278,8 +2294,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									$search_time = $qahm_time->unixtime_to_str( $lp_time );
 									$table_name  = $wpdb->prefix . 'qa_pv_log';
 									$query       = 'SELECT pv_id FROM ' . $table_name . ' WHERE access_time = %s AND reader_id = %d';
-									$preobj      = $wpdb->prepare( $query, $search_time, $reader_id );
-									$result      = $wpdb->get_results( $preobj );
+									//$preobj      = $wpdb->prepare( $query, $search_time, $reader_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result      = $wpdb->get_results( $wpdb->prepare( $query, $search_time, $reader_id ) );
 									$pv_id       = $result[0]->pv_id;
 								}
 
@@ -2302,6 +2319,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								'VALUES ' . join( ',', $place_holders );
 
 							// SQL実行
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
 							$result = $wpdb->query( $wpdb->prepare( $sql, $arrayValues ) );
 							if ($result === false && $wpdb->last_error !== '') {
 								$qahm_log->error( $wpdb->print_error() );
@@ -2449,8 +2467,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 					$yday_pvmaxcnt = (int) $wp_filesystem->get_contents( $yday_pvmaxcnt_file );
 					$table_name    = $wpdb->prefix . 'qa_pv_log';
 					$query         = 'SELECT pv_id, reader_id, page_id, device_id, session_no, access_time FROM ' . $table_name . ' ORDER BY pv_id DESC limit %d';
-					$preobj        = $wpdb->prepare( $query, $yday_pvmaxcnt );
-					$result        = $wpdb->get_results( $preobj );
+					//$preobj        = $wpdb->prepare( $query, $yday_pvmaxcnt );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$result        = $wpdb->get_results( $wpdb->prepare( $query, $yday_pvmaxcnt ) );
 					if ( ! empty( $result ) ) {
 						// 古い順番に反転させ、セッション番号とPV番号を挿入する。
 						$newpv_ary = array();
@@ -2569,8 +2588,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							// detect WordPress post ID from page_id
 							$table_name = $wpdb->prefix . 'qa_pages';
 							$query      = 'SELECT wp_qa_type, wp_qa_id, url FROM ' . $table_name . ' WHERE page_id = %d';
-							$preobj     = $wpdb->prepare( $query, $page_id );
-							$result     = $wpdb->get_results( $preobj );
+							//$preobj     = $wpdb->prepare( $query, $page_id );
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+							$result     = $wpdb->get_results( $wpdb->prepare( $query, $page_id ) );
 							$id         = $result[0]->wp_qa_id;
 
 							// When this ID is not archive page, then search raw file and update pv_log
@@ -2583,40 +2603,81 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								// check this page version, and get recent version_id & base_selector
 								$table_name = $wpdb->prefix . 'qa_page_version_hist';
 								$query      = 'SELECT version_id, base_selector, insert_datetime FROM ' . $table_name . ' WHERE page_id = %d AND device_id = %d ORDER BY version_id DESC';
-								$preobj     = $wpdb->prepare( $query, $page_id, $device_no );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $page_id, $device_no );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $page_id, $device_no ) );
 								if ( empty( $result ) ) {
 									$version_no = 1;
 									// create version
 									$options       = $this->get_stream_options( $dev );
-									$base_html     = file_get_contents( $base_url, false, stream_context_create( $options ) );
-									if ( $this->is_zip( $base_html ) ) {
-										$temphtml = gzdecode( $base_html );
-										if ( $temphtml !== false ) {
-											$base_html = $temphtml;
-										}
-									}
-									$bbb = 0;
-									while ( $base_html === false ) {
-										usleep(500);
-										$base_html     = file_get_contents( $base_url, false, stream_context_create( $options ) );
-										if ( $this->is_zip( $base_html ) ) {
-											$temphtml = gzdecode( $base_html );
+
+									// HTTPヘッダーの設定を抽出
+									$headers = array(
+										'User-Agent' => $options['http']['header'],
+									);
+									// タイムアウトとその他のオプションを抽出
+									$timeout = $options['http']['timeout'];
+									$method  = $options['http']['method'];
+
+									$base_html = false;  // 初期値としてfalseを設定
+									$bbb = 0;            // 再試行カウンタ
+
+									// 初回リクエストを送信
+									$res_base_html = wp_remote_get( $base_url, array(
+										'timeout'    => $timeout,
+										'headers'    => $headers,
+										'method'     => $method,
+										'sslverify'  => false,  // SSL検証を無効化
+									) );
+
+									// レスポンスを処理
+									if ( !is_wp_error( $res_base_html ) && wp_remote_retrieve_response_code( $res_base_html ) === 200 ) {
+										$body = wp_remote_retrieve_body( $res_base_html );
+										if ( $this->is_zip( $body ) ) {
+											$temphtml = gzdecode( $body );
 											if ( $temphtml !== false ) {
 												$base_html = $temphtml;
 											}
+										} else {
+											$base_html = $body;
+										}
+									}
+
+									// 再試行処理
+									while ( $base_html === false ) {
+										usleep(500);  // 500マイクロ秒待機
+
+										$res_base_html = wp_remote_get( $base_url, array(
+											'timeout'    => $timeout,
+											'headers'    => $headers,
+											'method'     => $method,
+											'sslverify'  => false,
+										));
+
+										if ( !is_wp_error( $res_base_html ) && wp_remote_retrieve_response_code( $res_base_html ) === 200 ) {
+											$body = wp_remote_retrieve_body( $res_base_html );
+											if ( $this->is_zip( $body ) ) {
+												$temphtml = gzdecode( $body );
+												if ( $temphtml !== false ) {
+													$base_html = $temphtml;
+												}
+											} else {
+												$base_html = $body;
+											}
 										}
 
-										++$bbb;
+										$bbb++;
 										if ( $bbb > 2 ) {
 											$qahm_log->error( 'failed get base_html:' . $base_html );
 											break;
 										}
 									}
+
 									$table_name    = $wpdb->prefix . 'qa_page_version_hist';
 									$query         = 'INSERT INTO ' . $table_name . ' (page_id, device_id, version_no, base_html, update_date, insert_datetime) VALUES (%d, %d, %d, %s, now(), now())';
-									$preobj        = $wpdb->prepare( $query, $page_id, $device_no, $version_no, $base_html );
-									$result        = $wpdb->get_results( $preobj );
+									//$preobj        = $wpdb->prepare( $query, $page_id, $device_no, $version_no, $base_html );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result        = $wpdb->get_results( $wpdb->prepare( $query, $page_id, $device_no, $version_no, $base_html ) );
 									$version_id    = $wpdb->insert_id;
 									$base_selector = '';
 								} else {
@@ -2635,8 +2696,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								// check qa_id
 								$table_name = $wpdb->prefix . 'qa_readers';
 								$query      = 'SELECT qa_id FROM ' . $table_name . ' WHERE reader_id = %d limit 1';
-								$preobj     = $wpdb->prepare( $query, $reader_id );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $reader_id );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $reader_id ) );
 								$qa_id      = $result[0]->qa_id;
 
 								// raw file check
@@ -2788,9 +2850,10 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 															}
 														}
 														$table_name = $wpdb->prefix . 'qa_page_version_hist';
-														$query      = 'UPDATE ' . $table_name . ' SET base_selector = %s, update_date = now() WHERE version_id = %d';
-														$preobj     = $wpdb->prepare( $query, $new_base_selector, $version_id );
-														$result     = $wpdb->get_results( $preobj );
+														$query      = 'UPDATE ' . $table_name . ' SET base_selector = %s, update_date = now() WHERE version_id = %d';														
+														//$preobj     = $wpdb->prepare( $query, $new_base_selector, $version_id );
+														// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+														$result     = $wpdb->get_results( $wpdb->prepare( $query, $new_base_selector, $version_id ) );
 													}
 												}
 											}
@@ -2808,15 +2871,17 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								// p,c,e all file check & make string done.
 								$table_name = $wpdb->prefix . 'qa_pv_log';
 								$query      = 'UPDATE ' . $table_name . ' SET raw_p = %s, raw_c = %s, raw_e = %s,version_id = %d WHERE pv_id = %d';
-								$preobj     = $wpdb->prepare( $query, $p_str, $c_str, $e_str, $version_id, $pv_id );
-								$result     = $wpdb->get_results( $preobj );
+								//$preobj     = $wpdb->prepare( $query, $p_str, $c_str, $e_str, $version_id, $pv_id );
+								// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+								$result     = $wpdb->get_results( $wpdb->prepare( $query, $p_str, $c_str, $e_str, $version_id, $pv_id ) );
 
 								// if version is accessed without raw_c. then update date
 								if ( ! empty( $p_str ) || ! empty( $e_str ) ) {
 									$table_name = $wpdb->prefix . 'qa_page_version_hist';
 									$query      = 'UPDATE ' . $table_name . ' SET update_date = now() WHERE version_id = %d';
-									$preobj     = $wpdb->prepare( $query, $version_id );
-									$result     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $version_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$result     = $wpdb->get_results( $wpdb->prepare( $query, $version_id ) );
 								}
 								// write delete raw files list & update loop count
 								$this->write_ary_to_temp( $delete_rawfiles_ary, $del_rawfileslist_temp . $iii );
@@ -3039,8 +3104,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 
 							$table_name = $wpdb->prefix . 'qa_pv_log';
 							$query      = 'SELECT count(*)  FROM ' . $table_name . ' WHERE  access_time between %s AND %s';
-							$preobj     = $wpdb->prepare( $query,  $s_datetime, $e_datetime );
-							$countx     = $wpdb->get_var( $preobj );
+							//$preobj     = $wpdb->prepare( $query,  $s_datetime, $e_datetime );
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+							$countx     = $wpdb->get_var( $wpdb->prepare( $query,  $s_datetime, $e_datetime ) );
 
 							if ((int)$countx === 0) {
 								$s_datetime = $qahm_time->xday_str($max_day_dist, $s_datetime, QAHM_Time::DEFAULT_DATETIME_FORMAT );
@@ -3088,8 +3154,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 						//make file
 						$table_name = $wpdb->prefix . 'qa_pv_log';
 						$query      = 'SELECT pv_id,reader_id,page_id ,device_id,source_id,medium_id,campaign_id,session_no,access_time,pv,speed_msec,browse_sec,is_last,is_newuser,version_id,raw_p,raw_c,raw_e  FROM ' . $table_name . ' WHERE  access_time between %s AND %s';
-						$preobj     = $wpdb->prepare( $query,  $s_datetime, $s_dateend );
-						$result     = $wpdb->get_results( $preobj );
+						//$preobj     = $wpdb->prepare( $query,  $s_datetime, $s_dateend );
+						// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+						$result     = $wpdb->get_results( $wpdb->prepare( $query,  $s_datetime, $s_dateend ) );
 
 						if ( ! empty( $result ) ) {
 							$newary = array();
@@ -3111,8 +3178,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									$table_name = $wpdb->prefix . 'qa_readers';
 
 									$query      = 'SELECT UAos,UAbrowser FROM ' . $table_name . ' WHERE  reader_id = %d';
-									$preobj     = $wpdb->prepare( $query, $row->reader_id );
-									$select     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $row->reader_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$select     = $wpdb->get_results( $wpdb->prepare( $query, $row->reader_id ) );
 									if ( $select ) {
 										$newary[$idx]['UAos'] = $select[0]->UAos;
 										$newary[$idx]['UAbrowser'] = $select[0]->UAbrowser;
@@ -3126,8 +3194,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $row->page_id ) {
 									$table_name = $wpdb->prefix . 'qa_pages';
 									$query      = 'SELECT url,title FROM ' . $table_name . ' WHERE  page_id = %d';
-									$preobj     = $wpdb->prepare( $query, $row->page_id );
-									$select     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $row->page_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$select     = $wpdb->get_results( $wpdb->prepare( $query, $row->page_id ) );
 									if ( $select ) {
 										$newary[$idx]['url'] = $select[0]->url;
 										$newary[$idx]['title'] = esc_html( $select[0]->title );
@@ -3144,8 +3213,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $row->source_id ) {
 									$table_name = $wpdb->prefix . 'qa_utm_sources';
 									$query      = 'SELECT utm_source,source_domain FROM ' . $table_name . ' WHERE  source_id = %d';
-									$preobj     = $wpdb->prepare( $query, $row->source_id );
-									$select     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $row->source_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$select     = $wpdb->get_results( $wpdb->prepare( $query, $row->source_id ) );
 									if ( $select ) {
 										$newary[$idx]['utm_source'] = $select[0]->utm_source;
 										$newary[$idx]['source_domain'] = $select[0]->source_domain;
@@ -3158,8 +3228,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $row->medium_id ) {
 									$table_name = $wpdb->prefix . 'qa_utm_media';
 									$query      = 'SELECT utm_medium FROM ' . $table_name . ' WHERE  medium_id = %d';
-									$preobj     = $wpdb->prepare( $query, $row->medium_id );
-									$select     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $row->medium_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$select     = $wpdb->get_results( $wpdb->prepare( $query, $row->medium_id ) );
 									if ( $select ) {
 										$newary[$idx]['utm_medium'] = $select[0]->utm_medium;
 									}
@@ -3171,8 +3242,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								if ( $row->campaign_id ) {
 									$table_name = $wpdb->prefix . 'qa_utm_campaigns';
 									$query      = 'SELECT utm_campaign FROM ' . $table_name . ' WHERE  campaign_id = %d';
-									$preobj     = $wpdb->prepare( $query, $row->campaign_id );
-									$select     = $wpdb->get_results( $preobj );
+									//$preobj     = $wpdb->prepare( $query, $row->campaign_id );
+									// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+									$select     = $wpdb->get_results( $wpdb->prepare( $query, $row->campaign_id ) );
 									if ( $select ) {
 										$newary[$idx]['utm_campaign'] = $select[0]->utm_campaign;
 									}
@@ -3462,10 +3534,12 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 					//現在の最終IDを調査
 					$table_name = $wpdb->prefix . 'qa_readers';
 					$query      = 'SELECT reader_id FROM ' . $table_name . ' order by reader_id asc limit 1';
-					$stat_id    = $wpdb->get_var( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$stat_id    = $wpdb->get_var( $wpdb->prepare($query) );
 
 					$query      = 'SELECT reader_id FROM ' . $table_name . ' order by reader_id desc limit 1';
-					$last_id    = $wpdb->get_var( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$last_id    = $wpdb->get_var( $wpdb->prepare($query) );
 
 					if ( $save_s_id < $stat_id ) {
 						$save_s_id = $stat_id;
@@ -3475,8 +3549,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 						if ( $save_e_id !== $last_id ) {
 							//最終IDだけ保存すればOK
 							$query      = 'SELECT * FROM ' . $table_name . ' WHERE reader_id between %d AND %d';
-							$preobj     = $wpdb->prepare( $query,  $save_s_id, $last_id );
-							$allrecord  = $qahm_db->get_results( $preobj );
+							//$preobj     = $wpdb->prepare( $query,  $save_s_id, $last_id );
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+							$allrecord  = $qahm_db->get_results( $wpdb->prepare( $query,  $save_s_id, $last_id ) );
 
 							//既存のファイルをオープンし、新しくカラムを追加して保存する
 							$oldfile = $save_s_id . '-' . $save_e_id . '_readers.php';
@@ -3508,8 +3583,9 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 								$is_last    = true;
 							}
 							$query      = 'SELECT * FROM ' . $table_name . ' WHERE reader_id between %d AND %d';
-							$preobj     = $wpdb->prepare( $query,  $save_s_id, $now_lastid );
-							$allrecord  = $qahm_db->get_results( $preobj );
+							//$preobj     = $wpdb->prepare( $query,  $save_s_id, $now_lastid );
+							// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+							$allrecord  = $qahm_db->get_results( $wpdb->prepare( $query,  $save_s_id, $now_lastid ) );
 
 							$allcount   = count($allrecord);
 							$dbstatid   = $allrecord[0]->reader_id;
@@ -3576,15 +3652,18 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 					//現在のIDを調査
 					$table_name = $wpdb->prefix . 'qa_page_version_hist';
 					$query      = 'SELECT version_id FROM ' . $table_name . ' order by version_id asc limit 1';
-					$stat_id    = $wpdb->get_var( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$stat_id    = $wpdb->get_var( $wpdb->prepare($query) );
 
 					$query      = 'SELECT version_id FROM ' . $table_name . ' order by version_id desc limit 1';
-					$last_id    = $wpdb->get_var( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$last_id    = $wpdb->get_var( $wpdb->prepare($query) );
 					for ($iii = $stat_id; $iii <= $last_id; $iii++) {
 						//一つずつ保存していく
 						$query      = 'SELECT * FROM ' . $table_name . ' WHERE version_id = %d';
-						$preobj     = $wpdb->prepare( $query,  $iii );
-						$allrecord  = $qahm_db->get_results( $preobj );
+						//$preobj     = $wpdb->prepare( $query,  $iii );
+						// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses placeholders and $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+						$allrecord  = $qahm_db->get_results( $wpdb->prepare( $query,  $iii ) );
 						if ( $allrecord ) {
 							//pageidのindexを作成
 							$pageid   = (int)$allrecord[0]->page_id;
@@ -4017,12 +4096,14 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 					// qa_pv_log
 					$table_name = $wpdb->prefix . 'qa_pv_log';
 					$query      = 'ALTER TABLE ' . $table_name . ' TRUNCATE PARTITION ' . $del_partition_name;
-					$result     = $wpdb->query( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$result     = $wpdb->query( $wpdb->prepare($query) );
 
 					// qa_page_version_hist
 					$table_name = $wpdb->prefix . 'qa_page_version_hist';
 					$query      = 'ALTER TABLE ' . $table_name . ' TRUNCATE PARTITION ' . $del_partition_name;
-					$result     = $wpdb->query( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+					$result     = $wpdb->query( $wpdb->prepare($query) );
 
 //20240401 delete 1years ago for readers
                     $yearx_1y     = $qahm_time->year();
@@ -4040,7 +4121,8 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
                     // qa_readers
                     $table_name = $wpdb->prefix . 'qa_readers';
                     $query      = 'ALTER TABLE ' . $table_name . ' TRUNCATE PARTITION ' . $del_partition_name_1y;
-                    $result     = $wpdb->query( $query );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This SQL query uses $wpdb->prepare(), but it may trigger warnings due to the dynamic construction of the SQL string. Direct database call is necessary in this case due to the complexity of the SQL query. Caching would not provide significant performance benefits in this context.
+                    $result     = $wpdb->query( $wpdb->prepare($query) );
 
 					// ---next
 					$cron_status = 'Night>Delete>Db>End';
@@ -4366,7 +4448,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( $first_d === null ) {
 								$first_d = $qahm_time->day();
 							} else {
-								$first_d = (int) date('t', strtotime( 'last day of ' . $y . '-' . $m ) );
+								$first_d = (int) gmdate( 't', strtotime( 'last day of ' . $y . '-' . $m ) );
 							}
 
 							// 一日ごとのデータ
@@ -4376,7 +4458,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									break;
 								}
 								
-								$date = date( 'Y-m-d' ,strtotime( $y . '-' . $m . '-' . $d ) );
+								$date = sprintf( '%04d-%02d-%02d', $y, $m, $d );
 								$qahm_google_api->insert_search_console_keyword( $date, $date );
 								$qahm_google_api->create_search_console_data( $date, $date, false );
 								$now_search_cnt++;
@@ -4392,8 +4474,8 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							}
 
 							// 月データ
-							$start_date = date( 'Y-m-d' ,strtotime( $y . '-' . $m . '-01' ) );
-							$end_date   = date( 'Y-m-d' ,strtotime( $y . '-' . $m . '-' . $first_d ) );
+							$start_date = sprintf( '%04d-%02d-01', $y, $m );
+							$end_date = sprintf( '%04d-%02d-%02d', $y, $m, $first_d );
 							$qahm_google_api->create_search_console_data( $start_date, $end_date, true );
 
 							if ( $qahm_time->xsec_num( $qahm_time->now_str(), $gsc_loop_start_time ) > $loop_limit_sec ) {
@@ -4487,62 +4569,6 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 					break;
 
 				case 'Night>Make cache file>Admin heatmap>End':
-					$this->backup_prev_status( $cron_status );
-
-					// ---next
-					$cron_status = 'Night>Make cache file>Admin post>Start';
-					$this->set_next_status( $cron_status );
-					break;
-
-				case 'Night>Make cache file>Admin post>Start':
-					$this->backup_prev_status( $cron_status );
-
-					// ---next
-					$cron_status = 'Night>Make cache file>Admin post>Create post list';
-					$this->set_next_status( $cron_status );
-					break;
-
-				case 'Night>Make cache file>Admin post>Create post list':
-					$this->backup_prev_status( $cron_status );
-
-					$list = $qahm_article_list->create_post_list( 'post', 7 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_post_list_file, $this->wrap_serialize( $list ) );
-					}
-
-					$list = $qahm_article_list->create_post_list( 'page', 7 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_page_list_file, $this->wrap_serialize( $list ) );
-					}
-					
-					$list = $qahm_article_list->create_post_list( 'custom', 7 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_custom_list_file, $this->wrap_serialize( $list ) );
-					}
-
-					//30days
-					$list = $qahm_article_list->create_post_list( 'post', 30 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_post_list_file30, $this->wrap_serialize( $list ) );
-					}
-
-					$list = $qahm_article_list->create_post_list( 'page', 30 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_page_list_file30, $this->wrap_serialize( $list ) );
-					}
-
-					$list = $qahm_article_list->create_post_list( 'custom', 30 );
-					if ( $list ) {
-						$this->wrap_put_contents( $cache_custom_list_file30, $this->wrap_serialize( $list ) );
-					}
-
-					$cron_status = 'Night>Make cache file>Admin post>End';
-
-					// ---next
-					$this->set_next_status( $cron_status );
-					break;
-
-				case 'Night>Make cache file>Admin post>End':
 					$this->backup_prev_status( $cron_status );
 
 					// ---next
@@ -4643,7 +4669,7 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 		// Last,delete cron lock
 		// ----------
 		if ( ! $wp_filesystem->delete( $this->get_cron_lock_path() ) ) {
-			throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . $this->get_cron_lock_path() );
+			throw new Exception( '$wp_filesystem->delete()に失敗しました。パス：' . esc_html( $this->get_cron_lock_path() ) );
 		}
 	}
 

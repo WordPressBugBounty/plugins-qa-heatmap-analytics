@@ -32,6 +32,103 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 		return parent::get_data_dir_url() . 'heatmap-view-work/';
 	}
 
+	public function enqueue_scripts() {
+		// グローバルなスクリプトとスタイルのキューを取得
+		global $wp_scripts;
+		global $wp_styles;
+		global $qahm_log;
+		global $qahm_time;
+		global $wp_filesystem;
+	
+		$version_id        = (int) filter_input( INPUT_GET, 'version_id' );
+		$heatmap_view_work_dir = $this->get_data_dir_path( 'heatmap-view-work' );
+		$heatmap_view_work_url = $this->get_heatmap_view_work_dir_url();
+		$file_info             = $heatmap_view_work_dir . $version_id . '-info.php';
+		if ( ! $wp_filesystem->exists( $file_info ) ) {
+			throw new Exception( 'heatmap view info file does not exist.' );
+		}
+		$content_info_ary = $wp_filesystem->get_contents_array( $file_info );
+	
+	
+		// info ファイル読み込み
+		foreach ( $content_info_ary as $content_info ) {
+			$exp_info = explode( '=', $content_info );
+			switch ( $exp_info[0] ) {
+				case 'data_num':
+					$data_num = (int) trim( $exp_info[1] );
+					break;
+				case 'wp_qa_type':
+					$wp_qa_type = trim( $exp_info[1] );
+					break;
+				case 'wp_qa_id':
+					$wp_qa_id = (int) trim( $exp_info[1] );
+					break;
+				case 'version_no':
+					$version_no = (int) trim( $exp_info[1] );
+					break;
+				case 'device_name':
+					$device_name = trim( $exp_info[1] );
+					break;
+				case 'time_on_page':
+					$time_on_page = (float) trim( $exp_info[1] );
+					$time_on_page = $qahm_time->seconds_to_timestr( $time_on_page );
+					$time_on_page = substr( $time_on_page, strlen('00:') );
+					break;
+			}
+		}
+	
+		// 読み込まれているすべてのスクリプトを解除
+		foreach( $wp_scripts->queue as $handle ) {
+			wp_dequeue_script( $handle );
+		}
+	
+		// 読み込まれているすべてのスタイルを解除
+		foreach( $wp_styles->queue as $handle ) {
+			wp_dequeue_style( $handle );
+		}
+	
+		// 自分たちのプラグインのスタイルやスクリプトを読み込む
+		$css_dir_url = $this->get_css_dir_url();
+		wp_enqueue_style( QAHM_NAME . '-sweet-alert-2', $css_dir_url . '/lib/sweet-alert-2/sweetalert2.min.css', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-doctor-reset', $css_dir_url . 'doctor-reset.css', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-common', $css_dir_url . 'common.css', array( QAHM_NAME . '-doctor-reset' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-heatmap-view', $css_dir_url . 'heatmap-view.css', array( QAHM_NAME . '-doctor-reset' ), QAHM_PLUGIN_VERSION );
+	
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( QAHM_NAME . '-font-awesome',  $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2',  $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-alert-message',  $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+
+		if ( $data_num === 0 ) {
+			return;
+		}
+
+		$js_dir_url = $this->get_js_dir_url();
+		wp_enqueue_script( QAHM_NAME . '-load-screen',  $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-cap-create',  $js_dir_url . 'cap-create.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-lib-heatmap',  $js_dir_url . 'lib/heatmap/heatmap.min.js', array( QAHM_NAME . '-cap-create' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-heatmap-view',  $js_dir_url . 'heatmap-view.js', array( QAHM_NAME . '-lib-heatmap' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-heatmap-bar',  $js_dir_url . 'heatmap-bar.js', array( QAHM_NAME . '-heatmap-view' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-heatmap-main',  $js_dir_url . 'heatmap-main.js', array( QAHM_NAME . '-heatmap-bar' ), QAHM_PLUGIN_VERSION, false );
+	
+		$scripts = array(
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'type' => $wp_qa_type,
+			'id' => $wp_qa_id,
+			'ver' => $version_no,
+			'dev' => $device_name,
+			'version_id' => $version_id,
+			'attention_limit_time' => self::ATTENTION_LIMIT_TIME,
+		);
+		wp_add_inline_script( QAHM_NAME . '-common', 'var ' . QAHM_NAME . ' = ' . QAHM_NAME . ' || {}; let ' . QAHM_NAME . 'Obj = ' . wp_json_encode( $scripts ) . '; ' . QAHM_NAME . ' = Object.assign( ' . QAHM_NAME . ', ' . QAHM_NAME . 'Obj );', 'before' );
+		
+		$localize = array(
+			'people' => esc_html_x( 'people', 'counting number (unit) of people', 'qa-heatmap-analytics' ),
+			);
+        wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
+	}
+
 
 	/**
 	 * ヒートマップ表示用のファイルを作成
@@ -52,11 +149,11 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 			$heatmap_view_url  = esc_url( plugin_dir_url( __FILE__ ) . 'heatmap-view.php' ) . '?';
 			$heatmap_view_url .= 'version_id=' . $version_id;
 
-			echo wp_json_encode( $heatmap_view_url );
+			echo wp_json_encode( esc_url_raw( $heatmap_view_url ) );
 
 		} catch ( Exception $e ) {
 			$log = $qahm_log->error( $e->getMessage() );
-			echo wp_json_encode( $log );
+			echo wp_json_encode( esc_html( $log ) );
 
 		} finally {
 			die();
@@ -576,13 +673,12 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 
 		// dbにbase_htmlが存在しない場合は作る
 		if ( ! $base_html ) {
-			$http_response_header = null;
 			$response = $this->wrap_remote_get( $base_url, $device_name );
 			if ( is_wp_error( $response ) ) {
 				throw new Exception( 'wp_remote_get failed.' );
 			}
 			if( ! ( $response['response']['code'] === 200 || $response['response']['code'] === 404 ) ) {
-				throw new Exception( 'wp_remote_get status error. status: ' . $response['response']['code'] );
+				throw new Exception( 'wp_remote_get status error. status: ' . esc_html( $response['response']['code'] ) );
 			}
 			$base_html = $response['body'];
 			if ( $this->is_zip( $base_html ) ) {
@@ -678,7 +774,7 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 				// 情報を格納するinfoファイル
 				// iniファイルと同じような書き方。シンプルにしたいが為にセクションは無し
 				// $separate_time_on_pageをJSONに変換して追加
-				$json_separate_time_on_page = json_encode($separate_time_on_page);
+				$json_separate_time_on_page = wp_json_encode($separate_time_on_page);
 				$info_str  = '';
 				$info_str .= 'base_url=' . $base_url . PHP_EOL;
 				$info_str .= 'data_num=' . $data_num . PHP_EOL;
@@ -733,11 +829,11 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 			$heatmap_view_url  = esc_url( plugin_dir_url( __FILE__ ) . 'heatmap-view.php' ) . '?';
 			$heatmap_view_url .= 'version_id=' . $version_id;
 
-			echo wp_json_encode( $heatmap_view_url );
+			echo wp_json_encode( esc_url_raw( $heatmap_view_url ) );
 
 		} catch ( Exception $e ) {
 			$log = $qahm_log->error( $e->getMessage() );
-			echo wp_json_encode( $log );
+			echo wp_json_encode( esc_html( $log ) );
 
 		} finally {
 			die();
@@ -1154,58 +1250,20 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 
 		// dbにbase_htmlが存在しない場合は作る
 		if ( ! $base_html ) {
-			$http_response_header = null;
-			$options              = $this->get_stream_options( $device_name );
-			$base_html            = file_get_contents( $base_url, false, stream_context_create( $options ) );
+			$response = $this->wrap_remote_get( $base_url, $dev_name );
+			if ( is_wp_error( $response ) ) {
+				throw new Exception( 'wp_remote_get failed.' );
+			}
+			if( ! ( $response['response']['code'] === 200 || $response['response']['code'] === 404 ) ) {
+				throw new Exception( 'wp_remote_get status error. status: ' . esc_html( $response['response']['code'] ) );
+			}
+			$base_html = $response['body'];
+			
 			if ( $this->is_zip( $base_html ) ) {
 				$temphtml = gzdecode( $base_html );
 				if ( $temphtml !== false ) {
 					$base_html = $temphtml;
 				}
-			}
-
-			// 「$http_response_header[0]」にはステータスコードがセットされている
-			if ( $http_response_header ) {
-				preg_match( '/HTTP\/1\.[0|1|x] ([0-9]{3})/', $http_response_header[0], $matches );
-				$status_code = $matches[1];
-
-				switch ( $status_code ) {
-					case 200:
-						/*
-						DBから取ってこない可能性があるのでこのコードは封印
-						if ( $version_id ) {
-							// base_htmlの更新
-							$wpdb->update(
-								$wpdb->prefix . 'qa_page_version_hist',
-								array(
-									'base_html' => $base_html,
-								),
-								array(
-									'version_id' => $version_id,
-								),
-								array(
-									'%s',
-								),
-								array(
-									'%d',
-								)
-							);
-						}
-						*/
-						break;
-					case 404:
-						throw new Exception( 'As a result of doing file_get_contents, 404 was returned' );
-						break;
-					case 500:
-						throw new Exception( 'As a result of doing file_get_contents, 500 was returned' );
-						break;
-					default:
-						throw new Exception( 'As a result of doing file_get_contents, some kind of error was returned' );
-						break;
-				}
-				// $http_response_headerに値が無ければ404として扱う
-			} else {
-				throw new Exception( 'As a result of doing file_get_contents, 404 was returned' );
 			}
 		}
 

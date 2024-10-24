@@ -20,6 +20,89 @@ class QAHM_View_Replay extends QAHM_View_Base {
 		return parent::get_data_dir_url() . 'replay-view-work/';
 	}
 
+	public function enqueue_scripts() {
+		// グローバルなスクリプトとスタイルのキューを取得
+		global $wp_scripts;
+		global $wp_styles;
+		global $wp_filesystem;
+		global $qahm_log;
+
+		// info 読み込み
+		$work_base_name    = filter_input( INPUT_GET, 'work_base_name' );
+		$replay_id = (int) filter_input( INPUT_GET, 'replay_id' );
+		$replay_view_work_dir = $this->get_data_dir_path( 'replay-view-work' );
+
+		$event_ary         = $this->get_event_array( $work_base_name, $replay_id );
+		$event_ary_json    = wp_json_encode( $event_ary );
+		$info_path         = $replay_view_work_dir . $work_base_name . '_' . $replay_id . '-info.php';
+		$info_ary          = $this->get_contents_info( $info_path );
+		$page_ary          = $info_ary['page_array'];
+		$replay_id_max     = count( $page_ary );
+
+		// 読み込まれているすべてのスクリプトを解除
+		foreach( $wp_scripts->queue as $handle ) {
+			wp_dequeue_script( $handle );
+		}
+	
+		// 読み込まれているすべてのスタイルを解除
+		foreach( $wp_styles->queue as $handle ) {
+			wp_dequeue_style( $handle );
+		}
+	
+		// 自分たちのプラグインのスタイルやスクリプトを読み込む
+		$css_dir_url = $this->get_css_dir_url();
+		wp_enqueue_style( QAHM_NAME . '-sweet-alert-2', $css_dir_url . '/lib/sweet-alert-2/sweetalert2.min.css', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-doctor-reset', $css_dir_url . 'doctor-reset.css', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-common', $css_dir_url . 'common.css', array( QAHM_NAME . '-doctor-reset' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-replay-view', $css_dir_url . 'replay-view.css', array( QAHM_NAME . '-doctor-reset' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-custom-scroll-bar', $css_dir_url . 'lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.css', array( QAHM_NAME . '-doctor-reset' ), QAHM_PLUGIN_VERSION );
+	
+		$js_dir_url = $this->get_js_dir_url();
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( QAHM_NAME . '-font-awesome',  $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2',  $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-alert-message',  $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-custom-scroll-bar',  $js_dir_url . 'lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+
+		wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-load-screen',  $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-replay-class',  $js_dir_url . 'replay-class.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-replay-view',  $js_dir_url . 'replay-view.js', array( QAHM_NAME . '-replay-class' ), QAHM_PLUGIN_VERSION, false );
+
+		$scripts = array(
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'data_type' => $info_ary['data_type'],
+			'const_debug_level' => wp_json_encode( QAHM_DEBUG_LEVEL ),
+			'const_debug' => QAHM_DEBUG,
+			'event_ary' => $event_ary_json,
+			'work_base_name' => $work_base_name,
+			'access_time' => $info_ary['access_time'],
+			'reader_id' => $info_ary['reader_id'],
+			'replay_id' => $replay_id,
+			'replay_id_max' => $replay_id_max,
+			'data_col_head' => self::DATA_COLUMN_HEADER,
+			'data_col_body' => self::DATA_COLUMN_BODY,
+			'data_row_win_w' => self::DATA_EVENT_1['WINDOW_INNER_W'],
+			'data_row_win_h' => self::DATA_EVENT_1['WINDOW_INNER_H'],
+			'data_row_type' => self::DATA_EVENT_1['TYPE'],
+			'data_row_time' => self::DATA_EVENT_1['TIME'],
+			'data_row_click_x' => self::DATA_EVENT_1['CLICK_X'],
+			'data_row_click_y' => self::DATA_EVENT_1['CLICK_Y'],
+			'data_row_mouse_x' => self::DATA_EVENT_1['MOUSE_X'],
+			'data_row_mouse_y' => self::DATA_EVENT_1['MOUSE_Y'],
+			'data_row_scroll_y' => self::DATA_EVENT_1['SCROLL_Y'],
+			'data_row_resize_x' => self::DATA_EVENT_1['RESIZE_X'],
+			'data_row_resize_y' => self::DATA_EVENT_1['RESIZE_Y'],
+		);
+		wp_add_inline_script( QAHM_NAME . '-common', 'var ' . QAHM_NAME . ' = ' . QAHM_NAME . ' || {}; let ' . QAHM_NAME . 'Obj = ' . wp_json_encode( $scripts ) . '; ' . QAHM_NAME . ' = Object.assign( ' . QAHM_NAME . ', ' . QAHM_NAME . 'Obj );', 'before' );
+		
+		$localize = array(
+			'event_data_not_found' => esc_html__( 'There is no data to replay. The (thinkable) major reason would be: \n - A visitor quickly moved on to the next page.\n - No event happened and time passed.', 'qa-heatmap-analytics' ),
+			'page_change_failed' => esc_html__( 'Failed to switch pages.', 'qa-heatmap-analytics' ),
+			);
+        wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
+	}
+
 	public function get_event_array( $work_base_name, $replay_id ) {
 		global $wp_filesystem;
 		$path = $this->get_data_dir_path( 'replay-view-work' ) . $work_base_name . '_' . $replay_id . '-e.php';
@@ -132,12 +215,12 @@ class QAHM_View_Replay extends QAHM_View_Base {
 		try {
 			$this->write_wp_load_path();
 			$url = $this->create_replay_file_to_raw_data();
-			echo $url;
+			echo esc_url_raw( $url );
 		
 		} catch ( Exception $e ) {
 			global $qahm_log;	
 			$log = $qahm_log->error( $e->getMessage() );
-			echo $log;
+			echo esc_html( $log );
 
 		} finally {
 			die();

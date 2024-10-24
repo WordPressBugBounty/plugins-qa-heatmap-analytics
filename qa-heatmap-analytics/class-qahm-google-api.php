@@ -168,7 +168,7 @@ class QAHM_Google_Api extends QAHM_File_Base {
 		$token = $this->client->getAccessToken();
 
 		// URLをパースする
-		$parse_url = parse_url( home_url() );
+		$parse_url = wp_parse_url( home_url() );
 		$sc_domain = 'sc-domain:' . urlencode( $parse_url['host'] );
 
 		$url_ary = [

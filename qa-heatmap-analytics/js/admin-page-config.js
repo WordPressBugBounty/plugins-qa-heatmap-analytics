@@ -567,6 +567,7 @@ jQuery( function(){
 				dataType : 'text',
 				data: {
 					'action'            : 'qahm_ajax_save_plugin_config',
+					'security'		    : qahml10n['nonce_qahm_options'],
 					'data_retention_dur': dataDay,
 					'cb_sup_mode'       : isCbChecked,
 					'send_email_address': email,

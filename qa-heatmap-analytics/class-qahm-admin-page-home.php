@@ -67,16 +67,16 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
 	
 		// enqueue script
 		$this->common_enqueue_script();
-//		wp_enqueue_script( QAHM_NAME . '-admin-page-realtime', $js_dir_url . 'admin-page-realtime.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION );
+//		wp_enqueue_script( QAHM_NAME . '-admin-page-realtime', $js_dir_url . 'admin-page-realtime.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-chart', $js_dir_url . 'lib/chart/chart.min.js', null, QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-moment-with-locales', $js_dir_url . 'lib/moment/moment-with-locales.min.js', null, QAHM_PLUGIN_VERSION, false );	
 		wp_enqueue_script( QAHM_NAME . '-daterangepicker', $js_dir_url . 'lib/date-range-picker/daterangepicker.js', array( QAHM_NAME . '-moment-with-locales' ), QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-admin-page-home-datasearch', $js_dir_url . 'admin-page-home-datasearch.js', array( 'jquery' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-admin-page-statistics', $js_dir_url . 'admin-page-statistics.js', array( QAHM_NAME . '-table', QAHM_NAME . '-chart', QAHM_NAME . '-moment-with-locales', QAHM_NAME . '-daterangepicker', QAHM_NAME . '-admin-page-home-datasearch' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-cap-create', $js_dir_url . 'cap-create.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-speedcheck', $js_dir_url . 'speedcheck.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-admin-page-home-datasearch', $js_dir_url . 'admin-page-home-datasearch.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-admin-page-statistics', $js_dir_url . 'admin-page-statistics.js', array( QAHM_NAME . '-table', QAHM_NAME . '-chart', QAHM_NAME . '-moment-with-locales', QAHM_NAME . '-daterangepicker', QAHM_NAME . '-admin-page-home-datasearch' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-cap-create', $js_dir_url . 'cap-create.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-speedcheck', $js_dir_url . 'speedcheck.js', null, QAHM_PLUGIN_VERSION, false );
 
 		// inline script
 		$scripts = $this->get_common_inline_script();
@@ -153,8 +153,10 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
 		$localize['calender_ok'] 			= esc_html_x( 'Apply', 'a word in a date range picker', 'qa-heatmap-analytics' );
 		$localize['calender_kara']			= esc_html_x( '-', 'a connector between dates in a date range picker', 'qa-heatmap-analytics' );
 
+		/* translators: placeholders represent the start and end dates for the download */
 		$localize['download_msg1']			= esc_html__( 'Download the data from %1$s to %2$s.', 'qa-heatmap-analytics' );
 		$localize['download_msg2']			= esc_html__( '*If the data size is too large, depending on the server, it may not be possible to download. In that case, try shortening the date range.', 'qa-heatmap-analytics' );
+		/* translators: placeholders represent the start and end dates for the download */
 		$localize['download_done_nodata']	= esc_html__( 'No data between %1$s and %2$s.', 'qa-heatmap-analytics' );
 		$localize['download_error1']		= esc_html__( 'A communication error occurred when acquiring data.', 'qa-heatmap-analytics' );
 		$localize['download_error2']		= esc_html__( 'It may be acquired too much data. Please shorten the date range and try again. (It depends on the server, but in general, it would be better to make the total number of PVs for the period less than 10,000.)', 'qa-heatmap-analytics' );
@@ -168,8 +170,10 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
 		$localize['ds_cyusyutsu_cyu'] 		= esc_html_x( 'Filtering...', 'value of the button in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_cyusyutsu_error1'] 	= esc_html_x( ': NO data found.', 'error message1 in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_cyusyutsu_error2'] 	= esc_html_x( 'A communication error occurred when acquiring data. It may be acquired too much data. Please narrow down the condition and try again.', 'error message2 in narrow-down-data-section', 'qa-heatmap-analytics' );
+		/* translators: placeholders represent the number of days for displaying report data */
 		$localize['ds_cyusyutsu_error3'] 	= esc_html_x( 'Showing for the last %d day(s) data because of too many data.', 'error message1 in narrow-down-data-section', 'qa-heatmap-analytics' );
 		$localize['ds_free_plan_msg1']	 	= esc_html_x( 'Would like to see the data of all pages?', 'a message appears if only one page can be measured.', 'qa-heatmap-analytics' );
+		/* translators: placeholders are for the link */
 		$localize['ds_free_plan_msg2']	 	= esc_html_x( '%1$s Get Upgrade Options %2$s, have event data collected without page limit.', 'a message appears if only one page can be measured.', 'qa-heatmap-analytics' );
 
 
@@ -196,6 +200,7 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
         $localize['caution'] = esc_html__( 'Caution', 'qa-heatmap-analytics' );
 
 		$localize['result_cannot_be_all_pages'] = esc_html__( 'It will return all pages as results. Please specify more specific criteria.', 'qa-heatmap-analytics' );
+		/* translators: placeholders represents the number of pages for displaying report data */
 		$localize['too_many_result_pages_msg'] = esc_html__('The number of pages exceeds %d. Aggregating all results may not be feasible. Consider refining the search parameters or narrowing down the time period. Is it okay to proceed with the current search settings?', 'qa-heatmap-analytics');
 
 		wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
@@ -222,29 +227,32 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
 
 		$lang_set = get_bloginfo('language');
 		if ( $lang_set == 'ja' ) {
-			$upgrade_link_atag = '<a href="https://quarka.org/plan/" target="_blank" rel="noopener">'; 
-			$referral_link_atag = '<a href="https://quarka.org/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/plan/') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/referral-program/') . '" target="_blank" rel="noopener">';
 		} else {
-			$upgrade_link_atag = '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">';
-			$referral_link_atag = '<a href="https://quarka.org/en/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/en/#plans') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/en/referral-program/') . '" target="_blank" rel="noopener">';
 		}
 		$is_subscribed = $this->is_subscribed();
 		?>
-		<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap qa-admin-home">
 				<h1>QA <?php esc_html_e( 'Home', 'qa-heatmap-analytics' ); ?></h1>
                 <div class="bl_news flex_item">
                     <?php $this->view_rss_feed(); ?>
-                    <?php $this->view_announce_html(); ?>
+                    <?php //$this->view_announce_html(); ?>
                 </div>
             <?php
                 global $qahm_data_api;
                 global $qahm_time;
 				if ( ! $is_subscribed ) {
-					$msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';
-                    $msg_yuryouikaga .=	sprintf( esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>' );
+					$msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';					
+					$msg_yuryouikaga .= sprintf(
+						/* translators: placeholders are for the link */ 
+						esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>'
+					);
                     $msg_yuryouikaga .= '</span></div>';
-                    echo $msg_yuryouikaga;
+                    echo wp_kses_post($msg_yuryouikaga);
 				}
                 global $qahm_data_api;
                 global $qahm_time;
@@ -344,7 +352,12 @@ class QAHM_Admin_Page_Home extends QAHM_Admin_Page_Base {
 
 				$cm_friendplan = '';
 	 			if ( ! $is_subscribed ) { 
-					$cm_friendplan = '<p><strong>' . sprintf( esc_html__( 'Running short on PV capacity? %1$s%2$sRefer friends%3$s to expand it!', 'qa-heatmap-analytics' ), '<br>', $referral_link_atag, '</a>' ). '</strong></p>';
+					$cm_friendplan = '<p><strong>';
+					$cm_friendplan .= esc_html__( 'Running short on PV capacity?', 'qa-heatmap-analytics' );
+					$cm_friendplan .= '<br>';
+					/* translators: placeholders are for the link */
+					$cm_friendplan .= sprintf( esc_html__( '%1$sRefer friends%2$s to expand it!', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>' );
+					$cm_friendplan .= '</strong></p>';
 
 	 			} 
 
@@ -406,21 +419,22 @@ EOF;
 			    $g_estimate = 0;
             }
             //ゴール計算は時間がかかるのでajaxをなるべく避けて事前処理
-            $g_2mon_json = json_encode( $g_session_ary );
-            $g_set_script = <<<EOL
-            <script>
-                if ( qahm !== undefined ) {
-                    qahm.g2monSessionsJson = {$g_2mon_json} 
-                }
-            </script>    
-EOL;
+            $g_2mon_json = wp_json_encode( $g_session_ary );
             if ( $g_2mon_json ) {
-                echo $g_set_script;
+				?>
+            <script>
+				if ( qahm !== undefined ) {
+                    qahm.g2monSessionsJson = <?php echo wp_json_encode( $g_session_ary ); ?>;
+				}			
+			</script> 
+			<?php
             }
             ?>
+
+
             <!--ダッシュボード-->
             <div class="bl_dashBoardH">
-				<h2 id="h_dashboard" ><?php esc_html_e( 'Dashboard', 'qa-heatmap-analytics' ); echo $pv_limit_over_html; ?></h2>
+				<h2 id="h_dashboard" ><?php esc_html_e( 'Dashboard', 'qa-heatmap-analytics' ); echo wp_kses_post($pv_limit_over_html); ?></h2>
 			</div>
             <div id="bl_dashBoard" class="bl_infoArea">
                 <div class="bl_dashBoard flex">
@@ -455,8 +469,8 @@ EOL;
                                         <table>
                                             <thead><th><?php esc_html_e( 'Last Month', 'qa-heatmap-analytics' ); ?></th><th><span class="qa-view-count-info qahm-tooltip" data-qahm-tooltip="<?php esc_attr_e( 'until yesterday', 'qa-heatmap-analytics' ); ?>"><?php esc_html_e( 'Month-to-Date', 'qa-heatmap-analytics' ); ?></span></th></thead>
                                             <tbody>
-                                                <tr><td id="js_last_mn_cv_sessions"><?php echo $g_lmon_cv ?></td><td id="js_this_mn_cv_sessions"><?php echo $g_nmon_cv ?><br></td></tr>
-                                                <tr class="yosoku"><td>&nbsp;</td><td>( <?php esc_html_e( 'Current Forecast', 'qa-heatmap-analytics' ); ?>: <span id="js_this_mn_cv_estimate"><?php echo $g_estimate ?></span> )<br></td></tr>
+                                                <tr><td id="js_last_mn_cv_sessions"><?php echo esc_html($g_lmon_cv); ?></td><td id="js_this_mn_cv_sessions"><?php echo esc_html($g_nmon_cv); ?><br></td></tr>
+                                                <tr class="yosoku"><td>&nbsp;</td><td>( <?php esc_html_e( 'Current Forecast', 'qa-heatmap-analytics' ); ?>: <span id="js_this_mn_cv_estimate"><?php echo esc_html($g_estimate); ?></span> )<br></td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -489,8 +503,8 @@ EOL;
 												<table>
 													<thead><th><?php esc_html_e( 'Current Post Count', 'qa-heatmap-analytics' ); ?></th></thead>
 													<tbody>
-														<tr><?php echo '<td>' . $postcnt_ary[0] . '<br></td>'; ?></tr>
-														<tr class="posttotal"><td>( <?php esc_html_e( 'New in This Month', 'qa-heatmap-analytics' ); ?>: <span><?php echo $postcnt_new ?></span> )<br></td></tr>
+														<tr><?php echo '<td>' . esc_html($postcnt_ary[0]) . '<br></td>'; ?></tr>
+														<tr class="posttotal"><td>( <?php esc_html_e( 'New in This Month', 'qa-heatmap-analytics' ); ?>: <span><?php echo esc_html($postcnt_new); ?></span> )<br></td></tr>
 													</tbody>
 												</table>
 											</div>
@@ -545,7 +559,41 @@ EOL;
                     </div>
                     <div class="bl_anotation flexitem">
                         <div class="flex_column">
-							<?php echo $use_status; ?>
+							<?php
+							echo wp_kses($use_status, array(
+								'div' => array(
+									'class' => array(),
+									'style' => array(),
+								),
+								'h3' => array(
+									'class' => array(),
+									'span' => array(),
+									'style' => array(),
+								),
+								'span' => array(
+									'class' => array(),
+									'style' => array(),
+								),
+								'p' => array(
+									'class' => array(),
+								),
+								'a' => array(
+									'href' => array(),
+									'target' => array(),
+									'rel' => array(),
+								),
+								'progress' => array(
+									'value' => array(),
+									'max' => array(),
+									'class' => array(),
+								),
+								'br' => array(),
+								'strong' => array(),
+								'i' => array(
+									'class' => array(),
+								),
+							));							
+							?>
 							<div class="bl_infobox flexitem">
 								<h3><span class="dashicons dashicons-performance"></span>  <?php esc_html_e( 'Page Speed of QA', 'qa-heatmap-analytics' ); ?></h3>
 								<div class="status" id="js_speedstatus"></div>
@@ -557,7 +605,7 @@ EOL;
 
 										//each value are "sec"
 										let clientspeed = qahm.clientLoadTime;
-										let serverspeed = <?php global $qahm_loadtime;echo $qahm_loadtime ?>;
+										let serverspeed = <?php global $qahm_loadtime; echo esc_js($qahm_loadtime); ?>;
 										let allspeed = Number(clientspeed) + Number(serverspeed);
 										let roundallspeed = Math.round(allspeed*10000)/10;
 
@@ -641,7 +689,7 @@ EOL;
                                 $goals_ary = $qahm_data_api->get_goals_array();
                                 echo '<label for="js_nrdGoals_0"><input type="radio" id="js_nrdGoals_0" name="js_nrdGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                                 foreach ( $goals_ary as $gid => $goal ) {
-                                    echo '<label for="js_nrdGoals_'. $gid . '"><input type="radio" id="js_nrdGoals_'. $gid . '" name="js_nrdGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                    echo '<label for="', esc_attr('js_nrdGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_nrdGoals_'. $gid), '" name="js_nrdGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                                 }
                             ?>
                             </div>
@@ -661,7 +709,7 @@ EOL;
                             $goals_ary = $qahm_data_api->get_goals_array();
                             echo '<label for="js_chGoals_0"><input type="radio" id="js_chGoals_0" name="js_chGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                             foreach ( $goals_ary as $gid => $goal ) {
-                                echo '<label for="js_chGoals_'. $gid . '"><input type="radio" id="js_chGoals_'. $gid . '" name="js_chGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                echo '<label for="', esc_attr('js_chGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_chGoals_'. $gid), '" name="js_chGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                             }
                         ?>
                         </div>
@@ -674,7 +722,7 @@ EOL;
                             $goals_ary = $qahm_data_api->get_goals_array();
                             echo '<label for="js_smGoals_0"><input type="radio" id="js_smGoals_0" name="js_smGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                             foreach ( $goals_ary as $gid => $goal ) {
-                                echo '<label for="js_smGoals_'. $gid . '"><input type="radio" id="js_smGoals_'. $gid . '" name="js_smGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                echo '<label for="', esc_attr('js_smGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_smGoals_'. $gid), '" name="js_smGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                             }
                         ?>
                         </div>
@@ -693,7 +741,7 @@ EOL;
                             $goals_ary = $qahm_data_api->get_goals_array();
                             echo '<label for="js_lpGoals_0"><input type="radio" id="js_lpGoals_0" name="js_lpGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                             foreach ( $goals_ary as $gid => $goal ) {
-                                echo '<label for="js_lpGoals_'. $gid . '"><input type="radio" id="js_lpGoals_'. $gid . '" name="js_lpGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                echo '<label for="', esc_attr('js_lpGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_lpGoals_'. $gid), '" name="js_lpGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                             }
                         ?>
                         </div>
@@ -706,7 +754,7 @@ EOL;
                             $goals_ary = $qahm_data_api->get_goals_array();
                             echo '<label for="js_gwGoals_0"><input type="radio" id="js_gwGoals_0" name="js_gwGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                             foreach ( $goals_ary as $gid => $goal ) {
-                                echo '<label for="js_gwGoals_'. $gid . '"><input type="radio" id="js_gwGoals_'. $gid . '" name="js_gwGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                echo '<label for="', esc_attr('js_gwGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_gwGoals_'. $gid), '" name="js_gwGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                             }
                         ?>
                         </div>
@@ -719,7 +767,7 @@ EOL;
                             $goals_ary = $qahm_data_api->get_goals_array();
                             echo '<label for="js_apGoals_0"><input type="radio" id="js_apGoals_0" name="js_apGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                             foreach ( $goals_ary as $gid => $goal ) {
-                                echo '<label for="js_apGoals_'. $gid . '"><input type="radio" id="js_apGoals_'. $gid . '" name="js_apGoals">'. urldecode( $goal["gtitle"]) . '</label>';
+                                echo '<label for="', esc_attr('js_apGoals_'. $gid), '"><input type="radio" id="', esc_attr('js_apGoals_'. $gid), '" name="js_apGoals">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                             }
                         ?>
                         </div>
@@ -746,43 +794,56 @@ EOL;
 
 						<div class="goal_graph_container">
 							<div class="flex">
-								<?php
-									$gcomplete = esc_html__( 'Goal Completions', 'qa-heatmap-analytics' );
-									$gvalue    = esc_html__( 'Goal Value', 'qa-heatmap-analytics' );
-									$goalrate   = esc_html__( 'Goal Conversion Rate', 'qa-heatmap-analytics' );
+							<?php
+							$gcomplete = esc_html__( 'Goal Completions', 'qa-heatmap-analytics' );
+							$gvalue    = esc_html__( 'Goal Value', 'qa-heatmap-analytics' );
+							$goalrate  = esc_html__( 'Goal Conversion Rate', 'qa-heatmap-analytics' );
 
-									$goals_ary = $qahm_data_api->get_goals_array();
-									$goals_ary[0] = ['gtitle' => esc_html__( 'All Goals', 'qa-heatmap-analytics' )];
-									for ( $gid = 0; $gid < count( $goals_ary ); $gid++ ) {
-										$gtitle = urldecode($goals_ary[$gid]['gtitle']);
-										$checked = '';
-										$checkedclass = '';
-										if ( $gid === 0 ) {
-											$checked = 'checked';
-											$checkedclass = 'bl_goalBoxChecked';
-										}
-										$gsession_selector = <<< EOL
-										<div class="flex_item  bl_goalBoxFlex bl_goalBox bl_goalAll {$checkedclass}">
-											<p><input type="radio" name="js_gsession_selector" id="js_gsession_selector_{$gid}" {$checked}><label class="el_bold" for="js_gsession_selector_{$gid}">{$gtitle}</label></p>
-											<div><canvas id="js_gssCanvas_{$gid}" width="250px" height="200px"></canvas></div>
-											<div class="bl_goalSummary">
-												<div class="flex">
-													<div class="flex_item">
-														<p>{$gcomplete}<br><span id="js_gcomplete_{$gid}">0</span></p>
-													</div>
-													<div class="flex_item">
-														<p>{$gvalue}<br><span id="js_gvalue_{$gid}">0</span></p>
-													</div>
-													<div class="flex_item">
-														<p>{$goalrate}<br><span id="js_gcvrate_{$gid}">0</span></p>
-													</div>
-												</div>
+							$goals_ary = $qahm_data_api->get_goals_array();
+							$goals_ary[0] = ['gtitle' => esc_html__( 'All Goals', 'qa-heatmap-analytics' )];
+
+							for ($gid = 0; $gid < count($goals_ary); $gid++) {
+								$gtitle = esc_html(urldecode($goals_ary[$gid]['gtitle'])); // エスケープ処理
+								$checked = '';
+								$checkedclass = '';
+								if ($gid === 0) {
+									$checked = 'checked';
+									$checkedclass = 'bl_goalBoxChecked';
+								}
+								
+								$gsession_selector = <<< EOL
+								<div class="flex_item bl_goalBoxFlex bl_goalBox bl_goalAll {$checkedclass}">
+									<p><input type="radio" name="js_gsession_selector" id="js_gsession_selector_{$gid}" {$checked}><label class="el_bold" for="js_gsession_selector_{$gid}">{$gtitle}</label></p>
+									<div><canvas id="js_gssCanvas_{$gid}" width="250px" height="200px"></canvas></div>
+									<div class="bl_goalSummary">
+										<div class="flex">
+											<div class="flex_item">
+												<p>{$gcomplete}<br><span id="js_gcomplete_{$gid}">0</span></p>
+											</div>
+											<div class="flex_item">
+												<p>{$gvalue}<br><span id="js_gvalue_{$gid}">0</span></p>
+											</div>
+											<div class="flex_item">
+												<p>{$goalrate}<br><span id="js_gcvrate_{$gid}">0</span></p>
 											</div>
 										</div>
+									</div>
+								</div>
 EOL;
-									echo $gsession_selector . PHP_EOL;
-									}
-								?>
+								
+								// $gsession_selectorを出力
+								echo wp_kses($gsession_selector, array(
+									'div' => array('class' => array(), 'id' => array()),
+									'p' => array(),
+									'input' => array('type' => array(), 'name' => array(), 'id' => array(), 'checked' => array()),
+									'label' => array('for' => array(), 'class' => array()),
+									'canvas' => array('id' => array(), 'width' => array(), 'height' => array()),
+									'span' => array('id' => array()),
+									'br' => array(),
+								));
+							}
+							?>
+
                         	</div>
 						</div>
                         <div class="bl_goalBox goalsearch_sec">
@@ -967,7 +1028,7 @@ EOL;
 
 			if ( ! empty( $referrer ) ) {
 				if ( 0 === strncmp( $referrer, 'http', 4 ) ) {
-					$parse_url          = parse_url( $referrer );
+					$parse_url          = wp_parse_url( $referrer );
 					$ref_host           = $parse_url['host'];
 					$source_domain      = mb_strimwidth( $ref_host, 0, $domain_width, $ellipsis );
 					$source_domain_html = '<a href="' . esc_url( $referrer ) . '" target="_blank" class="qahm-tooltip" data-qahm-tooltip="'. esc_url( $referrer ) . '">' . esc_html( $source_domain ) . '</a>';
@@ -1034,9 +1095,14 @@ EOL;
 			$yesterday_str = $time->xday_str(-1);
 
 			$table_name = $wpdb->prefix . 'qa_pv_log';
-			$query      = 'SELECT pv_id,reader_id,page_id ,device_id,source_id,medium_id,campaign_id,session_no,access_time,pv,speed_msec,browse_sec,is_last,is_newuser,is_cv_session,flag_bit,version_id FROM ' . $table_name . ' WHERE  access_time between %s AND %s';
-			$preobj     = $wpdb->prepare( $query,  '2020-08-01 00:00:00', $yesterday_str . ' 23:59:59' );
-			$result     = $wpdb->get_results( $preobj );
+			//$query      = 'SELECT pv_id,reader_id,page_id ,device_id,source_id,medium_id,campaign_id,session_no,access_time,pv,speed_msec,browse_sec,is_last,is_newuser,is_cv_session,flag_bit,version_id FROM ' . $table_name . ' WHERE  access_time between %s AND %s';
+			//$preobj     = $wpdb->prepare( $query,  '2020-08-01 00:00:00', $yesterday_str . ' 23:59:59' );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query. 
+			$result     = $wpdb->get_results( $wpdb->prepare(
+				'SELECT pv_id,reader_id,page_id,device_id,source_id,medium_id,campaign_id,session_no,access_time,pv,speed_msec,browse_sec,is_last,is_newuser,is_cv_session,flag_bit,version_id FROM ' . esc_sql($table_name) . ' WHERE  access_time between %s AND %s',
+				'2020-08-01 00:00:00',
+				$yesterday_str . ' 23:59:59'
+			) );
 
 			if ( ! empty( $result ) ) {
 				$newary = array();
@@ -1045,18 +1111,20 @@ EOL;
 					// reader_id
 					$newary[$idx]['reader_id'] = $row->reader_id;
 					$table_name = $wpdb->prefix . 'qa_readers';
-					$query      = 'SELECT UAos,UAbrowser FROM ' . $table_name . ' WHERE  reader_id = %d';
-					$preobj     = $wpdb->prepare( $query, $row->reader_id );
-					$select     = $wpdb->get_results( $preobj );
+					//$query      = 'SELECT UAos,UAbrowser FROM ' . $table_name . ' WHERE  reader_id = %d';
+					//$preobj     = $wpdb->prepare( $query, $row->reader_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+					$select     = $wpdb->get_results( $wpdb->prepare( 'SELECT UAos,UAbrowser FROM ' . esc_sql($table_name) . ' WHERE  reader_id = %d', $row->reader_id ) );
 					$newary[$idx]['UAos'] = $select[0]->UAos;
 					$newary[$idx]['UAbrowser'] = $select[0]->UAbrowser;
 
 					// page_id
 					$newary[$idx]['page_id'] = $row->page_id;
 					$table_name = $wpdb->prefix . 'qa_pages';
-					$query      = 'SELECT url,title FROM ' . $table_name . ' WHERE  page_id = %d';
-					$preobj     = $wpdb->prepare( $query, $row->page_id );
-					$select     = $wpdb->get_results( $preobj );
+					//$query      = 'SELECT url,title FROM ' . $table_name . ' WHERE  page_id = %d';
+					//$preobj     = $wpdb->prepare( $query, $row->page_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+					$select     = $wpdb->get_results( $wpdb->prepare( 'SELECT url,title FROM ' . esc_sql($table_name) . ' WHERE  page_id = %d', $row->page_id ) );
 					$newary[$idx]['url'] = $select[0]->url;
 					$newary[$idx]['title'] = esc_html( $select[0]->title );
 
@@ -1066,9 +1134,10 @@ EOL;
 					// source_id
 					$newary[$idx]['source_id'] = $row->source_id;
 					$table_name = $wpdb->prefix . 'qa_utm_sources';
-					$query      = 'SELECT utm_source,source_domain FROM ' . $table_name . ' WHERE  source_id = %d';
-					$preobj     = $wpdb->prepare( $query, $row->source_id );
-					$select     = $wpdb->get_results( $preobj );
+					//$query      = 'SELECT utm_source,source_domain FROM ' . $table_name . ' WHERE  source_id = %d';
+					//$preobj     = $wpdb->prepare( $query, $row->source_id );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+					$select     = $wpdb->get_results( $wpdb->prepare( 'SELECT utm_source,source_domain FROM ' . esc_sql($table_name) . ' WHERE  source_id = %d', $row->source_id ) );
 					$newary[$idx]['utm_source'] = $select[0]->utm_source;
 					$newary[$idx]['source_domain'] = $select[0]->source_domain;
 
@@ -1076,9 +1145,10 @@ EOL;
 					$newary[$idx]['medium_id'] = $row->medium_id;
 					if ( $row->medium_id ) {
 						$table_name = $wpdb->prefix . 'qa_utm_media';
-						$query      = 'SELECT utm_medium FROM ' . $table_name . ' WHERE  medium_id = %d';
-						$preobj     = $wpdb->prepare( $query, $row->medium_id );
-						$select     = $wpdb->get_results( $preobj );
+						//$query      = 'SELECT utm_medium FROM ' . $table_name . ' WHERE  medium_id = %d';
+						//$preobj     = $wpdb->prepare( $query, $row->medium_id );
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+						$select     = $wpdb->get_results( $wpdb->prepare( 'SELECT utm_medium FROM ' . esc_sql($table_name) . ' WHERE  medium_id = %d', $row->medium_id ) );
 						$newary[$idx]['utm_medium'] = $select[0]->utm_medium;
 					}
 
@@ -1086,9 +1156,10 @@ EOL;
 					$newary[$idx]['campaign_id'] = $row->campaign_id;
 					if ( $row->campaign_id ) {
 						$table_name = $wpdb->prefix . 'qa_utm_campaigns';
-						$query      = 'SELECT utm_campaign FROM ' . $table_name . ' WHERE  campaign_id = %d';
-						$preobj     = $wpdb->prepare( $query, $row->campaign_id );
-						$select     = $wpdb->get_results( $preobj );
+						//$query      = 'SELECT utm_campaign FROM ' . $table_name . ' WHERE  campaign_id = %d';
+						//$preobj     = $wpdb->prepare( $query, $row->campaign_id );
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+						$select     = $wpdb->get_results( $wpdb->prepare( 'SELECT utm_campaign FROM ' . esc_sql($table_name) . ' WHERE  campaign_id = %d', $row->campaign_id ) );
 						$newary[$idx]['utm_campaign'] = $select[0]->utm_campaign;
 					}
 
@@ -1110,7 +1181,7 @@ EOL;
 			}
 		}
 		
-		echo $list;
+		echo esc_js($list);
 		die();
 	}
 

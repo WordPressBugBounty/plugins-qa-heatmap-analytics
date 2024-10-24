@@ -116,10 +116,10 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 		}
 		?>
 
-<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap">
 				<h1>QA <?php esc_html_e( 'License Activation', 'qa-heatmap-analytics' ); ?></h1>
-				<?php $this->view_announce_html(); ?>
+				<?php //$this->view_announce_html(); ?>
 				<form method="post" action="" id="license_form">
 					<?php wp_nonce_field( self::NONCE_ACTION, self::NONCE_NAME ); ?>
 
@@ -132,7 +132,7 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 									</label>
 								</th>
 								<td>
-									<input name="license_key" type="text" id="license_key" value="<?php echo esc_attr( $key ); ?>" class="regular-text"<?php echo $input_read; ?>>
+									<input name="license_key" type="text" id="license_key" value="<?php echo esc_attr( $key ); ?>" class="regular-text"<?php echo esc_attr($input_read); ?>>
 
 								</td>
 							</tr>
@@ -144,7 +144,7 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 									</label>
 								</th>
 								<td>
-									<input name="license_id" type="email" id="license_id" value="<?php echo esc_attr( $id ); ?>" class="regular-text" placeholder="test@example.com"<?php echo $input_read; ?>>
+									<input name="license_id" type="email" id="license_id" value="<?php echo esc_attr( $id ); ?>" class="regular-text" placeholder="test@example.com"<?php echo esc_attr($input_read); ?>>
 								</td>
 							</tr>
 
@@ -304,17 +304,17 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 					$lang_set = get_bloginfo('language');
 					if ( $lang_set === "ja" ) {
 						$plan_link = "https://quarka.org/plan/";
-						$referral_link_atag = '<a href="https://quarka.org/referral-program/" target="_blank" rel="noopener">';
+						$referral_link_atag = '<a href="' . esc_url('https://quarka.org/referral-program/') . '" target="_blank" rel="noopener">'; 
 					} else {
 						$plan_link = "https://quarka.org/en/#plans";
-						$referral_link_atag = '<a href="https://quarka.org/en/referral-program/" target="_blank" rel="noopener">';
+						$referral_link_atag = '<a href="' . esc_url('https://quarka.org/en/referral-program/') . '" target="_blank" rel="noopener">'; 
 					}
 					$td_max_pv = '<td>10K</td>';
 					if ( $is_friend_plan ) {
 						$measure   = $this->get_license_option( 'measure' );
 						if ( $measure ) {
 							$max_pv = $measure / 1000 . 'K';
-							$td_max_pv = '<td style="font-weight: bold; background-color: #ceed91;">' . $max_pv . '<br><span style="font-size:90%;">Thank you friend:)</span></td>';
+							$td_max_pv = '<td style="font-weight: bold; background-color: #ceed91;">' . esc_html($max_pv) . '<br><span style="font-size:90%;">Thank you friend:)</span></td>';
 						}
 					}
 				?>
@@ -323,27 +323,27 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 						<h3 class="title">Free</h3>
 						<table>
 							<tr>
-								<td><?php echo $plan_features['max_pv']; ?></td>
-								<?php echo $td_max_pv; ?>
+								<td><?php echo esc_html($plan_features['max_pv']); ?></td>
+								<?php echo wp_kses_post($td_max_pv); ?>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['heatmap'] ?></td>
+								<td><?php echo esc_html($plan_features['heatmap']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['session_replay'] ?></td>
+								<td><?php echo esc_html($plan_features['session_replay']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['gsc'] ?></td>
+								<td><?php echo esc_html($plan_features['gsc']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['goal'] ?></td>
+								<td><?php echo esc_html($plan_features['goal']); ?></td>
 								<td>1</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['retention'] ?></td>
+								<td><?php echo esc_html($plan_features['retention']); ?></td>
 								<td>90 days</td>
 							</tr>
 						</table>
@@ -351,71 +351,87 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 
 					<div class="upgrade_notice">
 						<div style="margin-bottom: 54px;">
-						<p style="font-size: 1.2em;"><span class="dashicons dashicons-superhero"></span><?php echo sprintf( esc_html__( 'Need more PV capacity? %1$sRefer friends%2$s to earn it!', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>' ); ?></p>
+						<p style="font-size: 1.2em;"><span class="dashicons dashicons-superhero"></span>
+							<?php 							 
+							$referral_text = sprintf(
+								/* translators: placeholders are for the link */ 
+								esc_html__( 'Need more PV capacity? %1$sRefer friends%2$s to earn it!', 'qa-heatmap-analytics' ), 
+								$referral_link_atag, 
+								'</a>' 
+							);
+							echo wp_kses( $referral_text, array(
+								'a' => array(
+									'href' => array(),
+									'target' => array(),
+									'rel' => array(),
+								),
+							));
+							?>
+						</p>
 						</div>
 						<div class="upgrade_button">
-							<a href="<?php echo $plan_link; ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Subscribe to the Premium Plan', 'qa-heatmap-analytics' ); ?></a>
+							<a href="<?php echo esc_url($plan_link); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Subscribe to the Premium Plan', 'qa-heatmap-analytics' ); ?></a>
 						</div>
 					</div>
 				</div>
 				<?php } ?>
 
 				<div class="plans-container">
-					<div id="light-plan" class="plan-sec <?php echo $light_style; ?>">
+					<div id="light-plan" class="plan-sec <?php echo esc_attr($light_style); ?>">
 						<h3 class="title">Light <?php if($myplan === "light" ) { echo '<span class="dashicons dashicons-yes-alt" style="color: green;"></span>'; } ?></h3>
 						<table>
 							<tr>
-								<td><?php echo $plan_features['max_pv']; ?></td>
+								<td><?php echo esc_html($plan_features['max_pv']); ?></td>
 								<td>100K</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['heatmap'] ?></td>
+								<td><?php echo esc_html($plan_features['heatmap']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['session_replay'] ?></td>
+								<td><?php echo esc_html($plan_features['session_replay']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['gsc'] ?></td>
+								<td><?php echo esc_html($plan_features['gsc']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['goal'] ?></td>
+								<td><?php echo esc_html($plan_features['goal']); ?></td>
 								<td>3</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['retention'] ?></td>
-								<td>Custom<br><span><?php echo $plan_features['set_your_own'] ?></span></td>
+								<td><?php echo esc_html($plan_features['retention']); ?></td>
+								<td>Custom<br><span><?php echo esc_html($plan_features['set_your_own']); ?></span></td>
 							</tr>
 						</table>
 					</div>
-					<div id="pro-plan" class="plan-sec <?php echo $pro_style; ?>">
+					<div id="pro-plan" class="plan-sec <?php echo esc_attr($pro_style); ?>">
 						<h3 class="title">Pro <?php if($myplan === "pro") { echo '<span class="dashicons dashicons-yes-alt" style="color: green;"></span>'; } ?></h3>
 						<table>
 							<tr>
-								<td><?php echo $plan_features['max_pv']; ?></td>
+								<td><?php echo esc_html($plan_features['max_pv']); ?></td>
 								<td>300K</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['heatmap'] ?></td>
+								<td><?php echo esc_html($plan_features['heatmap']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['session_replay'] ?></td>
+								<td><?php echo esc_html($plan_features['session_replay']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['gsc'] ?></td>
+								<td><?php echo esc_html($plan_features['gsc']); ?></td>
 								<td>&#10003;</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['goal'] ?></td>
+								<td><?php echo esc_html($plan_features['goal']); ?></td>
 								<td>10</td>
 							</tr>
 							<tr>
-								<td><?php echo $plan_features['retention'] ?></td>
-								<td>Custom<br><span><?php echo $plan_features['set_your_own'] ?></span></td>
+								<td><?php echo esc_html($plan_features['retention']); ?></td>
+								<td>Custom<br><span><?php echo esc_html($plan_features['set_your_own']); ?></span></td>
 							</tr>
 						</table>
 					</div>
@@ -460,7 +476,7 @@ class QAHM_Admin_Page_License extends QAHM_Admin_Page_Base {
 		$post = array();
 		// nonceで設定したcredentialのチェック
 		// 設定画面
-		if ( isset( $_POST[ self::NONCE_NAME ] ) && $_POST[ self::NONCE_NAME ] ) {
+		if ( isset( $_POST[ self::NONCE_NAME ] ) ) {
 			if ( check_admin_referer( self::NONCE_ACTION, self::NONCE_NAME ) ) {
 				global $qahm_license;
 				

@@ -1,9 +1,9 @@
-=== QA Analytics - Web Analytics Tool with Heatmaps & Session Replay Across All Pages ===
+=== QA Analytics - with Heatmaps & Replay, Privacy Friendly ===
 Contributors: QuarkA
 Tags: analytics,cookieless,gdpr,heatmap,statistics
-Tested up to: 6.5.0
+Tested up to: 6.6.0
 Requires at least: 5.6
-Stable tag: 4.1.1.1
+Stable tag: 4.1.2.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -183,6 +183,12 @@ We will contact back and look forward to *meeting* you.
 
 
 == Changelog ==
+
+= 4.1.2.0 =
+
+* **Release Date:** October 24, 2024
+* Fixed various bugs, handled plugin security, and improved overall performance.
+* Addressed minor issues and refined plugin functionality.
 
 = 4.1.1.1 =
 

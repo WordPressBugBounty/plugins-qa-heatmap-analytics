@@ -38,7 +38,7 @@ class QAHM_License extends QAHM_File_Base {
 		add_action( 'admin_notices', array( $this, 'view_message' ) );
 
 		$wp_url    = get_option('home');
-		$parse_url = parse_url( $wp_url );
+		$parse_url = wp_parse_url( $wp_url );
 		$ref_host  = $parse_url['host'];
 		self::$dom = $ref_host;
 		
@@ -107,7 +107,47 @@ class QAHM_License extends QAHM_File_Base {
 			//echo '<p>' . esc_html( $plugin_name . $msg['message'] ) .'</p>';
 			//echo '</div>';
 
-			echo $this->create_qa_announce_html( $msg['message'], $status );
+			// create_qa_announce_html用
+			// 許可するHTMLタグと属性のリスト
+			$qa_announce_allowed_tags = array(
+				'div' => array(
+					'class' => array(),
+					'style' => array(),
+				),
+				'span' => array(
+					'class' => array(),
+					'style' => array(),
+				),
+				'p' => array(
+					'class' => array(),
+					'style' => array(),
+				),
+				'br' => array(),
+				'blockquote' => array(),
+				'ul' => array(),
+				'ol' => array(),
+				'li' => array(),
+				'strong' => array(),
+				'em' => array(),
+				'b' => array(),
+				'i' => array(),
+				'a' => array(
+					'href' => array(),
+					'title' => array(),
+					'target' => array(),
+					'rel' => array(),
+				),
+				'img' => array(
+					'src' => array(),
+					'alt' => array(),
+					'width' => array(),
+					'height' => array(),
+					'class' => array(),
+				),
+			);
+						
+			$qa_announce = $this->create_qa_announce_html( $msg['message'], $status );
+			echo wp_kses( $qa_announce, $qa_announce_allowed_tags );
 		}
 	}
 
@@ -392,7 +432,7 @@ class QAHM_License extends QAHM_File_Base {
 					}
 				}
 			}
-			$goals_json = json_encode( $goals_ary );
+			$goals_json = wp_json_encode( $goals_ary );
 			$this->wrap_update_option( 'goals', $goals_json );
 		}
 		//$this->wrap_update_option( 'access_role', 'administrator' );

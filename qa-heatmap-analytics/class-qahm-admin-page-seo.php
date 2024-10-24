@@ -44,7 +44,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 
 		// nonceで設定したcredentialのチェック
 		// 設定画面
-		if ( isset( $_POST[ self::NONCE_NAME ] ) && $_POST[ self::NONCE_NAME ] ) {
+		if ( isset( $_POST[ self::NONCE_NAME ] ) ) {
 			if ( check_admin_referer( self::NONCE_ACTION, self::NONCE_NAME ) ) {
 				// フォームから値が送信されていればDBに保存
 				$client_id     = $this->wrap_filter_input( INPUT_POST, 'client_id' );
@@ -103,8 +103,8 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 
 		// enqueue script
 		$this->common_enqueue_script();
-		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-admin-page-seo', plugins_url( 'js/admin-page-seo.js', __FILE__ ), array( QAHM_NAME . '-table' ), QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-simple-statistics', plugins_url( 'js/lib/simple-statistics/simple-statistics.min.js', __FILE__ ), null, QAHM_PLUGIN_VERSION, false );
 		wp_enqueue_script( QAHM_NAME . '-chart', plugins_url( 'js/lib/chart/chart.min.js', __FILE__ ), null, QAHM_PLUGIN_VERSION, false );
@@ -215,11 +215,18 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 
 		// wp_postから上記範囲内の更新日付を持つ記事一覧を取得する
 		$table_name = $qahm_db->prefix . 'posts';
-		$in_search_post_types = get_post_types( array( 'exclude_from_search' => false ) );
-		$where    = " WHERE post_status = 'publish' AND post_type IN ('" . implode( "', '", array_map( 'esc_sql', $in_search_post_types ) ) . "') AND post_modified BETWEEN %s AND %s";
-		$order    = ' ORDER BY post_date DESC';
-		$query    = 'SELECT ID,post_modified FROM ' . $table_name . $where . $order;
-		$post_ary = $wpdb->get_results( $wpdb->prepare( $query, $start_date, $end_date ), ARRAY_A );
+		$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+		$wherein_post_types = "('" . implode( "', '", array_map( 'esc_sql', $post_types ) ) . "')";
+		//$where    = " WHERE post_status = 'publish' AND post_type IN ('" . implode( "', '", array_map( 'esc_sql', $post_types ) ) . "') AND post_modified BETWEEN %s AND %s";
+		//$order    = ' ORDER BY post_date DESC';
+		//$query    = 'SELECT ID,post_modified FROM ' . $table_name . $where . $order;
+		// phpcs:ignore  WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query.
+		$post_ary = $wpdb->get_results( $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $wherein_post_types is already escaped.
+			 'SELECT ID,post_modified FROM ' . esc_sql($table_name) . " WHERE post_status = 'publish' AND post_type IN " . $wherein_post_types . ' AND post_modified BETWEEN %s AND %s ORDER BY post_date DESC',
+			 $start_date,
+			 $end_date
+		), ARRAY_A );
 		//var_dump($post_ary);
 		//echo $start_date;
 		//return;
@@ -256,7 +263,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 
 						if ( ! array_key_exists( $wp_qa_id, $table_ary ) ) {
 							$title = $lp_query_ary[$lp_query_idx]['title'];
-							$url   = parse_url( $lp_query_ary[$lp_query_idx]['url'] );
+							$url   = wp_parse_url( $lp_query_ary[$lp_query_idx]['url'] );
 							$url   = $url['path'];
 							$date  = substr( $post_ary[$post_idx]['post_modified'], 0, 10 );
 
@@ -866,13 +873,14 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 		$err_ary = $qahm_google_api->test_search_console_connect();
 		if ( $err_ary ) {
 			$svg_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 130 126"><defs><style>.cls-1{fill:#00709e;}.cls-2{fill:none;}</style></defs><path class="cls-1" d="M312.85,477.41h-1.46a2.28,2.28,0,1,1,0-4.55h.66c20.14.07,29.47-4.91,33.75-9.16a17.25,17.25,0,0,0,5.09-12.9,21.7,21.7,0,0,0-8-16.54,2.28,2.28,0,0,1-.94-1.79c-.44-20.23-9.06-33-9.15-33.14a2.3,2.3,0,0,1-.19-2.24c0-.08,3.52-7.67,4-12.64.55-6,.52-16.44-5.89-18.84l-.11-.05c-2.09-.92-8.47,5.79-11.9,9.4-5.25,5.52-8.63,8.9-11.75,8.9a2.23,2.23,0,0,1-1-.22,18.27,18.27,0,0,0-14,0,2.23,2.23,0,0,1-1,.22c-3.12,0-6.5-3.38-11.75-8.9-3.43-3.6-9.81-10.32-11.9-9.4l-.11.05c-6.41,2.4-6.44,12.83-5.89,18.84.47,5,3.95,12.56,4,12.64a2.29,2.29,0,0,1-.19,2.25c-.09.12-8.71,12.9-9.15,33.13a2.29,2.29,0,0,1-1,1.81,21,21,0,0,0-7.95,16.52,17.26,17.26,0,0,0,5.1,12.9c4.21,4.2,13.36,9.16,33,9.16h1.44a2.28,2.28,0,0,1,0,4.55H286c-17.4.07-29.87-3.41-37-10.47a21.9,21.9,0,0,1-6.44-16.13,25.62,25.62,0,0,1,9-19.5c.62-17.83,7-29.86,9.22-33.45-1.07-2.48-3.46-8.44-3.88-13-1.16-12.56,1.95-20.9,8.76-23.48,5-2.13,10.8,4,16.95,10.44,2.62,2.76,6.5,6.84,8.17,7.43a22.95,22.95,0,0,1,16.53,0c1.65-.59,5.53-4.67,8.16-7.43,6.15-6.46,12-12.57,17-10.44,6.8,2.58,9.91,10.92,8.75,23.48-.42,4.55-2.81,10.51-3.87,13,2.17,3.59,8.59,15.62,9.22,33.47a26.11,26.11,0,0,1,8.95,19.48A21.9,21.9,0,0,1,349,466.94c-7,6.95-19.16,10.47-36.15,10.47Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M270.59,398.56c-1.22-.44-3.72-7.75-4.85-12.43-1.28-5.61-1.88-12.75,2.52-14.88a3.23,3.23,0,0,1,1.4-.34c2,0,3.48,2.14,4.95,4.21.35.49.7,1,1.07,1.47a29.44,29.44,0,0,0,5.75,5.19c1.88,1.38,2.44,1.94,2,2.57-.14.21-.44.33-1.38.7a23.45,23.45,0,0,0-7.12,4c-2.86,2.45-3.51,6.37-3.83,8.25-.13.83-.18,1.06-.32,1.2a.48.48,0,0,1-.23.1Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M327.41,398.56a.4.4,0,0,1-.23-.1c-.14-.14-.19-.37-.32-1.2-.32-1.89-1-5.81-3.83-8.25a23.41,23.41,0,0,0-7.1-4c-1-.39-1.27-.5-1.4-.7-.4-.63.16-1.2,2-2.57a29.52,29.52,0,0,0,5.76-5.2c.36-.47.71-1,1.06-1.45,1.47-2.08,3-4.22,4.95-4.22a3.16,3.16,0,0,1,1.39.34c4.42,2.13,3.81,9.3,2.52,14.94-1.59,6.37-3.8,12-4.84,12.37Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M278.77,412.57s-1.53,4.08,0,5.92a7.45,7.45,0,0,0,5.24,2,8.57,8.57,0,1,1-5.25-7.93Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M325.93,412.57s-1.53,4.08,0,5.92a7.47,7.47,0,0,0,5.25,2,8.59,8.59,0,1,1-5.26-7.93Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M299,437.87c-5.84,0-10.58,3-10.58,6.63S293.15,455,299,455s10.58-6.85,10.58-10.51S304.83,437.87,299,437.87Z" transform="translate(-233 -357.5)"/><rect id="_スライス_" data-name="&lt;スライス&gt;" class="cls-2" width="130" height="126"/></svg>';
-			$err_text  = esc_html( __( 'Failed to connect with Google API.', 'qa-heatmap-analytics' ) ) . '<br>';
+			$err_text  = esc_html__( 'Failed to connect with Google API.', 'qa-heatmap-analytics' ) . '<br>';
 			$err_text .= '<br>';
-			$err_text .= 'error code: ' . $err_ary['code'] . '<br>';
-			$err_text .= 'error message: ' . $err_ary['message'];
+			$err_text .= 'error code: ' . esc_html( $err_ary['code'] ) . '<br>';
+			$err_text .= 'error message: ' . esc_html( $err_ary['message'] );
+
 			echo '<div class="qahm-announce-container">';
-			echo '<div class="qahm-announce-icon">' . $svg_icon . '</div>';
-			echo '<div>' . $err_text . '</div>';
+			echo '<div class="qahm-announce-icon">' . wp_kses_post( $svg_icon ) . '</div>';
+			echo '<div>' . wp_kses_post( $err_text ) . '</div>';
 			echo '</div>';
 			return;
 		}
@@ -892,7 +900,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 		//$biva_test_opt = '<option data-start-date="' . $start_date_2 . '" data-end-date="' . $end_date_2 . '">' . $start_date_2 . ' - ' . $end_date_2 . '（biva テスト用）</option>';
 		?>
 
-		<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap">
 				<h1>QA <?php echo esc_html( __( 'SEO Analysis', 'qa-heatmap-analytics' ) ); ?></h1>
 
@@ -900,8 +908,8 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
                 <div id="bl_calenderAndMenu" style="visibility: hidden;">
                     <p><i class="fas fa-calendar-check"></i> <?php echo esc_html( __( 'Date Range to analyze', 'qa-heatmap-analytics' ) ); ?></p>
                     <select id="analysis-date">
-                    <option data-start-date="<?php echo $start_date; ?>" data-end-date="<?php echo $end_date; ?>"><?php echo $start_date; ?> - <?php echo $end_date; ?></option>
-                    <?php echo $biva_test_opt; ?>
+                    <option data-start-date="<?php echo esc_attr($start_date); ?>" data-end-date="<?php echo esc_attr($end_date); ?>"><?php echo esc_html($start_date); ?> - <?php echo esc_html($end_date); ?></option>
+                    <?php //echo $biva_test_opt; ?>
 					</select>
                 </div>
 				<p><?php echo esc_html__( 'Google Search Console data here does not include information from the previous day or the day before due to Google\'s specifications and the time required to fetch data.', 'qa-heatmap-analytics' ); ?></p>
@@ -930,7 +938,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 								<div class="test-block">
 									<p class="sub-title"><i class="fas fa-spell-check"></i> <?php echo esc_html( __( 'Keyword(s) to be monitored', 'qa-heatmap-analytics' ) ); ?></p>
 									<p><?php echo esc_html( __( 'Enter one keyword per line.', 'qa-heatmap-analytics' ) ); ?></p>
-									<textarea id="monitor-keyword-textarea" cols="30" rows="5"><?php echo $monitor_keyword; ?></textarea><br>
+									<textarea id="monitor-keyword-textarea" cols="30" rows="5"><?php echo esc_textarea($monitor_keyword); ?></textarea><br>
 									<input type="button" id="monitor-keyword-input" value="<?php echo esc_html( __( 'Reflect keyword(s) in the table', 'qa-heatmap-analytics' ) ); ?>" class="button-primary">
 								</div>
 	<!--maru 20220919-->
@@ -946,7 +954,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 										$goals_ary = $qahm_data_api->get_goals_array();
 										echo '<input type="radio" id="js_manualGoals_0" name="js_manualGoals" checked><label for="js_manualGoals_0">'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
 										foreach ( $goals_ary as $gid => $goal ) {
-											echo '<input type="radio" id="js_manualGoals_'. $gid . '" name="js_manualGoals"><label for="js_manualGoals_'. $gid . '">'. urldecode( $goal["gtitle"]) . '</label>';
+											echo '<input type="radio" id="', esc_attr('js_manualGoals_'. $gid), '" name="js_manualGoals"><label for="', esc_attr('js_manualGoals_'. $gid), '">'. esc_html(urldecode( $goal["gtitle"])), '</label>';
 										}
 									?>
 									</div>
@@ -964,7 +972,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
                                     $goals_ary = $qahm_data_api->get_goals_array();
                                     echo '<input type="radio" id="js_autoGoals_0" name="js_autoGoals" checked><label for="js_autoGoals_0">'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
                                     foreach ( $goals_ary as $gid => $goal ) {
-                                        echo '<input type="radio" id="js_autoGoals_'. $gid . '" name="js_autoGoals"><label for="js_autoGoals_'. $gid . '">'. urldecode( $goal["gtitle"]) . '</label>';
+                                        echo '<input type="radio" id="', esc_attr('js_autoGoals_'. $gid), '" name="js_autoGoals"><label for="', esc_attr('js_autoGoals_'. $gid), '">', esc_html(urldecode( $goal["gtitle"])), '</label>';
                                     }
                                 ?>
                                 </div>

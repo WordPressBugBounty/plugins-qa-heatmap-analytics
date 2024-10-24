@@ -33,7 +33,6 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		$this->regist_ajax_func( 'ajax_create_unmeasurable_table' );
 
 		add_action( 'init', array( $this, 'init_wp_filesystem' ) );
-		add_action( 'admin_init', array( $this, 'save_config' ) );
 	}
 
 	/**
@@ -72,10 +71,10 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 	
 		// enqueue script
 		$this->common_enqueue_script();
-		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-cap-create', $js_dir_url . 'cap-create.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-admin-page-heatmap', $js_dir_url . 'admin-page-heatmap.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-table', $js_dir_url . 'table.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-progress-bar', $js_dir_url . '/progress-bar-exec.js', null, QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-cap-create', $js_dir_url . 'cap-create.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
+		wp_enqueue_script( QAHM_NAME . '-admin-page-heatmap', $js_dir_url . 'admin-page-heatmap.js', array( QAHM_NAME . '-admin-page-base' ), QAHM_PLUGIN_VERSION, false );
 	
 		// inline script
 		$scripts = $this->get_common_inline_script();
@@ -94,22 +93,21 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		$localize['tax']                              = esc_html__( 'Custom taxonomy', 'qa-heatmap-analytics' );
 		$localize['ver']                              = esc_html__( 'ver.', 'qa-heatmap-analytics' );
 		$localize['limit_measure_title']              = esc_html__( 'About measurement', 'qa-heatmap-analytics' );
-		$localize['limit_measure_text']               = esc_html__( 'Measurable for heatmap is limited to %d page(s) with your QA.', 'qa-heatmap-analytics' ) . '<br>';
-		$localize['limit_free_text']                  = sprintf( esc_html__( '%1$s Upgrade %2$s to collect event data on more pages.', 'qa-heatmap-analytics' ), '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">', '</a>' );
+		//$localize['limit_measure_text']               = esc_html__( 'Measurable for heatmap is limited to %d page(s) with your QA.', 'qa-heatmap-analytics' ) . '<br>';
+		//$localize['limit_free_text']                  = sprintf( esc_html__( '%1$s Upgrade %2$s to collect event data on more pages.', 'qa-heatmap-analytics' ), '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">', '</a>' );
 		//$localize['limit_friend_text']                = sprintf( esc_html__( '%1$s Get upgrade options %2$s.', 'qa-heatmap-analytics' ), '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">', '</a>' );
 		$localize['switch']                           = esc_html__( 'Updaded to', 'qa-heatmap-analytics' );
 		$localize['version_switch']                   = esc_html__( 'Update Page Version', 'qa-heatmap-analytics' );
-		$localize['version_switch_error_text']        = sprintf( esc_html__( 'Failed to update the page version. %s Please try again aftertime.', 'qa-heatmap-analytics' ), '<br>' );
+		$localize['version_switch_error_text']        = esc_html__( 'Failed to update the page version.', 'qa-heatmap-analytics' ) . '<br>' . esc_html__( 'Please try again aftertime.', 'qa-heatmap-analytics' );
 		$localize['version_switch_start_text_1']      = esc_html__( 'Upon updating the page version, measurement will automatically begin with the new version.', 'qa-heatmap-analytics' );
 		$localize['version_switch_start_text_2']      = esc_html__( 'Are you sure you want to proceed?', 'qa-heatmap-analytics' );
 		$localize['version_switch_inte_title']        = esc_html__( 'Data is in the process of integration', 'qa-heatmap-analytics' );
 		$localize['version_switch_inte_text']         = esc_html__( 'Sorry, updating the page version is prevented.<br>This page is being combined to the data by QA version 3.0. Please wait until the data gets ready.', 'qa-heatmap-analytics' );
-		$localize['achievements_data_num_1_title']    = esc_html__( 'Now on taking the first step!', 'qa-heatmap-analytics' );
-		$localize['achievements_data_num_1_text']     = sprintf( esc_html__( 'Congratulations! %s Data has been collected for the first time.', 'qa-heatmap-analytics' ), '<br>' );
-		$localize['achievements_data_num_1000_title'] = esc_html__( 'Improved analytical skills!', 'qa-heatmap-analytics' );
-		$localize['achievements_data_num_1000_text']  = esc_html__( 'In total, %d data have been collected in QA!', 'qa-heatmap-analytics' );
+		//$localize['achievements_data_num_1_title']    = esc_html__( 'Now on taking the first step!', 'qa-heatmap-analytics' );
+		//$localize['achievements_data_num_1_text']     = esc_html__( 'Congratulations!', 'qa-heatmap-analytics' ) . '<br>' . esc_html__( 'Data has been collected for the first time.', 'qa-heatmap-analytics' );
+		//$localize['achievements_data_num_1000_title'] = esc_html__( 'Improved analytical skills!', 'qa-heatmap-analytics' );
+		//$localize['achievements_data_num_1000_text']  = esc_html__( 'In total, %d data have been collected in QA!', 'qa-heatmap-analytics' );
 		$localize['measure_comment_text']             = esc_html__( 'You have reached the limit of measuable pages.', 'qa-heatmap-analytics' );
-		$localize['achievements_data_num_1000_text']  = esc_html__( 'In total, %d data have been collected in QA!', 'qa-heatmap-analytics' );
 		$localize['page_title']                       = esc_html__( 'Page Title', 'qa-heatmap-analytics' );
 		$localize['post_type']                        = esc_html__( 'Post Type', 'qa-heatmap-analytics' );
 		wp_localize_script( QAHM_NAME . '-common', QAHM_NAME . 'l10n', $localize );
@@ -142,11 +140,11 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 
 		$lang_set = get_bloginfo('language');
 		if ( $lang_set == 'ja' ) {
-			$upgrade_link_atag = '<a href="https://quarka.org/plan/" target="_blank" rel="noopener">'; 
-			$referral_link_atag = '<a href="https://quarka.org/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/plan/') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/referral-program/') . '" target="_blank" rel="noopener">';
 		} else {
-			$upgrade_link_atag = '<a href="https://quarka.org/en/#plans" target="_blank" rel="noopener">';
-			$referral_link_atag = '<a href="https://quarka.org/en/referral-program/" target="_blank" rel="noopener">';
+			$upgrade_link_atag = '<a href="' . esc_url('https://quarka.org/en/#plans') . '" target="_blank" rel="noopener">';
+			$referral_link_atag = '<a href="' . esc_url('https://quarka.org/en/referral-program/') . '" target="_blank" rel="noopener">';
 		}
 		?>
 
@@ -157,10 +155,13 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 				$license_plan = $this->wrap_get_option( 'license_plans' );
 				$is_subscribed = $this->is_subscribed();
 				if ( ! $is_subscribed ) {
-                    $msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';
-                    $msg_yuryouikaga .=	sprintf( esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>' );
+                    $msg_yuryouikaga = '<div class="qahm-using-free-announce"><span class="qahm_margin-right4"><span class="dashicons dashicons-megaphone"></span></span><span class="qahm_fontsize12em">';					
+					$msg_yuryouikaga .= sprintf( 
+						/* translators: placeholders are for the link */
+						esc_html__( 'Upgrade for better insights! Gain more PV capacity for free by %1$sreferring friends%2$s, or choose our %3$sPremium Plan%4$s to increase PV limits and unlock more goals.', 'qa-heatmap-analytics' ), $referral_link_atag, '</a>', $upgrade_link_atag, '</a>'
+					);
                     $msg_yuryouikaga .= '</span></div>';
-                    echo $msg_yuryouikaga;
+                    echo wp_kses_post($msg_yuryouikaga);
 				}
 				?>
 
@@ -170,7 +171,7 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 						foreach ( self::$error_msg as $msg ) {
 							echo '<div class="error notice is-dismissible"><p><strong>' . esc_html__( 'Error', 'qa-heatmap-analytics' ) . ' : ' . esc_html( $msg ) . '</strong></p></div>';
 						}
-					} elseif ( isset( $_POST[ self::NONCE_NAME ] ) ) {
+					} elseif ( isset( $_POST[ self::NONCE_NAME ] ) && check_admin_referer( self::NONCE_ACTION, self::NONCE_NAME ) ) {
 						echo '<div class="updated notice is-dismissible"><p><strong>' . esc_html__( 'Saved settings.', 'qa-heatmap-analytics' ) . '</strong></p></div>';
 					}
 				?>
@@ -184,6 +185,7 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 				</p>
 				<p>
 					<?php
+						/* translators: placeholders refer to the report home page */
 						echo ( sprintf( esc_html__( 'For comprehensive analytics, including heatmap and session replay data, for your entire website, access the %1$sHome Report%2$s.', 'qa-heatmap-analytics' ), '<a href="./admin.php?page=qahm-home">', '</a>' ) );
 					?>
 				</p>
@@ -203,7 +205,10 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 									}
 									?>
 								>
-									<?php printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 10 ); ?>
+									<?php 
+									/* translators: placeholders refer to the number of items to show on the list */
+									printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 10 ); 
+									?>
 								</option>
 
 								<option value="25"
@@ -213,7 +218,10 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 									}
 									?>
 								>
-									<?php printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 25 ); ?>
+									<?php 
+									/* translators: placeholders refer to the number of items to show on the list */
+									printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 25 ); 
+									?>
 								</option>
 
 								<option value="50"
@@ -223,7 +231,10 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 									}
 									?>
 								>
-									<?php printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 50 ); ?>
+									<?php 
+									/* translators: placeholders refer to the number of items to show on the list */
+									printf( esc_html__( 'Show %d', 'qa-heatmap-analytics' ), 50 ); 
+									?>
 								</option>
 							</select>
 
@@ -293,8 +304,8 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		$where    = " WHERE post_status = 'publish' AND post_type IN ('" . implode( "', '", array_map( 'esc_sql', $in_search_post_types ) ) . "') AND post_title LIKE '%" . esc_sql( $search_title ) . "%'";
 		$order    = ' ORDER BY post_modified DESC';
 		$limit    = ' LIMIT ' . $search_limit;
-		$query    = 'SELECT ID,post_title,post_type,post_modified FROM ' . $table_name . $where . $order . $limit;
-		$post_ary = $qahm_db->get_results( $query, ARRAY_A );
+		$my_query    = 'SELECT ID,post_title,post_type,post_modified FROM ' . $table_name . $where . $order . $limit;
+		$post_ary = $qahm_db->get_results( $my_query, ARRAY_A );
 
 		$add_post_type = $this->wrap_get_option( 'add_post_type' );
 		if ( $add_post_type ) {
@@ -302,7 +313,7 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 			$where    = " WHERE post_status = 'publish' AND post_type IN ('" . implode( "', '", array_map( 'esc_sql', $in_search_post_types ) ) . "') AND post_title LIKE '%" . esc_sql( $search_title ) . "%'";
 			$order    = ' ORDER BY post_modified DESC';
 			$limit    = ' LIMIT ' . $search_limit;
-			$query    = 'SELECT ID,post_title,post_type FROM ' . $table_name . $where . $order;		$add_post_ary = $qahm_db->get_results( $query, ARRAY_A );
+			$my_query    = 'SELECT ID,post_title,post_type FROM ' . $table_name . $where . $order;		$add_post_ary = $qahm_db->get_results( $my_query, ARRAY_A );
 			$post_ary = array_merge( $post_ary, $add_post_ary );
 		}
 
@@ -342,8 +353,8 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		$where    = " WHERE t.name LIKE '%" . esc_sql( $search_title ) . "%'";
 		$order    = ' ORDER BY t.name ASC';
 		$limit    = ' LIMIT ' . $update_limit;
-		$query    = 'SELECT t.term_id,t.name,tt.taxonomy FROM ' . $table_name_term . ' AS t INNER JOIN ' . $table_name_tax . ' AS tt ON t.term_id = tt.term_id' . $where . $order . $limit;
-		$term_ary = $qahm_db->get_results( $query, ARRAY_A );
+		$my_query    = 'SELECT t.term_id,t.name,tt.taxonomy FROM ' . $table_name_term . ' AS t INNER JOIN ' . $table_name_tax . ' AS tt ON t.term_id = tt.term_id' . $where . $order . $limit;
+		$term_ary = $qahm_db->get_results( $my_query, ARRAY_A );
 
 		foreach ( $term_ary as $term ) {
 			switch ( $term['taxonomy'] ) {
@@ -393,8 +404,14 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 	 */
 	private function exists_database_table( $table_name ) {
 		global $wpdb;
-		$query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) );
-		return $wpdb->get_var( $query ) === $table_name ? true : false;
+		//$my_prepare = $wpdb->prepare( 'SHOW TABLES LIKE %s', '%' . $wpdb->esc_like( $table_name ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This query will not be called frequently, so caching is not necessary.
+		$exist_table_name = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', '%' . $wpdb->esc_like( $table_name ) ) );
+		if ( $exist_table_name === $table_name ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 
@@ -439,96 +456,6 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 	}
 
 	/**
-	 * 設定画面の項目をデータベースに保存する
-	 */
-	public function save_config() {
-		$post = array();
-		// nonceで設定したcredentialのチェック
-
-		// ヒートマップ管理画面
-		if ( isset( $_POST[ self::NONCE_NAME ] ) && $_POST[ self::NONCE_NAME ] ) {
-			if ( check_admin_referer( self::NONCE_ACTION, self::NONCE_NAME ) ) {
-				//$this->wrap_update_option( 'is_first_heatmap_setting', false );
-				// falseだとkeyがdbにない場合、値が何も入らないので確実に空欄が1入るようにしている
-				$this->wrap_update_option( 'is_first_heatmap_setting', '' );
-
-				/*
-				// ライセンス認証による制限 あとで今の仕様に変更
-				if ( ! $this->wrap_get_option( 'license_auth' ) ) {
-					$post['list_rec_num'] = $this->wrap_filter_input( INPUT_POST, 'list_rec_num' );
-					if ( $post['list_rec_num'] > QAHM_License::FREE_MEASURE_PAGE ) {
-						self::$error_msg['list_rec_num'] = ( QAHM_License::FREE_MEASURE_PAGE + 1 ) . 'ページ以上の計測を行う場合はライセンス認証を行ってください。';
-						return;
-					}
-				}
-				*/
-
-				global $wpdb;
-				global $qahm_time;
-				global $qahm_recterm;
-				$db_rts   = $qahm_recterm->get_all_record();
-				$bulk_rts = array();
-
-				$post['list_num'] = $this->wrap_filter_input( INPUT_POST, 'list_num' );
-				if ( $post['list_num'] > 0 ) {
-					for ( $i = 0; $i < $post['list_num']; $i++ ) {
-						$post[ 'type_' . $i ]     = $this->wrap_filter_input( INPUT_POST, 'type_' . $i );
-						$post[ 'ids_' . $i ]      = $this->wrap_filter_input( INPUT_POST, 'ids_' . $i );
-						$post[ 'rec_days_' . $i ] = $this->wrap_filter_input( INPUT_POST, 'rec_days_' . $i );
-						if ( ! $post[ 'type_' . $i ] || ! $post[ 'ids_' . $i ] ) {
-							continue;
-						}
-
-						$idx_rt = -1;
-
-						if ( $db_rts ) {
-							$db_rts_cnt = count( $db_rts );
-							for ( $j = 0; $j < $db_rts_cnt; $j++ ) {
-								if ( $post[ 'type_' . $i ] == $db_rts[ $j ]['type'] &&
-									$post[ 'ids_' . $i ] == $db_rts[ $j ]['ids'] ) {
-									$idx_rt = $j;
-									break;
-								}
-								usleep( 100 );
-							}
-						}
-
-						// recterm内に見つからなかった場合、recrefreshも無いということなのでrecrefreshも作成する
-						if ( $idx_rt === -1 ) {
-							$bulk_rts[] = array(
-								'type'        => $post[ 'type_' . $i ],
-								'ids'         => $post[ 'ids_' . $i ],
-								'update_date' => date_i18n( 'Y-m-d' ),
-							);
-
-						} else {
-
-							$bulk_rts[] = array(
-								'type'        => $db_rts[ $idx_rt ]['type'],
-								'ids'         => $db_rts[ $idx_rt ]['ids'],
-								'rec_days'    => $post[ 'rec_days_' . $i ] ? $post[ 'rec_days_' . $i ] : $db_rts[ $idx_rt ]['rec_days'],
-								'rec_flag'    => $db_rts[ $idx_rt ]['rec_flag'],
-								'file_size'   => $db_rts[ $idx_rt ]['file_size'],
-								'insert_date' => $db_rts[ $idx_rt ]['insert_date'],
-								'update_date' => $db_rts[ $idx_rt ]['update_date'],
-								'start_date'  => $db_rts[ $idx_rt ]['start_date'],
-								'stop_date'   => $db_rts[ $idx_rt ]['stop_date'],
-							);
-						}
-
-						usleep( 100 );
-					}
-
-					// バルクインサート
-					if ( isset( $bulk_rts ) ) {
-						$qahm_recterm->bulk_insert( $bulk_rts );
-					}
-				}
-			}
-		}
-	}
-
-	/**
 	 * ヒートマップリストを取得
 	 */
 	public function ajax_create_heatmap_list() {
@@ -569,15 +496,15 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 
 		// page_idを求める。wp_qa_idとwp_qa_typeで検索をかけ、最大値を取得
 		$table_name   = $qahm_db->prefix . 'qa_pages';
-		$query        = 'SELECT page_id,url FROM ' . $table_name . ' WHERE wp_qa_id = %d AND wp_qa_type = %s';
-		$qa_pages_ary = $qahm_db->get_results( $qahm_db->prepare( $query, $wp_qa_id, $wp_qa_type ), ARRAY_A );
+		$my_query        = 'SELECT page_id,url FROM ' . $table_name . ' WHERE wp_qa_id = %d AND wp_qa_type = %s';
+		$qa_pages_ary = $qahm_db->get_results( $qahm_db->prepare( $my_query, $wp_qa_id, $wp_qa_type ), ARRAY_A );
 		if( $qa_pages_ary ) {
 			$table_name = $qahm_db->prefix . 'view_pv';
-			$query      = 'SELECT count(*) FROM ' . $table_name . ' WHERE page_id = %d';
+			$my_query      = 'SELECT count(*) FROM ' . $table_name . ' WHERE page_id = %d';
 			$pv_max_idx = 0;
 			$pv_max_num = 0;
 			for ( $qa_pages_idx = 0, $qa_pages_max = count( $qa_pages_ary ); $qa_pages_idx < $qa_pages_max; $qa_pages_idx++ ) {
-				$count = $qahm_db->get_results( $qahm_db->prepare( $query, $qa_pages_ary[$qa_pages_idx]['page_id'] ), ARRAY_A );
+				$count = $qahm_db->get_results( $qahm_db->prepare( $my_query, $qa_pages_ary[$qa_pages_idx]['page_id'] ), ARRAY_A );
 				if ( $pv_max_num < $count ) {
 					$pv_max_idx = $qa_pages_idx;
 					$pv_max_num = $count;
@@ -590,7 +517,7 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		if ( empty( $page_id ) ) {
 			// qa_pages insert
 			$table_name = $wpdb->prefix . 'qa_pages';
-
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Using $wpdb->insert() is necessary here for direct data manipulation as it fits the specific requirements of this operation.
 			$wpdb->insert( 
 				$table_name, 
 				array( 
@@ -621,8 +548,9 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		// 最新バージョンを調べる。存在しなければバージョン1作成
 		// 存在していれば全デバイスそのバージョンを作成＆新規バージョン追加
 		$table_name           = $wpdb->prefix . 'qa_page_version_hist';
-		$query                = 'SELECT version_id,device_id,version_no FROM ' . $table_name . ' WHERE page_id=%d and version_no=(select max(version_no) FROM ' . $table_name . ' WHERE page_id=%d)';
-		$qa_page_version_hist = $wpdb->get_results( $wpdb->prepare( $query, $page_id, $page_id ) );
+		//$my_query                = 'SELECT version_id,device_id,version_no FROM ' . $table_name . ' WHERE page_id=%d and version_no=(select max(version_no) FROM ' . $table_name . ' WHERE page_id=%d)';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->get_results() is necessary for retrieving data efficiently in this context, and it's not feasible to use the standard API methods for this specific query. This query will not be called frequently, so caching is not necessary.
+		$qa_page_version_hist = $wpdb->get_results( $wpdb->prepare( 'SELECT version_id,device_id,version_no FROM ' . esc_sql($table_name) . ' WHERE page_id=%d and version_no=(select max(version_no) FROM ' . esc_sql($table_name) . ' WHERE page_id=%d)', $page_id, $page_id ) );
 
 		$dev_id_ary = array();
 		$cur_ver_no = 0;
@@ -684,20 +612,38 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		}
 
 		// バルクインサート
-		$query = 'INSERT INTO ' . $table_name . ' ' .
+		//$my_query = 'INSERT INTO ' . $table_name . ' ' .
+		//		'(page_id, device_id, version_no, base_html, update_date, insert_datetime) ' .
+		//		'VALUES ' . join( ',', $ver_hist_place_holder_ary ) . ' ' .
+		//		'ON DUPLICATE KEY UPDATE ' .
+		//		'page_id = VALUES(page_id), ' .
+		//		'device_id = VALUES(device_id), ' .
+		//		'version_no = VALUES(version_no), ' .
+		//		'base_html = VALUES(base_html), ' .
+		//		'update_date = VALUES(update_date), ' .
+		//		'insert_datetime = VALUES(insert_datetime)';
+		$verhist_placeholders = join( ',', $ver_hist_place_holder_ary );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Using $wpdb->query() is essential for executing this specific SQL command that cannot be efficiently managed by standard API methods. This query will not be called frequently, so caching is not necessary.
+		$data['result']  = $wpdb->query( $wpdb->prepare( 
+			'INSERT INTO ' . esc_sql($table_name) . ' ' .
 				'(page_id, device_id, version_no, base_html, update_date, insert_datetime) ' .
-				'VALUES ' . join( ',', $ver_hist_place_holder_ary ) . ' ' .
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- using $wpdb->prepare and manually made placeholders
+				'VALUES ' . $verhist_placeholders . ' ' .
 				'ON DUPLICATE KEY UPDATE ' .
 				'page_id = VALUES(page_id), ' .
 				'device_id = VALUES(device_id), ' .
 				'version_no = VALUES(version_no), ' .
 				'base_html = VALUES(base_html), ' .
 				'update_date = VALUES(update_date), ' .
-				'insert_datetime = VALUES(insert_datetime)';
-		$data['result']  = $wpdb->query( $wpdb->prepare( $query, $ver_hist_bulk_ary ) );
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders are stored in $verhist_placeholders
+				'insert_datetime = VALUES(insert_datetime)',
+			$ver_hist_bulk_ary
+		) );
 		$data['version'] = $cur_ver_no + 1;
-
-		$data['version_switch_success_text'] = sprintf( esc_html__( 'The page version has been successfully updated to version %1$d. %2$s The updated data will be available tomorrow or later.', 'qa-heatmap-analytics' ), $data['version'], '<br>' );
+		/* translators: placeholders represent the page version number */
+		$data['version_switch_success_text'] = sprintf( esc_html__( 'The page version has been successfully updated to version %d.', 'qa-heatmap-analytics' ), $data['version'] );
+		$data['version_switch_success_text'] .=  '<br>';
+		$data['version_switch_success_text'] .= esc_html__( 'The updated data will be available tomorrow or later.', 'qa-heatmap-analytics' );
 
 		
 		// その日のバージョンアップファイルを作成
@@ -756,8 +702,8 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 
 		// wp_postsから記事一覧を取得
 		$table_name = $qahm_db->prefix . 'posts';
-		$query      = 'SELECT ID, post_title, post_type FROM ' . $table_name . ' WHERE post_status = "publish"';
-		$wp_posts   = $qahm_db->get_results( $query );
+		$my_query      = 'SELECT ID, post_title, post_type FROM ' . $table_name . ' WHERE post_status = "publish"';
+		$wp_posts   = $qahm_db->get_results( $my_query );
 		
 		// リストファイル読み込み
 		$cache_dir_path    = $this->get_data_dir_path() . 'cache/';
@@ -831,8 +777,8 @@ class QAHM_Admin_Page_Heatmap extends QAHM_Admin_Page_Base {
 		$in_search_post_types = get_post_types( array( 'exclude_from_search' => false ) );
 		$where = " WHERE post_status = 'publish' AND post_type IN ('" . implode( "', '", array_map( 'esc_sql', $in_search_post_types ) ) . "')";
 		$order = ' ORDER BY post_date DESC';
-		$query = 'SELECT ID,post_title,post_type FROM ' . $table_name . $where . $order;
-		$exclude_post_ary = $qahm_db->get_results( $query, ARRAY_A );
+		$my_query = 'SELECT ID,post_title,post_type FROM ' . $table_name . $where . $order;
+		$exclude_post_ary = $qahm_db->get_results( $my_query, ARRAY_A );
 
 		foreach ( $exclude_post_ary as $exclude_post ) {
 			if ( ! in_array( $exclude_post['post_type'], $exclude_type_ary ) ) {

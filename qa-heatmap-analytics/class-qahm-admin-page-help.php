@@ -63,10 +63,10 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 		global $wp_version;
 		?>
 
-		<div id="<?php esc_attr_e( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
+		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>" class="qahm-admin-page">
 			<div class="wrap">
 				<h1>QA <?php esc_html_e( 'Help', 'qa-heatmap-analytics' ); ?></h1>
-				<?php $this->view_announce_html(); ?>
+				<?php //$this->view_announce_html(); ?>
 
 				<div id="qa-help">
 					<div class="help01">
@@ -82,19 +82,19 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 							<tbody>
 								<tr>
 									<th><?php esc_html_e( 'WordPress version', 'qa-heatmap-analytics' ); ?></th>
-									<td class="yours"><?php echo $wp_version; ?></td><td class="qas">/ <?php printf( esc_html__( '%s or higher', 'qa-heatmap-analytics' ), '5.9' ); ?></td>
+									<td class="yours"><?php echo esc_html($wp_version); ?></td><td class="qas">/ <?php /* translators: placeholders represent the supported version number */ printf( esc_html__( '%s or higher', 'qa-heatmap-analytics' ), '5.9' ); ?></td>
 								</tr>
 								<tr>
 									<th><?php esc_html_e( 'PHP version', 'qa-heatmap-analytics' ); ?></th>
-									<td class="yours"><?php echo $php_version; ?></td><td class="qas">/ <?php printf( esc_html__( '%s or higher', 'qa-heatmap-analytics' ), '5.6' ); ?></td>
+									<td class="yours"><?php echo esc_html($php_version); ?></td><td class="qas">/ <?php /* translators: placeholders represent the supported version number */  printf( esc_html__( '%s or higher', 'qa-heatmap-analytics' ), '5.6' ); ?></td>
 								</tr>
 								<tr>
 									<th><?php esc_html_e( 'PHP memory limit', 'qa-heatmap-analytics' ); ?></th>
-									<td class="yours"><?php echo $php_memory_limit; ?></td><td class="qas">/ <?php esc_html_e( '1G+(1024M+) recommended', 'qa-heatmap-analytics' ); ?></td>
+									<td class="yours"><?php echo esc_html($php_memory_limit); ?></td><td class="qas">/ <?php esc_html_e( '1G+(1024M+) recommended', 'qa-heatmap-analytics' ); ?></td>
 								</tr>
 								<tr>
 									<th><?php esc_html_e( 'PHP max execution time', 'qa-heatmap-analytics' ); ?></th>
-									<td class="yours"><?php echo $php_max_execution_time; ?></td><td class="qas">/ <?php esc_html_e( '240 seconds recommended', 'qa-heatmap-analytics' ); ?></td>
+									<td class="yours"><?php echo esc_html($php_max_execution_time); ?></td><td class="qas">/ <?php esc_html_e( '240 seconds recommended', 'qa-heatmap-analytics' ); ?></td>
 								</tr>
 							</tbody>
 						</table>
@@ -124,7 +124,7 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 							}
 						?>	
 						<h2><?php esc_html_e( 'Help', 'qa-heatmap-analytics' ); ?></h2>
-						<h3><a href="<?php echo $support_form_url; ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Direct Support for Subscribers', 'qa-heatmap-analytics' ); ?></a></h3>
+						<h3><a href="<?php echo esc_url($support_form_url); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Direct Support for Subscribers', 'qa-heatmap-analytics' ); ?></a></h3>
 						<p><?php esc_html_e( 'Subscribers to our paid plans can access a dedicated contact form on our site to reach our support team directly. Password required.', 'qa-heatmap-analytics' ); ?><br>
 						<?php esc_html_e( 'For technical inquiries, including plugin operations, you can find the necessary "Debug" information at the bottom of this Help page.', 'qa-heatmap-analytics' ); ?></p>
 						<h3><a href="https://wordpress.org/support/plugin/qa-heatmap-analytics/" target="_blank" rel="noopener"><?php esc_html_e( 'WordPress Support Forum', 'qa-heatmap-analytics' ); ?></a></h3>
@@ -137,7 +137,7 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 					<div class="h-frame help04">
 						<h2><?php esc_html_e( 'Glossary', 'qa-heatmap-analytics' ); ?></h2>
 						<p><?php esc_html_e( 'This briefly explains the terms that appear on the QA Analytics pages.', 'qa-heatmap-analytics' ); ?><br>
-						<?php printf( esc_html__( 'For more details, see %1$s User Guide / Manual %2$s in our support site.', 'qa-heatmap-analytics' ), '<a href="https://mem.quarka.org/en/manual/" target="_blank" rel="noopener">', '</a>'); ?></p>
+						<?php /* translators: placeholders are for the link */ printf( esc_html__( 'For more details, see %1$s User Guide / Manual %2$s in our support site.', 'qa-heatmap-analytics' ), '<a href="https://mem.quarka.org/en/manual/" target="_blank" rel="noopener">', '</a>'); ?></p>
 						<table>
 							<tbody>
 								<tr>
@@ -156,7 +156,7 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 								</tr>
 								<tr>
 									<th><?php esc_html_e( 'Time on Site', 'qa-heatmap-analytics' ); ?></th>
-									<td><?php printf( esc_html__( '%1$sUnlike Google Universal Analytics%2$s, QA Analytics measures the time spent on your site with an accuracy of +/- 3 seconds.', 'qa-heatmap-analytics' ), '<i>', '</i>' ); ?><br>
+									<td><?php esc_html_e( 'QA Analytics measures the time spent on your site with an accuracy of +/- 3 seconds.', 'qa-heatmap-analytics' ); ?><br>
 									<?php esc_html_e( 'It specifically tracks the time during which a user is actively browsing your site, excluding any time spent on other websites or using other applications. This provides a more accurate representation of the time range that users spend on your site.', 'qa-heatmap-analytics' ); ?></td>
 								</tr>
 
@@ -220,20 +220,38 @@ class QAHM_Admin_Page_Help extends QAHM_Admin_Page_Base {
 		<div id="qahm-help-debug">
 			<h3>Debug</h3>
 			<hr>
-			<p><strong>WordPress Server IP address:</strong><br><?php echo $this->wrap_filter_input( INPUT_SERVER, 'SERVER_ADDR' ); ?></p>
-			<p><strong>PHP version:</strong><br><?php echo $php_version; ?></p>
-			<p><strong>PHP memory limit:</strong><br><?php echo $php_memory_limit; ?></p>
-			<p><strong>max_execution_time:</strong><br><?php echo $php_max_execution_time; ?></p>
-			<p><strong>PHP extensions:</strong><br><?php echo implode( ', ', get_loaded_extensions() ); ?></p>
-			<p><strong>Database version:</strong><br><?php echo $wpdb->get_var( "SELECT VERSION();" ); ?></p>
-			<p><strong>InnoDB availability:</strong><br><?php echo $wpdb->get_var( "SELECT SUPPORT FROM INFORMATION_SCHEMA.ENGINES WHERE ENGINE = 'InnoDB';" ); ?></p>
-			<p><strong>WordPress version:</strong><br><?php echo $wp_version; ?></p>
-			<p><strong>Multisite:</strong><br><?php echo ( function_exists( 'is_multisite' ) && is_multisite() ) ? 'Yes' : 'No'; ?></p>
-			<p><strong>Active plugins:</strong><br><?php echo implode( ', ', $plugin_names ); ?></p>
-			<p><strong>Theme:</strong><br><?php echo $my_theme->get( 'Name' ) . ' (' . $my_theme->get('Version') . ') by ' . $my_theme->get('Author'); ?></p>
-			<?php echo $options; ?>
-			<p><strong>qalog.txt:</strong><br><?php echo $this->get_data_dir_url( 'log' ) . 'qalog.txt'; ?></p>
-			<p><strong>cron_status:</strong><br><?php echo $cron_status; ?></p>
+			<p><strong>WordPress Server IP address:</strong><br><?php echo esc_html( $this->wrap_filter_input( INPUT_SERVER, 'SERVER_ADDR' ) ); ?></p>
+			<p><strong>PHP version:</strong><br><?php echo esc_html($php_version); ?></p>
+			<p><strong>PHP memory limit:</strong><br><?php echo esc_html($php_memory_limit); ?></p>
+			<p><strong>max_execution_time:</strong><br><?php echo esc_html($php_max_execution_time); ?></p>
+			<p><strong>PHP extensions:</strong><br><?php echo esc_html( implode( ', ', get_loaded_extensions() ) ); ?></p>			
+			<p><strong>Database version:</strong><br>
+			<?php
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct query is required to get the database version.
+			echo esc_html( $wpdb->get_var( "SELECT VERSION();" ) ); 
+			?></p>
+			<p><strong>InnoDB availability:</strong><br>
+			<?php
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct query is required to get the InnoDB availability.
+			echo esc_html( $wpdb->get_var( "SELECT SUPPORT FROM INFORMATION_SCHEMA.ENGINES WHERE ENGINE = 'InnoDB';" ) ); 
+			?></p>
+			<p><strong>WordPress version:</strong><br><?php echo esc_html($wp_version); ?></p>
+			<p><strong>Multisite:</strong><br>
+			<?php
+			 $is_multisite = ( function_exists( 'is_multisite' ) && is_multisite() ) ? 'Yes' : 'No';
+			 echo esc_html( $is_multisite ); 
+			?>
+			</p>
+			<p><strong>Active plugins:</strong><br><?php echo esc_html( implode( ', ', $plugin_names ) ); ?></p>
+			<p><strong>Theme:</strong><br>
+			<?php
+			 $theme =  $my_theme->get( 'Name' ) . ' (' . $my_theme->get('Version') . ') by ' . $my_theme->get('Author');
+			 echo esc_html($theme);
+			?>
+			</p>
+			<?php echo wp_kses_post($options); ?>
+			<p><strong>qalog.txt:</strong><br><?php echo esc_url( $this->get_data_dir_url( 'log' ) . 'qalog.txt' ); ?></p>
+			<p><strong>cron_status:</strong><br><?php echo esc_html($cron_status); ?></p>
 		</div>
 		<!-- End debug -->
 

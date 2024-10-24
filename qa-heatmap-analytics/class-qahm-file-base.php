@@ -611,6 +611,7 @@ class QAHM_File_Base extends QAHM_Base {
 	 */
 	public function wrap_unserialize( $data ){
 
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- ini_set() is required here to adjust runtime configuration dynamically for specific functionality.
 		ini_set('pcre.backtrack_limit', 5000000);
 
 		$arr = @unserialize($data);

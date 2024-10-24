@@ -71,11 +71,12 @@ class QAHM_Base {
 			INPUT_POST,
 			INPUT_COOKIE
 		];
-	
+
 		if (in_array($type, $checkTypes) || filter_has_var($type, $variable_name)) {
 			return filter_input($type, $variable_name, $filter, $options);
 		} else if ($type == INPUT_SERVER && isset($_SERVER[$variable_name])) {
-			return filter_var($_SERVER[$variable_name], $filter, $options);
+			$sanitized_value = sanitize_text_field(wp_unslash($_SERVER[$variable_name]));
+			return filter_var($sanitized_value, $filter, $options);
 		} else if ($type == INPUT_ENV && isset($_ENV[$variable_name])) {
 			return filter_var($_ENV[$variable_name], $filter, $options);
 		} else {
@@ -90,7 +91,7 @@ class QAHM_Base {
 		global $qahm_data_api;
 		//$subject = mb_encode_mimeheader($subject, 'UTF-8');
 		$homeurl = get_home_url();
-		$domain  = parse_url( $homeurl, PHP_URL_HOST );
+		$domain  = wp_parse_url( $homeurl, PHP_URL_HOST );
 		$from    = 'wordpress@' . $domain;
 		$return  = false;
 
@@ -339,11 +340,11 @@ class QAHM_Base {
 	public function get_tracking_id( $url = null ) {
 		if ( $this->is_wordpress() ) {
 			// auto
-			$parse_url = parse_url( get_home_url() );
+			$parse_url = wp_parse_url( get_home_url() );
 			$id = 'a&' . $parse_url['host'];
 		} else {
 			// manual
-			$parse_url = parse_url( $url );
+			$parse_url = wp_parse_url( $url );
 			$id = 'm&' . $parse_url['host'];
 		}
 		return hash( 'fnv164', $id );
@@ -559,19 +560,13 @@ class QAHM_Base {
 	 * qa_idの生成
 	 */
 	public function create_qa_id( $ip_address, $ua, $tracking_hash ){
-
-		global $qahm_time;
-		global $behave; 
-	
-		$exist_s_fname = false;
-	
 		$unique_server_value = NONCE_SALT.AUTH_SALT;
 		//$id_base       = $ip_address.$ua.$tracking_hash;
 		$id_base       = $ip_address.$ua.$unique_server_value.$tracking_hash;
 		$qa_id_hash    = hash( 'fnv164', $id_base );
-	
+
 		return '000000000000' . $qa_id_hash;
-	
+
 	}
 
 	/**
@@ -600,6 +595,7 @@ class QAHM_Base {
 				return null;
 		}
 
+		/*
 		$svg_icon = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 				x="0px" y="0px" width="20" height="20" viewBox="0 0 256 256" style="enable-background:new 0 0 256 256;" xml:space="preserve">
 			<g>
@@ -620,12 +616,14 @@ class QAHM_Base {
 				</g>
 			</g>
 			</svg>';
-
+			
+			// cut out from returning html
+			<!--<div class="qahm-announce-icon">{$svg_icon}</div>-->
+			*/
 		$text = esc_html__( 'QA Analytics', 'qa-heatmap-analytics' ) . ': ' . $text;
 
 		return <<< EOH
 			<div class="qahm-announce-container qahm-announce-container-{$status}">
-				<div class="qahm-announce-icon">{$svg_icon}</div>
 				<div class="qahm-announce-text">{$text}</div>
 			</div>
 EOH;

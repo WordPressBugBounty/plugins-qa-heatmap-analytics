@@ -115,13 +115,9 @@ jQuery(
 
 // サイト読み込みからdocument readyが走るまでの時間を更新
 qahm.updateMsec = function() {
-	let ajaxUrl = qahm.ajax_url;
-	let action  = 'qahm_ajax_update_msec';
-	if ( qahm.useMyAjax ) {
-		ajaxUrl = qahm.plugin_dir_url + 'qahm-ajax.php';
-		action  = 'update_msec';
-	}
-	
+	let ajaxUrl = qahm.plugin_dir_url + 'qahm-ajax.php';
+	let action  = 'update_msec';
+
 	jQuery.ajax(
 		{
 			type: 'POST',
@@ -220,12 +216,8 @@ qahm.postBehavioralData = function( forceRec = false ) {
 		isEvent = true;
 	}
 
-	let ajaxUrl = qahm.ajax_url;
-	let action  = 'qahm_ajax_record_behavioral_data';
-	if ( qahm.useMyAjax ) {
-		ajaxUrl = qahm.plugin_dir_url + 'qahm-ajax.php';
-		action  = 'record_behavioral_data';
-	}
+	let ajaxUrl = qahm.plugin_dir_url + 'qahm-ajax.php';
+	let action  = 'record_behavioral_data';
 
 	let data = new FormData();
 	data.append('action', action);

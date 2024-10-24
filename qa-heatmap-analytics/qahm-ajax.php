@@ -9,33 +9,20 @@
 //return wp-setting.php at line141
 define('SHORTINIT', true);
 //IMPORTANT: Change with the correct path to wp-load.php in your installation
-require '../../../wp-load.php' ;
-require_once '../../../wp-settings.php' ;
+require '../../../wp-load.php';
+require_once '../../../wp-settings.php';
 require_once ABSPATH . WPINC . '/l10n.php';
-//require( ABSPATH . WPINC . '/capabilities.php' );
-//require( ABSPATH . WPINC . '/class-wp-user.php' );
-//require( ABSPATH . WPINC . '/user.php' );
-//require( ABSPATH . WPINC . '/kses.php' );
-//require( ABSPATH . WPINC . '/rest-api.php' );
-
 
 wp_plugin_directory_constants();
-
 $GLOBALS['wp_plugin_paths'] = array();
-
-//wp_cookie_constants();
-//require_once ABSPATH . WPINC . '/pluggable.php';
-//require_once ABSPATH . WPINC . '/pluggable-deprecated.php';
-
 require_once ABSPATH . WPINC . '/link-template.php';
 
+// wp functions
+require_once ABSPATH . WPINC . '/http.php';
+require_once ABSPATH . WPINC . '/pluggable.php';
+require_once ABSPATH . WPINC . '/formatting.php';
 
-/**
- * [ ! ] DO NOT include the plugin main file since WP6.1
- */
-//require_once 'qahm.php';//=ERROR
-
-//call qahm files
+// call qahm files
 require_once 'qahm-const.php';
 require_once 'class-qahm-base.php';
 $qahm_base = new QAHM_Base;
@@ -46,7 +33,6 @@ require_once 'class-qahm-file-base.php';
 require_once 'class-qahm-file-data.php';
 require_once 'class-qahm-behavioral-data.php';
 
-
 // work around for apache_request_headers
 if( !function_exists('apache_request_headers') ) {
 	function apache_request_headers() {
@@ -56,11 +42,11 @@ if( !function_exists('apache_request_headers') ) {
 			if ( preg_match( $rx_http, $key ) ) {
 			  $arh_key = preg_replace( $rx_http, '', $key );
 			  $rx_matches = array();
-			  // do some nasty string manipulations to restore the original letter case
-			  // this should work in most cases
 			  $rx_matches = explode( '_', $arh_key );
-			  if ( count($rx_matches) > 0 and strlen($arh_key) > 2 ) {
-				foreach ( $rx_matches as $ak_key => $ak_val ) $rx_matches[$ak_key] = ucfirst( $ak_val );
+			  if ( count($rx_matches) > 0 && strlen($arh_key) > 2 ) {
+				foreach ( $rx_matches as $ak_key => $ak_val ) {
+					$rx_matches[$ak_key] = ucfirst( $ak_val );
+				}
 				$arh_key = implode( '-', $rx_matches );
 			  }
 			  $arh[$arh_key] = $val;
@@ -70,32 +56,31 @@ if( !function_exists('apache_request_headers') ) {
 	}
 }
 
-
-//qahm start
+// qahm start
 $behave         = new QAHM_Behavioral_Data;
 $base           = new QAHM_Base;
-$owndomain      = $_SERVER['SERVER_NAME'];
+$owndomain      = isset($_SERVER['SERVER_NAME']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME'])) : '';
 $allowed_origin = [ $owndomain ];
-$req_headers    = apache_request_headers( );
+$req_headers    = apache_request_headers();
 $req_origin     = '';
 if ( array_key_exists( 'Origin', $req_headers ) ) {
-	$req_origin = $req_headers['Origin'];
+	$req_origin = sanitize_text_field(wp_unslash($req_headers['Origin']));
 }
 if ( array_key_exists( 'ORIGIN', $req_headers ) ) {
-	$req_origin = $req_headers['ORIGIN'];
+	$req_origin = sanitize_text_field(wp_unslash($req_headers['ORIGIN']));
 }
 if ( array_key_exists( 'origin', $req_headers ) ) {
-	$req_origin = $req_headers['origin'];
+	$req_origin = sanitize_text_field(wp_unslash($req_headers['origin']));
 }
 $is_own_domain  = true;
 $orgin          = '';
 $action         = $base->wrap_filter_input( INPUT_POST, 'action' );
 
 // allowed domain?
-if ( $req_origin !== '' ) {
+if ( ! empty($req_origin) ) {
     $is_allowed = false;
     foreach ( $allowed_origin as $domain ) {
-        $host = parse_url( $req_origin, PHP_URL_HOST );
+        $host = wp_parse_url( $req_origin, PHP_URL_HOST );
         if ( $host === $domain ) {
             $orgin = $req_origin;
             if ($host === $owndomain ) {
@@ -112,14 +97,14 @@ if ( $req_origin !== '' ) {
 }
 
 // get ip address
-$ip_address = $_SERVER['REMOTE_ADDR'];
+$ip_address = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
 if (isset($_SERVER['HTTP_X_READ_IP'])) {
-    $ip_address = $_SERVER['HTTP_X_READ_IP'];
+    $ip_address = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_READ_IP']));
 }
 
 if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-    $ip_addresses = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+    $ip_addresses = explode(',', sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR'])));
     $ip_address = trim($ip_addresses[0]);
 }
 
@@ -130,14 +115,11 @@ if ( ! $behave->check_tracking_hash( $tracking_hash ) ) {
     exit;
 }
 
-
 // ok, start behavioral data
 $errmsg = '';
 
 switch ( $action ) {
     case 'init_session_data':
-        //$qa_id      = $base->wrap_filter_input( INPUT_COOKIE, 'qa_id' );
-
         $wp_qa_type = $base->wrap_filter_input( INPUT_POST, 'wp_qa_type' );
         $wp_qa_id   = $base->wrap_filter_input( INPUT_POST, 'wp_qa_id' );
         $title      = $base->wrap_filter_input( INPUT_POST, 'title' );
@@ -147,20 +129,17 @@ switch ( $action ) {
         $is_new_user   = (int)$base->wrap_filter_input( INPUT_POST, 'is_new_user' );
         $is_reject     = $base->wrap_filter_input( INPUT_POST, 'is_reject' );
         $is_reject     = ( $is_reject === 'true' ) ? true : false;
-        $ua         = $base->wrap_filter_input( INPUT_SERVER, 'HTTP_USER_AGENT' );
+        $ua         = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
 
         $posted_qa_id = $base->wrap_filter_input( INPUT_POST, 'qa_id' );
-        if ( empty( $posted_qa_id ) ){
-
-            //$anontrack = $qahm_db->get_anontrack( $tracking_id );
+        if ( empty( $posted_qa_id ) ) {
             $anontrack = $base->wrap_get_option( 'anontrack' );
             if( $anontrack == 1 ){
                 $qa_id = $base->create_qa_id( $ip_address, $ua, $tracking_hash );
             }else{
                 $qa_id = $base->create_qa_id( $ip_address, $ua, '' );
             }
-            
-        }else{
+        } else {
             $qa_id = $posted_qa_id;
         }
 
@@ -198,14 +177,14 @@ switch ( $action ) {
         $readers_name   = $base->wrap_filter_input( INPUT_POST, 'readers_name' );
         $type           = $base->wrap_filter_input( INPUT_POST, 'type' );
         $id             = $base->wrap_filter_input( INPUT_POST, 'id' );
-        $ua             = $base->wrap_filter_input( INPUT_POST, 'ua' );
+        $ua             = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
         $is_reject = $base->wrap_filter_input( INPUT_POST, 'is_reject' );
         $is_reject = ( $is_reject === 'true' ) ? true : false;
         if( ! $ua ) {
-            $ua = $_SERVER['HTTP_USER_AGENT'];
+            $ua = sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT']));
         }
         $output = $behave->record_behavioral_data( $is_pos, $is_click, $is_event, $raw_name, $readers_name, $type, $id, $ua, $is_reject );
-        echo $output;
+        echo esc_html( $output );
         break;
 
     default:
@@ -215,14 +194,12 @@ switch ( $action ) {
 
 exit;
 
-
-
 function return_json ( $data, $is_own_domain = true, $origin = '') {
     if ( ! $is_own_domain ) {
         header("Access-Control-Allow-Origin: {$origin}");
     }
     header("Content-Type: application/json; charset=utf-8");
-    echo json_encode($data);
+    echo wp_json_encode($data);
     exit;
 }
 
