@@ -11,7 +11,7 @@ Plugin URI: https://quarka.org/en/
 Description: Collects, records and visualizes visits data. You can own precise data and analyze them with stats, heatmap, session replay, and more.
 Author: QuarkA
 Author URI: https://quarka.org/en/
-Version: 4.1.2.0
+Version: 4.1.2.1
 Text Domain: qa-heatmap-analytics
 Requires at least: 5.6
 Tested up to: 6.6.0

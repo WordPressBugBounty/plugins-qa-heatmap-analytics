@@ -879,7 +879,7 @@ class QAHM_Admin_Page_Seo extends QAHM_Admin_Page_Base {
 			$err_text .= 'error message: ' . esc_html( $err_ary['message'] );
 
 			echo '<div class="qahm-announce-container">';
-			echo '<div class="qahm-announce-icon">' . wp_kses_post( $svg_icon ) . '</div>';
+			//echo '<div class="qahm-announce-icon">' . wp_kses_post( $svg_icon ) . '</div>';
 			echo '<div>' . wp_kses_post( $err_text ) . '</div>';
 			echo '</div>';
 			return;

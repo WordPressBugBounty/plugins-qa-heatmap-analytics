@@ -176,6 +176,22 @@ EOD;
 		$continue    = esc_attr_x( 'Continue', 'on pre-check panel', 'qa-heatmap-analytics' );
 		$alert_update_failed = esc_html__( 'Failed updating. You can set and update it from Settings.', 'qa-heatmap-analytics' );
 
+		// 許可するタグと属性を設定
+		$allowed_html = array(
+			'div' => array( 'class' => array() ),
+			'style' => array(),
+			'h3' => array(),
+			'p' => array( 'style' => array() ),
+			'ul' => array( 'style' => array(), 'class' => array() ),
+			'li' => array(),
+			'span' => array( 'class' => array() ),
+			'a' => array( 'href' => array(), 'target' => array(), 'rel' => array() ),
+			'img' => array( 'src' => array(), 'alt' => array() ),
+			'form' => array( 'onsubmit' => array() ),
+			'input' => array( 'type' => array(), 'id' => array(), 'name' => array(), 'required' => array(), 'value' => array(), 'class' => array(), 'align' => array() ),
+			'script' => array( 'type' => array() ),
+		);
+
 	    $html = <<< EOL
 
 		<style>
@@ -254,7 +270,7 @@ EOD;
 		</script>
 EOL;
 
-		echo wp_kses_post($html);
+		echo wp_kses( $html, $allowed_html );
 	}
 
 	/**
