@@ -8,9 +8,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Handler\FingersCrossed;
 
-use QAAnalyticsVendor\Monolog\Logger;
+namespace Monolog\Handler\FingersCrossed;
+
+use Monolog\Logger;
+
 /**
  * Error level based activation strategy.
  *
@@ -19,10 +21,12 @@ use QAAnalyticsVendor\Monolog\Logger;
 class ErrorLevelActivationStrategy implements ActivationStrategyInterface
 {
     private $actionLevel;
+
     public function __construct($actionLevel)
     {
         $this->actionLevel = Logger::toMonologLevel($actionLevel);
     }
+
     public function isHandlerActivated(array $record)
     {
         return $record['level'] >= $this->actionLevel;

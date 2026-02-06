@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,112 +14,115 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class AccountTicket extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class AccountTicket extends \Google\Model
 {
-    protected $accountType = Account::class;
-    protected $accountDataType = '';
-    /**
-     * @var string
-     */
-    public $id;
-    /**
-     * @var string
-     */
-    public $kind;
-    protected $profileType = Profile::class;
-    protected $profileDataType = '';
-    /**
-     * @var string
-     */
-    public $redirectUri;
-    protected $webpropertyType = Webproperty::class;
-    protected $webpropertyDataType = '';
-    /**
-     * @param Account
-     */
-    public function setAccount(Account $account)
-    {
-        $this->account = $account;
-    }
-    /**
-     * @return Account
-     */
-    public function getAccount()
-    {
-        return $this->account;
-    }
-    /**
-     * @param string
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param Profile
-     */
-    public function setProfile(Profile $profile)
-    {
-        $this->profile = $profile;
-    }
-    /**
-     * @return Profile
-     */
-    public function getProfile()
-    {
-        return $this->profile;
-    }
-    /**
-     * @param string
-     */
-    public function setRedirectUri($redirectUri)
-    {
-        $this->redirectUri = $redirectUri;
-    }
-    /**
-     * @return string
-     */
-    public function getRedirectUri()
-    {
-        return $this->redirectUri;
-    }
-    /**
-     * @param Webproperty
-     */
-    public function setWebproperty(Webproperty $webproperty)
-    {
-        $this->webproperty = $webproperty;
-    }
-    /**
-     * @return Webproperty
-     */
-    public function getWebproperty()
-    {
-        return $this->webproperty;
-    }
+  protected $accountType = Account::class;
+  protected $accountDataType = '';
+  /**
+   * @var string
+   */
+  public $id;
+  /**
+   * @var string
+   */
+  public $kind;
+  protected $profileType = Profile::class;
+  protected $profileDataType = '';
+  /**
+   * @var string
+   */
+  public $redirectUri;
+  protected $webpropertyType = Webproperty::class;
+  protected $webpropertyDataType = '';
+
+  /**
+   * @param Account
+   */
+  public function setAccount(Account $account)
+  {
+    $this->account = $account;
+  }
+  /**
+   * @return Account
+   */
+  public function getAccount()
+  {
+    return $this->account;
+  }
+  /**
+   * @param string
+   */
+  public function setId($id)
+  {
+    $this->id = $id;
+  }
+  /**
+   * @return string
+   */
+  public function getId()
+  {
+    return $this->id;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param Profile
+   */
+  public function setProfile(Profile $profile)
+  {
+    $this->profile = $profile;
+  }
+  /**
+   * @return Profile
+   */
+  public function getProfile()
+  {
+    return $this->profile;
+  }
+  /**
+   * @param string
+   */
+  public function setRedirectUri($redirectUri)
+  {
+    $this->redirectUri = $redirectUri;
+  }
+  /**
+   * @return string
+   */
+  public function getRedirectUri()
+  {
+    return $this->redirectUri;
+  }
+  /**
+   * @param Webproperty
+   */
+  public function setWebproperty(Webproperty $webproperty)
+  {
+    $this->webproperty = $webproperty;
+  }
+  /**
+   * @return Webproperty
+   */
+  public function getWebproperty()
+  {
+    return $this->webproperty;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(AccountTicket::class, 'QAAnalyticsVendor\\Google_Service_Analytics_AccountTicket');
+class_alias(AccountTicket::class, 'Google_Service_Analytics_AccountTicket');

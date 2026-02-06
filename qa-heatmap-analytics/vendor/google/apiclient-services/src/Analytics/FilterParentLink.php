@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class FilterParentLink extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class FilterParentLink extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $href;
-    /**
-     * @var string
-     */
-    public $type;
-    /**
-     * @param string
-     */
-    public function setHref($href)
-    {
-        $this->href = $href;
-    }
-    /**
-     * @return string
-     */
-    public function getHref()
-    {
-        return $this->href;
-    }
-    /**
-     * @param string
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
+  /**
+   * @var string
+   */
+  public $href;
+  /**
+   * @var string
+   */
+  public $type;
+
+  /**
+   * @param string
+   */
+  public function setHref($href)
+  {
+    $this->href = $href;
+  }
+  /**
+   * @return string
+   */
+  public function getHref()
+  {
+    return $this->href;
+  }
+  /**
+   * @param string
+   */
+  public function setType($type)
+  {
+    $this->type = $type;
+  }
+  /**
+   * @return string
+   */
+  public function getType()
+  {
+    return $this->type;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(FilterParentLink::class, 'QAAnalyticsVendor\\Google_Service_Analytics_FilterParentLink');
+class_alias(FilterParentLink::class, 'Google_Service_Analytics_FilterParentLink');

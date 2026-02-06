@@ -8,7 +8,8 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Processor;
+
+namespace Monolog\Processor;
 
 /**
  * Injects memory_get_usage in all records
@@ -24,9 +25,11 @@ class MemoryUsageProcessor extends MemoryProcessor
      */
     public function __invoke(array $record)
     {
-        $bytes = \memory_get_usage($this->realUsage);
+        $bytes = memory_get_usage($this->realUsage);
         $formatted = $this->formatBytes($bytes);
+
         $record['extra']['memory_usage'] = $formatted;
+
         return $record;
     }
 }

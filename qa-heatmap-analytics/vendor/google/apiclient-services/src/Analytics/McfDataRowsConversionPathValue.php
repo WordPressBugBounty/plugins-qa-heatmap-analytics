@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class McfDataRowsConversionPathValue extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class McfDataRowsConversionPathValue extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $interactionType;
-    /**
-     * @var string
-     */
-    public $nodeValue;
-    /**
-     * @param string
-     */
-    public function setInteractionType($interactionType)
-    {
-        $this->interactionType = $interactionType;
-    }
-    /**
-     * @return string
-     */
-    public function getInteractionType()
-    {
-        return $this->interactionType;
-    }
-    /**
-     * @param string
-     */
-    public function setNodeValue($nodeValue)
-    {
-        $this->nodeValue = $nodeValue;
-    }
-    /**
-     * @return string
-     */
-    public function getNodeValue()
-    {
-        return $this->nodeValue;
-    }
+  /**
+   * @var string
+   */
+  public $interactionType;
+  /**
+   * @var string
+   */
+  public $nodeValue;
+
+  /**
+   * @param string
+   */
+  public function setInteractionType($interactionType)
+  {
+    $this->interactionType = $interactionType;
+  }
+  /**
+   * @return string
+   */
+  public function getInteractionType()
+  {
+    return $this->interactionType;
+  }
+  /**
+   * @param string
+   */
+  public function setNodeValue($nodeValue)
+  {
+    $this->nodeValue = $nodeValue;
+  }
+  /**
+   * @return string
+   */
+  public function getNodeValue()
+  {
+    return $this->nodeValue;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(McfDataRowsConversionPathValue::class, 'QAAnalyticsVendor\\Google_Service_Analytics_McfDataRowsConversionPathValue');
+class_alias(McfDataRowsConversionPathValue::class, 'Google_Service_Analytics_McfDataRowsConversionPathValue');

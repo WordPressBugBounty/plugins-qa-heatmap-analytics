@@ -3,6 +3,7 @@ var qahm = qahm || {};
 qahm.loadScreen.promise()
 .then(
 	function() {
+		/*
 		// 配列から対応したパーセント値を渡す
 		qahm.createCap = function( versionId, devName, startDate, endDate, isTarBlank ) {
 			qahm.showLoadIcon();
@@ -143,26 +144,13 @@ qahm.loadScreen.promise()
 			);
 		}
 
+		*/
 
 		// 配列から対応したパーセント値を渡す
-		qahm.createCapZero = function( startDate, endDate, pageId, deviceName, isTarBlank ) {
+		qahm.createCap = function( startDate, endDate, pageId, deviceName, isLandingPage, media, tracking_id ) {
 			qahm.showLoadIcon();
 
 			let start_time = new Date().getTime();
-			
-			// ポップアップブロック対策として先にウインドウを開く
-			let windowOpen = null;
-			let height     = window.outerHeight * 0.8;
-			switch ( deviceName ) {
-				case 'smp':
-					opt = 'width=375,height=' + height;
-					windowOpen = window.open( '', '', opt );
-					break;
-				case 'tab':
-					opt = 'width=768,height=' + height;
-					windowOpen = window.open( '', '', opt );
-					break;
-			}
 			
 			jQuery.ajax(
 				{
@@ -170,17 +158,21 @@ qahm.loadScreen.promise()
 					url: qahm.ajax_url,
 					dataType : 'json',
 					data: {
-						'action' : 'qahm_ajax_create_heatmap_file_zero',
+						'action' : 'qahm_ajax_create_heatmap_file',
+						'tracking_id': tracking_id,
 						'start_date': startDate,
 						'end_date': endDate,
 						'page_id': pageId,
 						'device_name': deviceName,
+						'is_landing_page': isLandingPage,
+						'media': media,
 					},
 				}
 			).done(
 				function( url ){
-					if( ! url ) {
-						console.log( 'failed : create cap.php');
+					// 変数 url の内容を確認
+					if (typeof url !== 'string' || ! url.startsWith('http')) {
+						alert( url );
 						qahm.hideLoadIcon();
 						return;
 					}
@@ -195,25 +187,18 @@ qahm.loadScreen.promise()
 						setTimeout(
 							function(){
 								qahm.hideLoadIcon();
-								if ( isTarBlank ) {
-									windowOpen ? windowOpen.location.href = url : window.open( url, '_blank' );
-								} else {
-									location.href = url;
-								}
+								window.open( url, '_blank' );
 							},
 							(min_time - load_time)
 						);
 					} else {
 						qahm.hideLoadIcon();
-						if ( isTarBlank ) {
-							windowOpen ? windowOpen.location.href = url : window.open( url, '_blank' );
-						} else {
-							location.href = url;
-						}
+						window.open( url, '_blank' );
 					}
 				}
 			);
 		}
+
 
 		// アドミンバーのリンククリック
 		// ここを復活させるにはqahm-loadのqahm.version_idの設定が必要あり（その時にデータがあるページの最大バージョン値がよさそう）

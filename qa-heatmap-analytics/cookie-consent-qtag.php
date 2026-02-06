@@ -9,16 +9,15 @@
     $file_name   = './js/cookie-consent-qtag.js';
     $cookie_consent = "false";
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- This input is strictly controlled within the plugin and used only in a non-sensitive context, making nonce verification unnecessary.
-	if ( isset($_GET['cookie_consent']) ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- This input is processed internally and only used for strict string comparison ("yes" or other values), ensuring no security risks arise from arbitrary input.
-        if( $_GET['cookie_consent'] == "yes" ){
-            $cookie_consent = "true";
-        }
-	}
+    $cookie_consent_setting = $_GET['cookie_consent'];
 
-    if( file_exists( $file_name ) ){
-        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.Security.EscapeOutput.OutputNotEscaped -- This file outputs JavaScript content directly within the plugin, making wp_remote_get() unnecessary and escaping irrelevant since the content is safely managed internally.
+    if( $cookie_consent_setting == "yes" ){
+        $cookie_consent = "true";
+    }
+
+    if( file_exists( $file_name )){
+        // Plugin Check exclusion: Directly outputs a JavaScript file (Content-Type: application/x-javascript), not HTML context.
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo str_replace('"{cookie_consent}"', $cookie_consent, file_get_contents( $file_name ));
     }
 

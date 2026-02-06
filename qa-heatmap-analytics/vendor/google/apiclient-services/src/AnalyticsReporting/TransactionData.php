@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,55 +14,58 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class TransactionData extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class TransactionData extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $transactionId;
-    public $transactionRevenue;
-    public $transactionShipping;
-    public $transactionTax;
-    /**
-     * @param string
-     */
-    public function setTransactionId($transactionId)
-    {
-        $this->transactionId = $transactionId;
-    }
-    /**
-     * @return string
-     */
-    public function getTransactionId()
-    {
-        return $this->transactionId;
-    }
-    public function setTransactionRevenue($transactionRevenue)
-    {
-        $this->transactionRevenue = $transactionRevenue;
-    }
-    public function getTransactionRevenue()
-    {
-        return $this->transactionRevenue;
-    }
-    public function setTransactionShipping($transactionShipping)
-    {
-        $this->transactionShipping = $transactionShipping;
-    }
-    public function getTransactionShipping()
-    {
-        return $this->transactionShipping;
-    }
-    public function setTransactionTax($transactionTax)
-    {
-        $this->transactionTax = $transactionTax;
-    }
-    public function getTransactionTax()
-    {
-        return $this->transactionTax;
-    }
+  /**
+   * @var string
+   */
+  public $transactionId;
+  public $transactionRevenue;
+  public $transactionShipping;
+  public $transactionTax;
+
+  /**
+   * @param string
+   */
+  public function setTransactionId($transactionId)
+  {
+    $this->transactionId = $transactionId;
+  }
+  /**
+   * @return string
+   */
+  public function getTransactionId()
+  {
+    return $this->transactionId;
+  }
+  public function setTransactionRevenue($transactionRevenue)
+  {
+    $this->transactionRevenue = $transactionRevenue;
+  }
+  public function getTransactionRevenue()
+  {
+    return $this->transactionRevenue;
+  }
+  public function setTransactionShipping($transactionShipping)
+  {
+    $this->transactionShipping = $transactionShipping;
+  }
+  public function getTransactionShipping()
+  {
+    return $this->transactionShipping;
+  }
+  public function setTransactionTax($transactionTax)
+  {
+    $this->transactionTax = $transactionTax;
+  }
+  public function getTransactionTax()
+  {
+    return $this->transactionTax;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(TransactionData::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_TransactionData');
+class_alias(TransactionData::class, 'Google_Service_AnalyticsReporting_TransactionData');

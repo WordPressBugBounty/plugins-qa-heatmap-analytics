@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,99 +14,102 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class Columns extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\Analytics;
+
+class Columns extends \Google\Collection
 {
-    protected $collection_key = 'items';
-    /**
-     * @var string[]
-     */
-    public $attributeNames;
-    /**
-     * @var string
-     */
-    public $etag;
-    protected $itemsType = Column::class;
-    protected $itemsDataType = 'array';
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @var int
-     */
-    public $totalResults;
-    /**
-     * @param string[]
-     */
-    public function setAttributeNames($attributeNames)
-    {
-        $this->attributeNames = $attributeNames;
-    }
-    /**
-     * @return string[]
-     */
-    public function getAttributeNames()
-    {
-        return $this->attributeNames;
-    }
-    /**
-     * @param string
-     */
-    public function setEtag($etag)
-    {
-        $this->etag = $etag;
-    }
-    /**
-     * @return string
-     */
-    public function getEtag()
-    {
-        return $this->etag;
-    }
-    /**
-     * @param Column[]
-     */
-    public function setItems($items)
-    {
-        $this->items = $items;
-    }
-    /**
-     * @return Column[]
-     */
-    public function getItems()
-    {
-        return $this->items;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param int
-     */
-    public function setTotalResults($totalResults)
-    {
-        $this->totalResults = $totalResults;
-    }
-    /**
-     * @return int
-     */
-    public function getTotalResults()
-    {
-        return $this->totalResults;
-    }
+  protected $collection_key = 'items';
+  /**
+   * @var string[]
+   */
+  public $attributeNames;
+  /**
+   * @var string
+   */
+  public $etag;
+  protected $itemsType = Column::class;
+  protected $itemsDataType = 'array';
+  /**
+   * @var string
+   */
+  public $kind;
+  /**
+   * @var int
+   */
+  public $totalResults;
+
+  /**
+   * @param string[]
+   */
+  public function setAttributeNames($attributeNames)
+  {
+    $this->attributeNames = $attributeNames;
+  }
+  /**
+   * @return string[]
+   */
+  public function getAttributeNames()
+  {
+    return $this->attributeNames;
+  }
+  /**
+   * @param string
+   */
+  public function setEtag($etag)
+  {
+    $this->etag = $etag;
+  }
+  /**
+   * @return string
+   */
+  public function getEtag()
+  {
+    return $this->etag;
+  }
+  /**
+   * @param Column[]
+   */
+  public function setItems($items)
+  {
+    $this->items = $items;
+  }
+  /**
+   * @return Column[]
+   */
+  public function getItems()
+  {
+    return $this->items;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param int
+   */
+  public function setTotalResults($totalResults)
+  {
+    $this->totalResults = $totalResults;
+  }
+  /**
+   * @return int
+   */
+  public function getTotalResults()
+  {
+    return $this->totalResults;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Columns::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Columns');
+class_alias(Columns::class, 'Google_Service_Analytics_Columns');

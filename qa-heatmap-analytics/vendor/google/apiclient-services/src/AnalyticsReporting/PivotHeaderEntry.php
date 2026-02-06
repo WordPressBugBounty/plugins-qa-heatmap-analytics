@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,63 +14,66 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class PivotHeaderEntry extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class PivotHeaderEntry extends \Google\Collection
 {
-    protected $collection_key = 'dimensionValues';
-    /**
-     * @var string[]
-     */
-    public $dimensionNames;
-    /**
-     * @var string[]
-     */
-    public $dimensionValues;
-    protected $metricType = MetricHeaderEntry::class;
-    protected $metricDataType = '';
-    /**
-     * @param string[]
-     */
-    public function setDimensionNames($dimensionNames)
-    {
-        $this->dimensionNames = $dimensionNames;
-    }
-    /**
-     * @return string[]
-     */
-    public function getDimensionNames()
-    {
-        return $this->dimensionNames;
-    }
-    /**
-     * @param string[]
-     */
-    public function setDimensionValues($dimensionValues)
-    {
-        $this->dimensionValues = $dimensionValues;
-    }
-    /**
-     * @return string[]
-     */
-    public function getDimensionValues()
-    {
-        return $this->dimensionValues;
-    }
-    /**
-     * @param MetricHeaderEntry
-     */
-    public function setMetric(MetricHeaderEntry $metric)
-    {
-        $this->metric = $metric;
-    }
-    /**
-     * @return MetricHeaderEntry
-     */
-    public function getMetric()
-    {
-        return $this->metric;
-    }
+  protected $collection_key = 'dimensionValues';
+  /**
+   * @var string[]
+   */
+  public $dimensionNames;
+  /**
+   * @var string[]
+   */
+  public $dimensionValues;
+  protected $metricType = MetricHeaderEntry::class;
+  protected $metricDataType = '';
+
+  /**
+   * @param string[]
+   */
+  public function setDimensionNames($dimensionNames)
+  {
+    $this->dimensionNames = $dimensionNames;
+  }
+  /**
+   * @return string[]
+   */
+  public function getDimensionNames()
+  {
+    return $this->dimensionNames;
+  }
+  /**
+   * @param string[]
+   */
+  public function setDimensionValues($dimensionValues)
+  {
+    $this->dimensionValues = $dimensionValues;
+  }
+  /**
+   * @return string[]
+   */
+  public function getDimensionValues()
+  {
+    return $this->dimensionValues;
+  }
+  /**
+   * @param MetricHeaderEntry
+   */
+  public function setMetric(MetricHeaderEntry $metric)
+  {
+    $this->metric = $metric;
+  }
+  /**
+   * @return MetricHeaderEntry
+   */
+  public function getMetric()
+  {
+    return $this->metric;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(PivotHeaderEntry::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_PivotHeaderEntry');
+class_alias(PivotHeaderEntry::class, 'Google_Service_AnalyticsReporting_PivotHeaderEntry');

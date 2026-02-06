@@ -1,6 +1,6 @@
 <?php
 
-namespace QAAnalyticsVendor\GuzzleHttp\Psr7;
+namespace GuzzleHttp\Psr7;
 
 final class Rfc7230
 {
@@ -14,6 +14,6 @@ final class Rfc7230
      *
      * @license https://github.com/amphp/http/blob/v1.0.1/LICENSE
      */
-    const HEADER_REGEX = "(^([^()<>@,;:\\\"/[\\]?={}\x01- ]++):[ \t]*+((?:[ \t]*+[!-~\x80-\xff]++)*+)[ \t]*+\r?\n)m";
+    const HEADER_REGEX = "(^([^()<>@,;:\\\"/[\]?={}\x01-\x20\x7F]++):[ \t]*+((?:[ \t]*+[\x21-\x7E\x80-\xFF]++)*+)[ \t]*+\r?\n)m";
     const HEADER_FOLD_REGEX = "(\r?\n[ \t]++)";
 }

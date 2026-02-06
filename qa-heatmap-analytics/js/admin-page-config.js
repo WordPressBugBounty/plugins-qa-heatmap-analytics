@@ -12,7 +12,7 @@
             el_loadings[iii].style.display = "none";
         }
 //mkdummy
-        let tab_item = document.getElementsByClassName('tab_item');
+        let tab_item = document.getElementsByClassName('qahm-config__tab-item');
         for ( let iii = 0; iii < tab_item.length; iii++ ) {
             tab_item[iii].addEventListener( 'click',  (e) => {
                 let idname = e.target.htmlFor;
@@ -26,7 +26,9 @@
             // jQuery( `#g${gid}_event-iframe-containar` ).hide();
             let typeradios = document.getElementsByName( `g${gid}_type` );
             let iframeX = document.getElementById(`g${gid}_event-iframe`);
-            iframeX.src = `${g_clickpage[gid]}`;
+			// 開発環境等セキュリティの高いページをiframeで参照させた場合、g_clickpage[gid]内でエラーが発生する可能性がある。そのためにsrcを空白にする暫定措置を施した
+			//iframeX.src = `${g_clickpage[gid]}`;
+			iframeX.src = '';
             iframeX.addEventListener('load',function(){
                 for ( let jjj = 0; jjj < typeradios.length; jjj++ ) {
                     typeradios[jjj].addEventListener( 'click', showGoalTextboxes );
@@ -50,6 +52,19 @@
             }
         }
 //mkdummy
+
+//QA ZERO start
+        // let sm_table_all_cbx = document.getElementById("sm_table_all_cbx");
+        // sm_table_all_cbx.addEventListener("change",function(){
+
+        //     let sm_table_cbxs = document.getElementsByClassName("sm_table_cbx");
+        //     for(let i=0;i<sm_table_cbxs.length;i++){
+        //         sm_table_cbxs[i].checked = this.checked;
+        //     }
+
+        // }
+        // );
+//QA ZERO end
 
     }
     function calcSales( obj ) {
@@ -131,16 +146,22 @@
 
     function siteinfoChanges(formobj) {
         // let submitobj = e.target;
-        let siteinfo_form   = formobj;
-        let target_customer = siteinfo_form[`target_customer`].value;
+        let siteinfo_form     = formobj;
+        let idname    = formobj.id;
+        let idsplit   = idname.split('_');
+        let gnum      = idsplit[0].slice(1);
+        let submitobj = document.getElementById(`g${gnum}_submit`);
+
+        let target_customer      = siteinfo_form[`target_customer`].value;
         let sitetype  = siteinfo_form[`sitetype`].value;
         let membership  = siteinfo_form[`membership`].value;
         let payment       = siteinfo_form[`payment`].value;
         let month_later  = siteinfo_form[`month_later`].value;
         let session_goal = siteinfo_form[`session_goal`].value;
-
-		qahm.showLoadIcon();
-		let start_time = new Date().getTime();
+        let url = new URL(window.location.href);
+        let params = url.searchParams;
+        let tracking_id = params.get('tracking_id');
+        
         jQuery.ajax(
             {
                 type: 'POST',
@@ -154,53 +175,18 @@
                     'payment':  payment,
                     'month_later':  month_later,
                     'session_goal': session_goal,
-                    'nonce':qahm.nonce_api
+                    'nonce':qahm.nonce_api,
+                    'tracking_id':tracking_id
                 }
             }
         ).done(
             function( data ){
-				function saveSiteInfoDone() {
-					AlertMessage.alert(
-						qahml10n['alert_message_success'],
-						qahml10n['site_info_saved'],
-						'success',
-						function(){}
-					);
-					qahm.hideLoadIcon();
-				}
-
-				if ( data ) {
-					// 最低読み込み時間経過後に処理実行
-					let now_time  = new Date().getTime();
-					let load_time = now_time - start_time;
-					let min_time  = 600;
-
-					if ( load_time < min_time ) {
-						// ロードアイコンを削除して新しいウインドウを開く
-						setTimeout( saveSiteInfoDone, (min_time - load_time) );
-					} else {
-						saveSiteInfoDone();
-					}
-				} else {
-					AlertMessage.alert(
-						qahml10n['alert_message_failed'],
-						qahml10n['site_info_failed'],
-						'error',
-						function(){}
-					);
-					qahm.hideLoadIcon();
-				}
+				location.reload();
             }
         ).fail(
             function( jqXHR, textStatus, errorThrown ){
                 qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
-				AlertMessage.alert(
-					qahml10n['alert_message_failed'],
-					qahml10n['site_info_failed'],
-					'error',
-					function(){}
-				);
-				qahm.hideLoadIcon();
+                alert( qahml10n['cnv_couldnt_saved'] );
             }
         ).always(
             function(){
@@ -209,75 +195,62 @@
     }
 
     function deleteGoalX( gid ) {
-		AlertMessage.confirm(
-			qahm.sprintf( qahml10n['cnv_delete_title'], gid ),
-			qahml10n['cnv_delete_confirm'],
-			'info',
-			function () {
-				let start_time = new Date().getTime();
-				qahm.showLoadIcon();
-				jQuery.ajax(
-					{
-						type: 'POST',
-						url: qahm.ajax_url,
-						dataType : 'json',
-						data: {
-							'action'  : 'qahm_ajax_delete_goal_x',
-							'gid':      gid,
-							'nonce':qahm.nonce_api
-						}
-					}
-				).done(
-					function( data ){
-						function deleteGoalXDone() {
-							AlertMessage.alert(
-								qahml10n['alert_message_success'],
-								qahm.sprintf( qahml10n['cnv_success_delete'], gid ),
-								'success',
-								function(){}
-							);
+        let result = window.confirm( qahml10n['cnv_delete_confirm'] );
+        let url = new URL(window.location.href);
+        let params = url.searchParams;
+        let tracking_id = params.get('tracking_id');
+        if (result) {
+            let start_time = new Date().getTime();
+            jQuery.ajax(
+                {
+                    type: 'POST',
+                    url: qahm.ajax_url,
+                    dataType : 'json',
+                    data: {
+                        'action'  : 'qahm_ajax_delete_goal_x',
+                        'gid':      gid,
+                        'nonce':qahm.nonce_api,
+                        'tracking_id':tracking_id
+                    }
+                }
+            ).done(
+                function( data ){
+                    function deleteGoalXDone() {
+                        AlertMessage.alert(
+                            qahml10n['alert_message_success'],
+                            qahm.sprintf( qahml10n['cnv_deleted'], gid ) + '<br>' + qahml10n['cnv_deleted2'],
+                            'success',
+                            function(){
+                                qahm.hideLoadIcon();
+                                location.reload();
+                            }
+                        );                        
+                    }
+                    // 最低読み込み時間経過後に処理実行
+                    let now_time  = new Date().getTime();
+                    let load_time = now_time - start_time;
+                    let min_time  = 600;
 
-							qahm.hideLoadIcon();
-							location.reload();
-						}
-
-						if ( data ) {
-							// 最低読み込み時間経過後に処理実行
-							let now_time  = new Date().getTime();
-							let load_time = now_time - start_time;
-							let min_time  = 600;
-
-							if ( load_time < min_time ) {
-								// ロードアイコンを削除して新しいウインドウを開く
-								setTimeout( deleteGoalXDone, (min_time - load_time) );
-							} else {
-								deleteGoalXDone();
-							}
-						} else {
-							AlertMessage.alert(
-								qahml10n['alert_message_failed'],
-								qahml10n['cnv_couldnt_delete'],
-								'error',
-								function(){}
-							);
-							qahm.hideLoadIcon();
-						}
-
-					}
-				).fail(
-					function( jqXHR, textStatus, errorThrown ){
-						qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
-						AlertMessage.alert(
-							qahml10n['alert_message_failed'],
-							qahml10n['cnv_couldnt_delete'],
-							'error',
-							function(){}
-						);
-						qahm.hideLoadIcon();
-					}
-				);
-			}
-		);
+                    if ( load_time < min_time ) {
+                        // ロードアイコンを削除して新しいウインドウを開く
+                        setTimeout( deleteGoalXDone, (min_time - load_time) );
+                    } else {
+                        deleteGoalXDone();
+                    }
+                    //location.reload();
+                }
+            ).fail(
+                function( jqXHR, textStatus, errorThrown ){
+                    qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
+                    alert( qahml10n['cnv_couldnt_delete'] );
+                }
+            ).always(
+                function(){
+                }
+            );
+        } else {
+            return false;
+        }
     }
 
 
@@ -299,8 +272,10 @@
         let g_eventtype = gform[`g${gnum}_eventtype`].value;
         let g_clickselector = gform[`g${gnum}_clickselector`].value;
         let g_eventselector = gform[`g${gnum}_eventselector`].value;
-
-
+		let url = new URL(window.location.href);
+		let params = url.searchParams;
+		let tracking_id = params.get('tracking_id');
+        
         //required check
         if ( gtitle === '' ) {
             return
@@ -328,8 +303,7 @@
         let backupvalue = submitobj.value;
         submitobj.disabled = true;
         submitobj.value = qahml10n['cnv_saving'];
-		qahm.showLoadIcon();
-		let start_time = new Date().getTime();
+
         jQuery.ajax(
             {
                 type: 'POST',
@@ -348,95 +322,96 @@
                     'g_eventtype': g_eventtype,
                     'g_clickselector': g_clickselector,
                     'g_eventselector': g_eventselector,
-                    'nonce':qahm.nonce_api
+                    'nonce':qahm.nonce_api,
+                    'tracking_id': tracking_id
                 }
             }
         ).done(
             function( data ){
-				function saveGoalXDone() {
-					if ( data === 'no_page_id' ) {
-						AlertMessage.alert(
-							qahml10n['alert_message_failed'],
-							qahml10n['nothing_page_id'] + '<br>' + qahml10n['nothing_page_id2'],
-							'error',
-							function(){}
-						);
-					} else if ( data === 'wrong_delimiter' ) {
-						AlertMessage.alert(
-							qahml10n['alert_message_failed'],
-							qahml10n['wrong_regex_delimiter'],
-							'error',
-							function(){}
-						);
-					} else if(Array.isArray(data) && !data.length) {
-						AlertMessage.alert(
-							qahml10n['alert_message_failed'],
-							'',
-							'error',
-							function(){}
-						);
+                let saveStatus = data['status'];
+                if ( saveStatus !== 'error' ) { 
+                    let msg = '';          
+                    switch ( saveStatus ) {
+                        case 'in_progress':                            
+                            if ( data['estimated_sec'] != null ) {
+                                let estimateSec = data['estimated_sec'] + 20; // 20秒多めに見積もっておく
+                                let minutes = Math.floor(estimateSec / 60);
+                                let remainingSeconds = estimateSec % 60;
+                                let estimatedTime = '';
+                                if ( minutes > 0 ) {
+                                    estimatedTime += minutes + qahml10n['x_minutes'];
+                                }
+                                if ( remainingSeconds > 0 ) {
+                                    estimatedTime += remainingSeconds + qahml10n['x_seconds'];
+                                }
+                                msg = qahml10n['cnv_in_progress'] + '<br>' + qahml10n['cnv_estimated_time'] + estimatedTime;
+                            } else {
+                                msg = qahml10n['cnv_in_progress'] + '<br>' + qahml10n['cnv_estimated_time2'];
+                            }
+                            
+                            AlertMessage.alert(
+                                qahml10n['alert_message_success'],
+                                qahm.sprintf( qahml10n['cnv_saved_1'], gnum ) + '<br>' + msg,
+                                'success',
+                                function(){}
+                            );
+                            break;
 
-					} else {
-						let count = data['count'];
-						let btnstr = qahml10n['cnv_reaching_goal_notice'];
-						if ( isNaN( count ) || Number( count ) === 0 ) {
-							btnstr = qahml10n['goal_saved'];
-						}
-						submitobj.value = btnstr;
-						AlertMessage.alert(
-							qahml10n['alert_message_success'],
-							qahm.sprintf( qahml10n['cnv_saved_1'], gnum ) + '<br>' + qahml10n['cnv_saved_2'],
-							'success',
-							function(){}
-						);
-					}
+                        case 'done':
+                            let goalCompFlg = data['goal_comp_flg'];
+                            msg = qahm.sprintf( qahml10n['cnv_saved_1'], gnum );
+                            if ( goalCompFlg ) {
+                                msg += '<br>' + qahml10n['cnv_reaching_goal_notice'];
+                            }
+                            AlertMessage.alert(
+                                qahml10n['alert_message_success'],
+                                msg,
+                                'success',
+                                function(){}
+                            );
+                            break;
 
-					setTimeout( function(){
-						submitobj.value = backupvalue;
-						submitobj.disabled = false;
-					}, 2000 );
-					qahm.hideLoadIcon();
-				}
+                        case 'no_pvterm':
+                            AlertMessage.alert(
+                                qahml10n['alert_message_success'],
+                                qahml10n['no_pvterm'],
+                                'success',
+                                function(){}
+                            );                           
+                            break;
+                    }
+                    setTimeout(function(){submitobj.value = backupvalue; submitobj.disabled = true;}, 1000);
 
-				// 最低読み込み時間経過後に処理実行
-				let now_time  = new Date().getTime();
-				let load_time = now_time - start_time;
-				let min_time  = 600;
+                } else {
+                    let errorReason = data['reason'];
+                    let msg = '';
+                    switch ( errorReason ) {
+                        case 'no_page_id':
+                            msg = qahml10n['cnv_save_failed'] + '<br>' + qahml10n['nothing_page_id'] + '<br>' + qahml10n['nothing_page_id2'];
+                            break;
+                        case 'wrong_delimiter':
+                            msg = qahml10n['wrong_regex_delimiter'];
+                            break;
 
-				if ( load_time < min_time ) {
-					// ロードアイコンを削除して新しいウインドウを開く
-					setTimeout( saveGoalXDone, (min_time - load_time) );
-				} else {
-					saveGoalXDone();
-				}
-
+                    }
+                    AlertMessage.alert(
+                        qahml10n['alert_message_failed'],
+                        msg,
+                        'error',
+                        function(){}
+                    );
+                    setTimeout(function(){submitobj.value = backupvalue; submitobj.disabled =false;}, 2000);
+                }                
             }
         ).fail(
             function( jqXHR, textStatus, errorThrown ){
-				function saveGoalXFail() {
-					qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
-					AlertMessage.alert(
-						qahml10n['alert_message_failed'],
-						qahml10n['cnv_couldnt_saved'],
-						'error',
-						function(){}
-					);
-					submitobj.value = backupvalue;
-					submitobj.disabled = false;
-					qahm.hideLoadIcon();
-				}
-
-				// 最低読み込み時間経過後に処理実行
-				let now_time  = new Date().getTime();
-				let load_time = now_time - start_time;
-				let min_time  = 600;
-
-				if ( load_time < min_time ) {
-					// ロードアイコンを削除して新しいウインドウを開く
-					setTimeout( saveGoalXFail, (min_time - load_time) );
-				} else {
-					saveGoalXFail();
-				}
+                qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
+                alert( qahml10n['cnv_couldnt_saved'] );
+                submitobj.value = backupvalue;
+                submitobj.disabled = false;
+            }
+        ).always(
+            function(){
             }
         );
     }
@@ -457,37 +432,100 @@
 
 
 	/**
-	 * オブジェクトがELEMENT_NODEか判定
+	 * 目標設定
+     * クリック用のiframeを表示
 	 */
 	qahm.showIframeSelector = function( idname ){
         let idsplit  = idname.split('_');
         let gid      = idsplit[0].slice(1);
-        jQuery( `#g${gid}_event-iframe-containar` ).show();
-
+        jQuery(`#g${gid}_event-iframe-containar`).css('display', 'none');
 		jQuery( `#g${gid}_click_pageload` ).prop( 'disabled', false ).text( qahml10n['cnv_load_page'] );
-		let frameContent = jQuery( 'body', jQuery( `#g${gid}_event-iframe` ).contents() );
-		frameContent.on( 'click', function(e){
-			// セレクタ設定
-			const names   = qahm.getSelectorFromElement( e.target );
-			const selName = names.join( '>' );
-			jQuery( `#g${gid}_clickselector` ).val( selName );
-
-			// 吹き出し表示
-			jQuery( `#g${gid}_event-iframe-tooltip-right` ).fadeIn( 300 ).css( 'display', 'inline' );
-			setTimeout( function(){ jQuery( `#g${gid}_event-iframe-tooltip-right` ).fadeOut( 300 ); }, 1500 );
-			return false;
-		});
-
 		jQuery( `#g${gid}_click_pageload` ).on( 'click', function(){
-			let url = jQuery( `#g${gid}_clickpage` ).val();
-			jQuery( `#g${gid}_click_pageload` ).prop( 'disabled', true ).text( qahml10n['cnv_loading'] );
+            qahm.loadIframePage( gid );
 			jQuery( `#g${gid}_clickselector` ).val( '' );
-			jQuery( `#g${gid}_event-iframe` ).attr( 'src', url );
 			jQuery( `#g${gid}_event-iframe` ).on( 'load', function(){
 				qahm.showIframeSelector( jQuery(this).attr('id') );
 			});
 		});
 	};
+
+
+    /**
+     * 目標設定
+     *  
+     * Load Page が押されたら、iframe内にページ表示  
+     */    
+    qahm.loadIframePage = function( gid ) {
+        
+        jQuery( `#g${gid}_click_pageload` ).prop( 'disabled', false ).text( qahml10n['cnv_load_page'] );
+
+        let url = jQuery( `#g${gid}_clickpage` ).val();
+        let deviceId = 1;
+        jQuery( `#g${gid}_click_pageload` ).prop( 'disabled', true ).text( qahml10n['cnv_loading'] );
+        jQuery( `#g${gid}_clickselector` ).val( '' );
+        
+        //ZERO (1)base_html取得、(2)iframe表示 (3)iframe内のクリックされたセレクタ取得
+        jQuery.ajax(
+            {
+                type: 'POST',
+                url: qahm.ajax_url,
+                dataType : 'json',
+                data: {
+                    'action' : 'qahm_ajax_get_base_html_by_url',
+                    'nonce':qahm.nonce_api,
+                    'pageurl': url,
+                    'device_id': deviceId,
+                    'add_basehref': '1',
+                }
+            }
+        ).done(
+            function( data ) {
+                if (data) {
+                    let baseHtml = data;
+                    var iframe = jQuery(`#g${gid}_event-iframe`);                    
+                    var iframeDocument = iframe.contents();                
+                    try {
+                        // iframe内のHTMLを設定する
+                        //iframeDocument.find("html").html(baseHtml); //これだとうまくいかない
+                        iframeDocument[0].documentElement.innerHTML = baseHtml;
+                        jQuery(`#g${gid}_event-iframe-containar`).css('display', 'block');
+                
+                        // ここに、iframe内で実行するJavaScriptコードなどを追加
+                        let frameContent = jQuery( 'body', jQuery( `#g${gid}_event-iframe` ).contents() );
+                        frameContent.on( 'click', function(e){
+                            // セレクタ設定
+                            const names   = qahm.getSelectorFromElement( e.target );
+                            const selName = names.join( '>' );
+                            jQuery( `#g${gid}_clickselector` ).val( selName );
+                            jQuery( `#g${gid}_clickselector` ).prop("readonly", true);
+
+                            // 吹き出し表示
+                            jQuery( `#g${gid}_event-iframe-tooltip-right` ).fadeIn( 300 ).css( 'display', 'inline' );
+                            setTimeout( function(){ jQuery( `#g${gid}_event-iframe-tooltip-right` ).fadeOut( 300 ); }, 1500 );
+                            return false;
+                        });
+
+                    } catch (error) {
+                        console.error('An error occurred while setting HTML in iframe:', error.message);
+                        // エラーをコンソールにログ出力するだけで、何も追加しない
+                    }
+                } else {
+                    alert(url + '\n' + qahml10n['failed_iframe_load']);
+                }
+            }
+            
+        ).fail(
+            function( jqXHR, textStatus, errorThrown ){
+                qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
+                alert( '[' + textStatus + ']' + qahml10n['please_try_again'] );
+            }
+        ).always(
+            function(){
+                jQuery( `#g${gid}_click_pageload` ).prop( 'disabled', false ).text( qahml10n['cnv_load_page'] );
+            }
+        );
+    }
+    
 
 	/**
 	 * オブジェクトがELEMENT_NODEか判定
@@ -546,68 +584,43 @@
 	};
 
 
-
-
-
-
-
-jQuery( function(){
-	jQuery( document ).on( 'click', '#plugin-submit', function(){
-		qahm.showLoadIcon();
-
-		let dataDay     = jQuery('#data_retention_dur').val();
-		let isCbChecked = jQuery('#cb_sup_mode').is(':checked');
-		let email       = jQuery('#send_email_address').val();
-		
-		let start_time = new Date().getTime();
-		jQuery.ajax(
-			{
+    // プラグイン設定の保存処理用のコード
+	jQuery(function() {
+		jQuery(document).on('click', '#plugin-submit', function() {
+			qahm.showLoadIcon();
+			let advancedMode      = jQuery('#advanced_mode').is(':checked');
+			let cbSupMode         = jQuery('#cb_sup_mode').is(':checked');
+			
+			jQuery.ajax({
 				type: 'POST',
 				url: qahm.ajax_url,
-				dataType : 'text',
+				dataType: 'json',
 				data: {
-					'action'            : 'qahm_ajax_save_plugin_config',
-					'security'		    : qahml10n['nonce_qahm_options'],
-					'data_retention_dur': dataDay,
-					'cb_sup_mode'       : isCbChecked,
-					'send_email_address': email,
-				},
-			}
-		).done(
-			function(){
-				function savePluginConfigDone() {
-					AlertMessage.alert(
-						qahml10n['alert_message_success'],
-						qahml10n['setting_option_saved'],
-						'success',
-						function(){}
-					);
-					qahm.hideLoadIcon();
+					'action': 'qahm_ajax_save_plugin_config',
+					'security': qahml10n['nonce_qahm_options'],
+					'advanced_mode': advancedMode,
+					'cb_sup_mode': cbSupMode,
 				}
-
-				// 最低読み込み時間経過後に処理実行
-				let now_time  = new Date().getTime();
-				let load_time = now_time - start_time;
-				let min_time  = 500;
-
-				if ( load_time < min_time ) {
-					// ロードアイコンを削除して新しいウインドウを開く
-					setTimeout( savePluginConfigDone, (min_time - load_time));
-				} else {
-					savePluginConfigDone();
-				}
-			}
-		).fail(
-			function( jqXHR, textStatus, errorThrown ){
-				qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
+			}).done(function(data) {
+				AlertMessage.alert(
+					qahml10n['alert_message_success'],
+					qahml10n['setting_option_saved'],
+					'success',
+					function() {
+						location.reload();
+					}
+				);
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				qahm.log_ajax_error(jqXHR, textStatus, errorThrown);
 				AlertMessage.alert(
 					qahml10n['alert_message_failed'],
-					qahml10n['setting_option_failed'],
+					qahml10n['setting_option_failed'], 
 					'error',
-					function(){}
+					function() {}
 				);
+			}).always(function() {
 				qahm.hideLoadIcon();
-			}
-		);
+			});
+		});
 	});
-});
+//QA ZERO end

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,73 +14,76 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class ProductData extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class ProductData extends \Google\Model
 {
-    public $itemRevenue;
-    /**
-     * @var string
-     */
-    public $productName;
-    /**
-     * @var string
-     */
-    public $productQuantity;
-    /**
-     * @var string
-     */
-    public $productSku;
-    public function setItemRevenue($itemRevenue)
-    {
-        $this->itemRevenue = $itemRevenue;
-    }
-    public function getItemRevenue()
-    {
-        return $this->itemRevenue;
-    }
-    /**
-     * @param string
-     */
-    public function setProductName($productName)
-    {
-        $this->productName = $productName;
-    }
-    /**
-     * @return string
-     */
-    public function getProductName()
-    {
-        return $this->productName;
-    }
-    /**
-     * @param string
-     */
-    public function setProductQuantity($productQuantity)
-    {
-        $this->productQuantity = $productQuantity;
-    }
-    /**
-     * @return string
-     */
-    public function getProductQuantity()
-    {
-        return $this->productQuantity;
-    }
-    /**
-     * @param string
-     */
-    public function setProductSku($productSku)
-    {
-        $this->productSku = $productSku;
-    }
-    /**
-     * @return string
-     */
-    public function getProductSku()
-    {
-        return $this->productSku;
-    }
+  public $itemRevenue;
+  /**
+   * @var string
+   */
+  public $productName;
+  /**
+   * @var string
+   */
+  public $productQuantity;
+  /**
+   * @var string
+   */
+  public $productSku;
+
+  public function setItemRevenue($itemRevenue)
+  {
+    $this->itemRevenue = $itemRevenue;
+  }
+  public function getItemRevenue()
+  {
+    return $this->itemRevenue;
+  }
+  /**
+   * @param string
+   */
+  public function setProductName($productName)
+  {
+    $this->productName = $productName;
+  }
+  /**
+   * @return string
+   */
+  public function getProductName()
+  {
+    return $this->productName;
+  }
+  /**
+   * @param string
+   */
+  public function setProductQuantity($productQuantity)
+  {
+    $this->productQuantity = $productQuantity;
+  }
+  /**
+   * @return string
+   */
+  public function getProductQuantity()
+  {
+    return $this->productQuantity;
+  }
+  /**
+   * @param string
+   */
+  public function setProductSku($productSku)
+  {
+    $this->productSku = $productSku;
+  }
+  /**
+   * @return string
+   */
+  public function getProductSku()
+  {
+    return $this->productSku;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ProductData::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_ProductData');
+class_alias(ProductData::class, 'Google_Service_AnalyticsReporting_ProductData');

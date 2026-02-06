@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,44 +14,47 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class Segment extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class Segment extends \Google\Model
 {
-    protected $dynamicSegmentType = DynamicSegment::class;
-    protected $dynamicSegmentDataType = '';
-    /**
-     * @var string
-     */
-    public $segmentId;
-    /**
-     * @param DynamicSegment
-     */
-    public function setDynamicSegment(DynamicSegment $dynamicSegment)
-    {
-        $this->dynamicSegment = $dynamicSegment;
-    }
-    /**
-     * @return DynamicSegment
-     */
-    public function getDynamicSegment()
-    {
-        return $this->dynamicSegment;
-    }
-    /**
-     * @param string
-     */
-    public function setSegmentId($segmentId)
-    {
-        $this->segmentId = $segmentId;
-    }
-    /**
-     * @return string
-     */
-    public function getSegmentId()
-    {
-        return $this->segmentId;
-    }
+  protected $dynamicSegmentType = DynamicSegment::class;
+  protected $dynamicSegmentDataType = '';
+  /**
+   * @var string
+   */
+  public $segmentId;
+
+  /**
+   * @param DynamicSegment
+   */
+  public function setDynamicSegment(DynamicSegment $dynamicSegment)
+  {
+    $this->dynamicSegment = $dynamicSegment;
+  }
+  /**
+   * @return DynamicSegment
+   */
+  public function getDynamicSegment()
+  {
+    return $this->dynamicSegment;
+  }
+  /**
+   * @param string
+   */
+  public function setSegmentId($segmentId)
+  {
+    $this->segmentId = $segmentId;
+  }
+  /**
+   * @return string
+   */
+  public function getSegmentId()
+  {
+    return $this->segmentId;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Segment::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_Segment');
+class_alias(Segment::class, 'Google_Service_AnalyticsReporting_Segment');

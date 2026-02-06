@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class ReportRow extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class ReportRow extends \Google\Collection
 {
-    protected $collection_key = 'metrics';
-    /**
-     * @var string[]
-     */
-    public $dimensions;
-    protected $metricsType = DateRangeValues::class;
-    protected $metricsDataType = 'array';
-    /**
-     * @param string[]
-     */
-    public function setDimensions($dimensions)
-    {
-        $this->dimensions = $dimensions;
-    }
-    /**
-     * @return string[]
-     */
-    public function getDimensions()
-    {
-        return $this->dimensions;
-    }
-    /**
-     * @param DateRangeValues[]
-     */
-    public function setMetrics($metrics)
-    {
-        $this->metrics = $metrics;
-    }
-    /**
-     * @return DateRangeValues[]
-     */
-    public function getMetrics()
-    {
-        return $this->metrics;
-    }
+  protected $collection_key = 'metrics';
+  /**
+   * @var string[]
+   */
+  public $dimensions;
+  protected $metricsType = DateRangeValues::class;
+  protected $metricsDataType = 'array';
+
+  /**
+   * @param string[]
+   */
+  public function setDimensions($dimensions)
+  {
+    $this->dimensions = $dimensions;
+  }
+  /**
+   * @return string[]
+   */
+  public function getDimensions()
+  {
+    return $this->dimensions;
+  }
+  /**
+   * @param DateRangeValues[]
+   */
+  public function setMetrics($metrics)
+  {
+    $this->metrics = $metrics;
+  }
+  /**
+   * @return DateRangeValues[]
+   */
+  public function getMetrics()
+  {
+    return $this->metrics;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ReportRow::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_ReportRow');
+class_alias(ReportRow::class, 'Google_Service_AnalyticsReporting_ReportRow');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class ResourceQuotasRemaining extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class ResourceQuotasRemaining extends \Google\Model
 {
-    /**
-     * @var int
-     */
-    public $dailyQuotaTokensRemaining;
-    /**
-     * @var int
-     */
-    public $hourlyQuotaTokensRemaining;
-    /**
-     * @param int
-     */
-    public function setDailyQuotaTokensRemaining($dailyQuotaTokensRemaining)
-    {
-        $this->dailyQuotaTokensRemaining = $dailyQuotaTokensRemaining;
-    }
-    /**
-     * @return int
-     */
-    public function getDailyQuotaTokensRemaining()
-    {
-        return $this->dailyQuotaTokensRemaining;
-    }
-    /**
-     * @param int
-     */
-    public function setHourlyQuotaTokensRemaining($hourlyQuotaTokensRemaining)
-    {
-        $this->hourlyQuotaTokensRemaining = $hourlyQuotaTokensRemaining;
-    }
-    /**
-     * @return int
-     */
-    public function getHourlyQuotaTokensRemaining()
-    {
-        return $this->hourlyQuotaTokensRemaining;
-    }
+  /**
+   * @var int
+   */
+  public $dailyQuotaTokensRemaining;
+  /**
+   * @var int
+   */
+  public $hourlyQuotaTokensRemaining;
+
+  /**
+   * @param int
+   */
+  public function setDailyQuotaTokensRemaining($dailyQuotaTokensRemaining)
+  {
+    $this->dailyQuotaTokensRemaining = $dailyQuotaTokensRemaining;
+  }
+  /**
+   * @return int
+   */
+  public function getDailyQuotaTokensRemaining()
+  {
+    return $this->dailyQuotaTokensRemaining;
+  }
+  /**
+   * @param int
+   */
+  public function setHourlyQuotaTokensRemaining($hourlyQuotaTokensRemaining)
+  {
+    $this->hourlyQuotaTokensRemaining = $hourlyQuotaTokensRemaining;
+  }
+  /**
+   * @return int
+   */
+  public function getHourlyQuotaTokensRemaining()
+  {
+    return $this->hourlyQuotaTokensRemaining;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ResourceQuotasRemaining::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_ResourceQuotasRemaining');
+class_alias(ResourceQuotasRemaining::class, 'Google_Service_AnalyticsReporting_ResourceQuotasRemaining');

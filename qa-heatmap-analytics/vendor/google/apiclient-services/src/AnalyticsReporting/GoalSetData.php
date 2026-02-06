@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,27 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class GoalSetData extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class GoalSetData extends \Google\Collection
 {
-    protected $collection_key = 'goals';
-    protected $goalsType = GoalData::class;
-    protected $goalsDataType = 'array';
-    /**
-     * @param GoalData[]
-     */
-    public function setGoals($goals)
-    {
-        $this->goals = $goals;
-    }
-    /**
-     * @return GoalData[]
-     */
-    public function getGoals()
-    {
-        return $this->goals;
-    }
+  protected $collection_key = 'goals';
+  protected $goalsType = GoalData::class;
+  protected $goalsDataType = 'array';
+
+  /**
+   * @param GoalData[]
+   */
+  public function setGoals($goals)
+  {
+    $this->goals = $goals;
+  }
+  /**
+   * @return GoalData[]
+   */
+  public function getGoals()
+  {
+    return $this->goals;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GoalSetData::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_GoalSetData');
+class_alias(GoalSetData::class, 'Google_Service_AnalyticsReporting_GoalSetData');

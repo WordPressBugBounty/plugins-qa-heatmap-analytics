@@ -8,15 +8,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Symfony\Polyfill\Intl\Idn;
+
+namespace Symfony\Polyfill\Intl\Idn;
 
 /**
  * @internal
  */
 class Info
 {
-    public $bidiDomain = \false;
+    public $bidiDomain = false;
     public $errors = 0;
-    public $validBidiDomain = \true;
-    public $transitionalDifferent = \false;
+    public $validBidiDomain = true;
+    public $transitionalDifferent = false;
 }

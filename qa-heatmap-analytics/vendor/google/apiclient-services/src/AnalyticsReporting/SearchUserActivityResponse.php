@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,72 +14,75 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SearchUserActivityResponse extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class SearchUserActivityResponse extends \Google\Collection
 {
-    protected $collection_key = 'sessions';
-    /**
-     * @var string
-     */
-    public $nextPageToken;
-    public $sampleRate;
-    protected $sessionsType = UserActivitySession::class;
-    protected $sessionsDataType = 'array';
-    /**
-     * @var int
-     */
-    public $totalRows;
-    /**
-     * @param string
-     */
-    public function setNextPageToken($nextPageToken)
-    {
-        $this->nextPageToken = $nextPageToken;
-    }
-    /**
-     * @return string
-     */
-    public function getNextPageToken()
-    {
-        return $this->nextPageToken;
-    }
-    public function setSampleRate($sampleRate)
-    {
-        $this->sampleRate = $sampleRate;
-    }
-    public function getSampleRate()
-    {
-        return $this->sampleRate;
-    }
-    /**
-     * @param UserActivitySession[]
-     */
-    public function setSessions($sessions)
-    {
-        $this->sessions = $sessions;
-    }
-    /**
-     * @return UserActivitySession[]
-     */
-    public function getSessions()
-    {
-        return $this->sessions;
-    }
-    /**
-     * @param int
-     */
-    public function setTotalRows($totalRows)
-    {
-        $this->totalRows = $totalRows;
-    }
-    /**
-     * @return int
-     */
-    public function getTotalRows()
-    {
-        return $this->totalRows;
-    }
+  protected $collection_key = 'sessions';
+  /**
+   * @var string
+   */
+  public $nextPageToken;
+  public $sampleRate;
+  protected $sessionsType = UserActivitySession::class;
+  protected $sessionsDataType = 'array';
+  /**
+   * @var int
+   */
+  public $totalRows;
+
+  /**
+   * @param string
+   */
+  public function setNextPageToken($nextPageToken)
+  {
+    $this->nextPageToken = $nextPageToken;
+  }
+  /**
+   * @return string
+   */
+  public function getNextPageToken()
+  {
+    return $this->nextPageToken;
+  }
+  public function setSampleRate($sampleRate)
+  {
+    $this->sampleRate = $sampleRate;
+  }
+  public function getSampleRate()
+  {
+    return $this->sampleRate;
+  }
+  /**
+   * @param UserActivitySession[]
+   */
+  public function setSessions($sessions)
+  {
+    $this->sessions = $sessions;
+  }
+  /**
+   * @return UserActivitySession[]
+   */
+  public function getSessions()
+  {
+    return $this->sessions;
+  }
+  /**
+   * @param int
+   */
+  public function setTotalRows($totalRows)
+  {
+    $this->totalRows = $totalRows;
+  }
+  /**
+   * @return int
+   */
+  public function getTotalRows()
+  {
+    return $this->totalRows;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SearchUserActivityResponse::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SearchUserActivityResponse');
+class_alias(SearchUserActivityResponse::class, 'Google_Service_AnalyticsReporting_SearchUserActivityResponse');

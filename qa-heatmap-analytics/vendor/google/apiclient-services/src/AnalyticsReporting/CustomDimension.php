@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class CustomDimension extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class CustomDimension extends \Google\Model
 {
-    /**
-     * @var int
-     */
-    public $index;
-    /**
-     * @var string
-     */
-    public $value;
-    /**
-     * @param int
-     */
-    public function setIndex($index)
-    {
-        $this->index = $index;
-    }
-    /**
-     * @return int
-     */
-    public function getIndex()
-    {
-        return $this->index;
-    }
-    /**
-     * @param string
-     */
-    public function setValue($value)
-    {
-        $this->value = $value;
-    }
-    /**
-     * @return string
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
+  /**
+   * @var int
+   */
+  public $index;
+  /**
+   * @var string
+   */
+  public $value;
+
+  /**
+   * @param int
+   */
+  public function setIndex($index)
+  {
+    $this->index = $index;
+  }
+  /**
+   * @return int
+   */
+  public function getIndex()
+  {
+    return $this->index;
+  }
+  /**
+   * @param string
+   */
+  public function setValue($value)
+  {
+    $this->value = $value;
+  }
+  /**
+   * @return string
+   */
+  public function getValue()
+  {
+    return $this->value;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(CustomDimension::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_CustomDimension');
+class_alias(CustomDimension::class, 'Google_Service_AnalyticsReporting_CustomDimension');

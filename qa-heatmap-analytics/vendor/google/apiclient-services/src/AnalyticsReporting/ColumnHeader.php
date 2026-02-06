@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class ColumnHeader extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class ColumnHeader extends \Google\Collection
 {
-    protected $collection_key = 'dimensions';
-    /**
-     * @var string[]
-     */
-    public $dimensions;
-    protected $metricHeaderType = MetricHeader::class;
-    protected $metricHeaderDataType = '';
-    /**
-     * @param string[]
-     */
-    public function setDimensions($dimensions)
-    {
-        $this->dimensions = $dimensions;
-    }
-    /**
-     * @return string[]
-     */
-    public function getDimensions()
-    {
-        return $this->dimensions;
-    }
-    /**
-     * @param MetricHeader
-     */
-    public function setMetricHeader(MetricHeader $metricHeader)
-    {
-        $this->metricHeader = $metricHeader;
-    }
-    /**
-     * @return MetricHeader
-     */
-    public function getMetricHeader()
-    {
-        return $this->metricHeader;
-    }
+  protected $collection_key = 'dimensions';
+  /**
+   * @var string[]
+   */
+  public $dimensions;
+  protected $metricHeaderType = MetricHeader::class;
+  protected $metricHeaderDataType = '';
+
+  /**
+   * @param string[]
+   */
+  public function setDimensions($dimensions)
+  {
+    $this->dimensions = $dimensions;
+  }
+  /**
+   * @return string[]
+   */
+  public function getDimensions()
+  {
+    return $this->dimensions;
+  }
+  /**
+   * @param MetricHeader
+   */
+  public function setMetricHeader(MetricHeader $metricHeader)
+  {
+    $this->metricHeader = $metricHeader;
+  }
+  /**
+   * @return MetricHeader
+   */
+  public function getMetricHeader()
+  {
+    return $this->metricHeader;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ColumnHeader::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_ColumnHeader');
+class_alias(ColumnHeader::class, 'Google_Service_AnalyticsReporting_ColumnHeader');

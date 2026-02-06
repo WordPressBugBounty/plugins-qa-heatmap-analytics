@@ -8,9 +8,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Handler;
 
-use QAAnalyticsVendor\Monolog\Formatter\LineFormatter;
+namespace Monolog\Handler;
+
+use Monolog\Formatter\LineFormatter;
+
 /**
  * Handler sending logs to browser's javascript console with no browser extension required
  *
@@ -18,8 +20,9 @@ use QAAnalyticsVendor\Monolog\Formatter\LineFormatter;
  */
 class BrowserConsoleHandler extends AbstractProcessingHandler
 {
-    protected static $initialized = \false;
+    protected static $initialized = false;
     protected static $records = array();
+
     /**
      * {@inheritDoc}
      *
@@ -33,6 +36,7 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
     {
         return new LineFormatter('[[%channel%]]{macro: autolabel} [[%level_name%]]{font-weight: bold} %message%');
     }
+
     /**
      * {@inheritDoc}
      */
@@ -40,12 +44,14 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
     {
         // Accumulate records
         static::$records[] = $record;
+
         // Register shutdown handler if not already done
         if (!static::$initialized) {
-            static::$initialized = \true;
+            static::$initialized = true;
             $this->registerShutdownFunction();
         }
     }
+
     /**
      * Convert records to javascript console commands and send it to the browser.
      * This method is automatically called on PHP shutdown if output is HTML or Javascript.
@@ -56,7 +62,8 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
         if ($format === 'unknown') {
             return;
         }
-        if (\count(static::$records)) {
+
+        if (count(static::$records)) {
             if ($format === 'html') {
                 static::writeOutput('<script>' . static::generateScript() . '</script>');
             } elseif ($format === 'js') {
@@ -65,14 +72,17 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
             static::resetStatic();
         }
     }
+
     public function close()
     {
         self::resetStatic();
     }
+
     public function reset()
     {
         self::resetStatic();
     }
+
     /**
      * Forget all logged records
      */
@@ -80,15 +90,17 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
     {
         static::$records = array();
     }
+
     /**
      * Wrapper for register_shutdown_function to allow overriding
      */
     protected function registerShutdownFunction()
     {
-        if (\PHP_SAPI !== 'cli') {
-            \register_shutdown_function(array('Monolog\\Handler\\BrowserConsoleHandler', 'send'));
+        if (PHP_SAPI !== 'cli') {
+            register_shutdown_function(array('Monolog\Handler\BrowserConsoleHandler', 'send'));
         }
     }
+
     /**
      * Wrapper for echo to allow overriding
      *
@@ -98,6 +110,7 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
     {
         echo $str;
     }
+
     /**
      * Checks the format of the response
      *
@@ -110,95 +123,119 @@ class BrowserConsoleHandler extends AbstractProcessingHandler
     protected static function getResponseFormat()
     {
         // Check content type
-        foreach (\headers_list() as $header) {
-            if (\stripos($header, 'content-type:') === 0) {
+        foreach (headers_list() as $header) {
+            if (stripos($header, 'content-type:') === 0) {
                 // This handler only works with HTML and javascript outputs
                 // text/javascript is obsolete in favour of application/javascript, but still used
-                if (\stripos($header, 'application/javascript') !== \false || \stripos($header, 'text/javascript') !== \false) {
+                if (stripos($header, 'application/javascript') !== false || stripos($header, 'text/javascript') !== false) {
                     return 'js';
                 }
-                if (\stripos($header, 'text/html') === \false) {
+                if (stripos($header, 'text/html') === false) {
                     return 'unknown';
                 }
                 break;
             }
         }
+
         return 'html';
     }
+
     private static function generateScript()
     {
         $script = array();
         foreach (static::$records as $record) {
             $context = static::dump('Context', $record['context']);
             $extra = static::dump('Extra', $record['extra']);
+
             if (empty($context) && empty($extra)) {
                 $script[] = static::call_array('log', static::handleStyles($record['formatted']));
             } else {
-                $script = \array_merge($script, array(static::call_array('groupCollapsed', static::handleStyles($record['formatted']))), $context, $extra, array(static::call('groupEnd')));
+                $script = array_merge($script,
+                    array(static::call_array('groupCollapsed', static::handleStyles($record['formatted']))),
+                    $context,
+                    $extra,
+                    array(static::call('groupEnd'))
+                );
             }
         }
-        return "(function (c) {if (c && c.groupCollapsed) {\n" . \implode("\n", $script) . "\n}})(console);";
+
+        return "(function (c) {if (c && c.groupCollapsed) {\n" . implode("\n", $script) . "\n}})(console);";
     }
+
     private static function handleStyles($formatted)
     {
         $args = array();
         $format = '%c' . $formatted;
-        \preg_match_all('/\\[\\[(.*?)\\]\\]\\{([^}]*)\\}/s', $format, $matches, \PREG_OFFSET_CAPTURE | \PREG_SET_ORDER);
-        foreach (\array_reverse($matches) as $match) {
+        preg_match_all('/\[\[(.*?)\]\]\{([^}]*)\}/s', $format, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+
+        foreach (array_reverse($matches) as $match) {
             $args[] = '"font-weight: normal"';
             $args[] = static::quote(static::handleCustomStyles($match[2][0], $match[1][0]));
+
             $pos = $match[0][1];
-            $format = \substr($format, 0, $pos) . '%c' . $match[1][0] . '%c' . \substr($format, $pos + \strlen($match[0][0]));
+            $format = substr($format, 0, $pos) . '%c' . $match[1][0] . '%c' . substr($format, $pos + strlen($match[0][0]));
         }
+
         $args[] = static::quote('font-weight: normal');
         $args[] = static::quote($format);
-        return \array_reverse($args);
+
+        return array_reverse($args);
     }
+
     private static function handleCustomStyles($style, $string)
     {
         static $colors = array('blue', 'green', 'red', 'magenta', 'orange', 'black', 'grey');
         static $labels = array();
-        return \preg_replace_callback('/macro\\s*:(.*?)(?:;|$)/', function ($m) use($string, &$colors, &$labels) {
-            if (\trim($m[1]) === 'autolabel') {
+
+        return preg_replace_callback('/macro\s*:(.*?)(?:;|$)/', function ($m) use ($string, &$colors, &$labels) {
+            if (trim($m[1]) === 'autolabel') {
                 // Format the string as a label with consistent auto assigned background color
                 if (!isset($labels[$string])) {
-                    $labels[$string] = $colors[\count($labels) % \count($colors)];
+                    $labels[$string] = $colors[count($labels) % count($colors)];
                 }
                 $color = $labels[$string];
-                return "background-color: {$color}; color: white; border-radius: 3px; padding: 0 2px 0 2px";
+
+                return "background-color: $color; color: white; border-radius: 3px; padding: 0 2px 0 2px";
             }
+
             return $m[1];
         }, $style);
     }
+
     private static function dump($title, array $dict)
     {
         $script = array();
-        $dict = \array_filter($dict);
+        $dict = array_filter($dict);
         if (empty($dict)) {
             return $script;
         }
         $script[] = static::call('log', static::quote('%c%s'), static::quote('font-weight: bold'), static::quote($title));
         foreach ($dict as $key => $value) {
-            $value = \json_encode($value);
+            $value = json_encode($value);
             if (empty($value)) {
                 $value = static::quote('');
             }
             $script[] = static::call('log', static::quote('%s: %o'), static::quote($key), $value);
         }
+
         return $script;
     }
+
     private static function quote($arg)
     {
-        return '"' . \addcslashes($arg, "\"\n\\") . '"';
+        return '"' . addcslashes($arg, "\"\n\\") . '"';
     }
+
     private static function call()
     {
-        $args = \func_get_args();
-        $method = \array_shift($args);
+        $args = func_get_args();
+        $method = array_shift($args);
+
         return static::call_array($method, $args);
     }
+
     private static function call_array($method, array $args)
     {
-        return 'c.' . $method . '(' . \implode(', ', $args) . ');';
+        return 'c.' . $method . '(' . implode(', ', $args) . ');';
     }
 }

@@ -1,6 +1,5 @@
 <?php
-
-namespace QAAnalyticsVendor\GuzzleHttp\Cookie;
+namespace GuzzleHttp\Cookie;
 
 /**
  * Persists cookies in the client session
@@ -9,8 +8,10 @@ class SessionCookieJar extends CookieJar
 {
     /** @var string session key */
     private $sessionKey;
+    
     /** @var bool Control whether to persist session cookies or not. */
     private $storeSessionCookies;
+
     /**
      * Create a new SessionCookieJar object
      *
@@ -19,13 +20,14 @@ class SessionCookieJar extends CookieJar
      * @param bool $storeSessionCookies Set to true to store session cookies
      *                                  in the cookie jar.
      */
-    public function __construct($sessionKey, $storeSessionCookies = \false)
+    public function __construct($sessionKey, $storeSessionCookies = false)
     {
         parent::__construct();
         $this->sessionKey = $sessionKey;
         $this->storeSessionCookies = $storeSessionCookies;
         $this->load();
     }
+
     /**
      * Saves cookies to session when shutting down
      */
@@ -33,6 +35,7 @@ class SessionCookieJar extends CookieJar
     {
         $this->save();
     }
+
     /**
      * Save cookies to the client session
      */
@@ -45,8 +48,10 @@ class SessionCookieJar extends CookieJar
                 $json[] = $cookie->toArray();
             }
         }
-        $_SESSION[$this->sessionKey] = \json_encode($json);
+
+        $_SESSION[$this->sessionKey] = json_encode($json);
     }
+
     /**
      * Load the contents of the client session into the data array
      */
@@ -55,12 +60,12 @@ class SessionCookieJar extends CookieJar
         if (!isset($_SESSION[$this->sessionKey])) {
             return;
         }
-        $data = \json_decode($_SESSION[$this->sessionKey], \true);
-        if (\is_array($data)) {
+        $data = json_decode($_SESSION[$this->sessionKey], true);
+        if (is_array($data)) {
             foreach ($data as $cookie) {
                 $this->setCookie(new SetCookie($cookie));
             }
-        } elseif (\strlen($data)) {
+        } elseif (strlen($data)) {
             throw new \RuntimeException("Invalid cookie data");
         }
     }

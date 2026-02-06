@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,43 +14,46 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class GaDataDataTable extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\Analytics;
+
+class GaDataDataTable extends \Google\Collection
 {
-    protected $collection_key = 'rows';
-    protected $colsType = GaDataDataTableCols::class;
-    protected $colsDataType = 'array';
-    protected $rowsType = GaDataDataTableRows::class;
-    protected $rowsDataType = 'array';
-    /**
-     * @param GaDataDataTableCols[]
-     */
-    public function setCols($cols)
-    {
-        $this->cols = $cols;
-    }
-    /**
-     * @return GaDataDataTableCols[]
-     */
-    public function getCols()
-    {
-        return $this->cols;
-    }
-    /**
-     * @param GaDataDataTableRows[]
-     */
-    public function setRows($rows)
-    {
-        $this->rows = $rows;
-    }
-    /**
-     * @return GaDataDataTableRows[]
-     */
-    public function getRows()
-    {
-        return $this->rows;
-    }
+  protected $collection_key = 'rows';
+  protected $colsType = GaDataDataTableCols::class;
+  protected $colsDataType = 'array';
+  protected $rowsType = GaDataDataTableRows::class;
+  protected $rowsDataType = 'array';
+
+  /**
+   * @param GaDataDataTableCols[]
+   */
+  public function setCols($cols)
+  {
+    $this->cols = $cols;
+  }
+  /**
+   * @return GaDataDataTableCols[]
+   */
+  public function getCols()
+  {
+    return $this->cols;
+  }
+  /**
+   * @param GaDataDataTableRows[]
+   */
+  public function setRows($rows)
+  {
+    $this->rows = $rows;
+  }
+  /**
+   * @return GaDataDataTableRows[]
+   */
+  public function getRows()
+  {
+    return $this->rows;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GaDataDataTable::class, 'QAAnalyticsVendor\\Google_Service_Analytics_GaDataDataTable');
+class_alias(GaDataDataTable::class, 'Google_Service_Analytics_GaDataDataTable');

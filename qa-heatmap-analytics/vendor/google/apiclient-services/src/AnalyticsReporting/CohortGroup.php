@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class CohortGroup extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class CohortGroup extends \Google\Collection
 {
-    protected $collection_key = 'cohorts';
-    protected $cohortsType = Cohort::class;
-    protected $cohortsDataType = 'array';
-    /**
-     * @var bool
-     */
-    public $lifetimeValue;
-    /**
-     * @param Cohort[]
-     */
-    public function setCohorts($cohorts)
-    {
-        $this->cohorts = $cohorts;
-    }
-    /**
-     * @return Cohort[]
-     */
-    public function getCohorts()
-    {
-        return $this->cohorts;
-    }
-    /**
-     * @param bool
-     */
-    public function setLifetimeValue($lifetimeValue)
-    {
-        $this->lifetimeValue = $lifetimeValue;
-    }
-    /**
-     * @return bool
-     */
-    public function getLifetimeValue()
-    {
-        return $this->lifetimeValue;
-    }
+  protected $collection_key = 'cohorts';
+  protected $cohortsType = Cohort::class;
+  protected $cohortsDataType = 'array';
+  /**
+   * @var bool
+   */
+  public $lifetimeValue;
+
+  /**
+   * @param Cohort[]
+   */
+  public function setCohorts($cohorts)
+  {
+    $this->cohorts = $cohorts;
+  }
+  /**
+   * @return Cohort[]
+   */
+  public function getCohorts()
+  {
+    return $this->cohorts;
+  }
+  /**
+   * @param bool
+   */
+  public function setLifetimeValue($lifetimeValue)
+  {
+    $this->lifetimeValue = $lifetimeValue;
+  }
+  /**
+   * @return bool
+   */
+  public function getLifetimeValue()
+  {
+    return $this->lifetimeValue;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(CohortGroup::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_CohortGroup');
+class_alias(CohortGroup::class, 'Google_Service_AnalyticsReporting_CohortGroup');

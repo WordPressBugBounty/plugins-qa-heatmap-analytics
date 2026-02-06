@@ -1,6 +1,6 @@
 <?php
 
-namespace QAAnalyticsVendor\GuzzleHttp\Promise;
+namespace GuzzleHttp\Promise;
 
 /**
  * Interface used with classes that return a promise.

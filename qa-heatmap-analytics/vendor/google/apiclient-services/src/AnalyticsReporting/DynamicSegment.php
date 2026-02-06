@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,60 +14,63 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class DynamicSegment extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class DynamicSegment extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $name;
-    protected $sessionSegmentType = SegmentDefinition::class;
-    protected $sessionSegmentDataType = '';
-    protected $userSegmentType = SegmentDefinition::class;
-    protected $userSegmentDataType = '';
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    /**
-     * @param SegmentDefinition
-     */
-    public function setSessionSegment(SegmentDefinition $sessionSegment)
-    {
-        $this->sessionSegment = $sessionSegment;
-    }
-    /**
-     * @return SegmentDefinition
-     */
-    public function getSessionSegment()
-    {
-        return $this->sessionSegment;
-    }
-    /**
-     * @param SegmentDefinition
-     */
-    public function setUserSegment(SegmentDefinition $userSegment)
-    {
-        $this->userSegment = $userSegment;
-    }
-    /**
-     * @return SegmentDefinition
-     */
-    public function getUserSegment()
-    {
-        return $this->userSegment;
-    }
+  /**
+   * @var string
+   */
+  public $name;
+  protected $sessionSegmentType = SegmentDefinition::class;
+  protected $sessionSegmentDataType = '';
+  protected $userSegmentType = SegmentDefinition::class;
+  protected $userSegmentDataType = '';
+
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
+  /**
+   * @param SegmentDefinition
+   */
+  public function setSessionSegment(SegmentDefinition $sessionSegment)
+  {
+    $this->sessionSegment = $sessionSegment;
+  }
+  /**
+   * @return SegmentDefinition
+   */
+  public function getSessionSegment()
+  {
+    return $this->sessionSegment;
+  }
+  /**
+   * @param SegmentDefinition
+   */
+  public function setUserSegment(SegmentDefinition $userSegment)
+  {
+    $this->userSegment = $userSegment;
+  }
+  /**
+   * @return SegmentDefinition
+   */
+  public function getUserSegment()
+  {
+    return $this->userSegment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(DynamicSegment::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_DynamicSegment');
+class_alias(DynamicSegment::class, 'Google_Service_AnalyticsReporting_DynamicSegment');

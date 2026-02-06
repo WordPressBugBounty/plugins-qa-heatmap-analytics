@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,133 +14,136 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class EntityAdWordsLink extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\Analytics;
+
+class EntityAdWordsLink extends \Google\Collection
 {
-    protected $collection_key = 'profileIds';
-    protected $adWordsAccountsType = AdWordsAccount::class;
-    protected $adWordsAccountsDataType = 'array';
-    protected $entityType = EntityAdWordsLinkEntity::class;
-    protected $entityDataType = '';
-    /**
-     * @var string
-     */
-    public $id;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @var string
-     */
-    public $name;
-    /**
-     * @var string[]
-     */
-    public $profileIds;
-    /**
-     * @var string
-     */
-    public $selfLink;
-    /**
-     * @param AdWordsAccount[]
-     */
-    public function setAdWordsAccounts($adWordsAccounts)
-    {
-        $this->adWordsAccounts = $adWordsAccounts;
-    }
-    /**
-     * @return AdWordsAccount[]
-     */
-    public function getAdWordsAccounts()
-    {
-        return $this->adWordsAccounts;
-    }
-    /**
-     * @param EntityAdWordsLinkEntity
-     */
-    public function setEntity(EntityAdWordsLinkEntity $entity)
-    {
-        $this->entity = $entity;
-    }
-    /**
-     * @return EntityAdWordsLinkEntity
-     */
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-    /**
-     * @param string
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    /**
-     * @param string[]
-     */
-    public function setProfileIds($profileIds)
-    {
-        $this->profileIds = $profileIds;
-    }
-    /**
-     * @return string[]
-     */
-    public function getProfileIds()
-    {
-        return $this->profileIds;
-    }
-    /**
-     * @param string
-     */
-    public function setSelfLink($selfLink)
-    {
-        $this->selfLink = $selfLink;
-    }
-    /**
-     * @return string
-     */
-    public function getSelfLink()
-    {
-        return $this->selfLink;
-    }
+  protected $collection_key = 'profileIds';
+  protected $adWordsAccountsType = AdWordsAccount::class;
+  protected $adWordsAccountsDataType = 'array';
+  protected $entityType = EntityAdWordsLinkEntity::class;
+  protected $entityDataType = '';
+  /**
+   * @var string
+   */
+  public $id;
+  /**
+   * @var string
+   */
+  public $kind;
+  /**
+   * @var string
+   */
+  public $name;
+  /**
+   * @var string[]
+   */
+  public $profileIds;
+  /**
+   * @var string
+   */
+  public $selfLink;
+
+  /**
+   * @param AdWordsAccount[]
+   */
+  public function setAdWordsAccounts($adWordsAccounts)
+  {
+    $this->adWordsAccounts = $adWordsAccounts;
+  }
+  /**
+   * @return AdWordsAccount[]
+   */
+  public function getAdWordsAccounts()
+  {
+    return $this->adWordsAccounts;
+  }
+  /**
+   * @param EntityAdWordsLinkEntity
+   */
+  public function setEntity(EntityAdWordsLinkEntity $entity)
+  {
+    $this->entity = $entity;
+  }
+  /**
+   * @return EntityAdWordsLinkEntity
+   */
+  public function getEntity()
+  {
+    return $this->entity;
+  }
+  /**
+   * @param string
+   */
+  public function setId($id)
+  {
+    $this->id = $id;
+  }
+  /**
+   * @return string
+   */
+  public function getId()
+  {
+    return $this->id;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
+  /**
+   * @param string[]
+   */
+  public function setProfileIds($profileIds)
+  {
+    $this->profileIds = $profileIds;
+  }
+  /**
+   * @return string[]
+   */
+  public function getProfileIds()
+  {
+    return $this->profileIds;
+  }
+  /**
+   * @param string
+   */
+  public function setSelfLink($selfLink)
+  {
+    $this->selfLink = $selfLink;
+  }
+  /**
+   * @return string
+   */
+  public function getSelfLink()
+  {
+    return $this->selfLink;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(EntityAdWordsLink::class, 'QAAnalyticsVendor\\Google_Service_Analytics_EntityAdWordsLink');
+class_alias(EntityAdWordsLink::class, 'Google_Service_Analytics_EntityAdWordsLink');

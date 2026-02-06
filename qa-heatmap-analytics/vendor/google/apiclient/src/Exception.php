@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2013 Google Inc.
  *
@@ -15,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google;
+
+namespace Google;
 
 use Exception as BaseException;
+
 class Exception extends BaseException
 {
 }

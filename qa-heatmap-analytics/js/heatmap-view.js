@@ -40,15 +40,22 @@ qahm.blockHeight           = 100;
 翻訳
 */
 
+qahm.updateHeatmapBarHeight = function() {
+	const heatmapBar = document.getElementById('heatmap-bar');
+	if (heatmapBar) {
+		const barHeight = heatmapBar.offsetHeight;
+		if (barHeight > 0) {
+			document.documentElement.style.setProperty('--heatmap-bar-height', barHeight + 'px');
+		}
+	}
+};
+
 // 初期化
 qahm.initMapParam = function(){
-	qahm.docHeight = Math.max.apply(
-		null,
-		[qahm.iframeDoc.body.clientHeight,
-		qahm.iframeDoc.body.scrollHeight,
-		qahm.iframeDoc.documentElement.clientHeight,
-		qahm.iframeDoc.documentElement.scrollHeight]
-	);
+    let bodyHeight = qahm.iframeDoc.body.scrollHeight;
+    //let elementHeight = qahm.iframeDoc.documentElement.scrollHeight;
+    //let clientHeight = qahm.iframeDoc.documentElement.clientHeight;
+    qahm.docHeight = bodyHeight;
 
 	qahm.docWidth = Math.max.apply(
 		null,
@@ -60,24 +67,39 @@ qahm.initMapParam = function(){
 	qahm.prevDocWidth = qahm.docWidth;
 
 	jQuery( '#heatmap-content' ).css( 'height', qahm.docHeight );
-	qahm.heatMapCreateY = jQuery( qahm.iframeWin ).scrollTop();
+	qahm.heatMapCreateY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	
+	qahm.updateHeatmapBarHeight();
 };
 
 
 qahm.correctScroll = function() {
-	let scrollTop = jQuery( qahm.iframeWin ).scrollTop();
+	let scrollTop;
+	let scrollLeft;
+	
+	if (typeof qahm.iframeWin.jQuery !== 'undefined') {
+		scrollTop = jQuery( qahm.iframeWin ).scrollTop();
+		scrollLeft = jQuery( qahm.iframeWin ).scrollLeft();
+	} else {
+		scrollTop = qahm.iframeWin.pageYOffset || qahm.iframeDoc.documentElement.scrollTop || qahm.iframeDoc.body.scrollTop || 0;
+		scrollLeft = qahm.iframeWin.pageXOffset || qahm.iframeDoc.documentElement.scrollLeft || qahm.iframeDoc.body.scrollLeft || 0;
+	}
+	
 	jQuery( '#heatmap-container' ).scrollTop( scrollTop );
-
-	let scrollLeft = jQuery( qahm.iframeWin ).scrollLeft();
 	jQuery( '#heatmap-container' ).scrollLeft( scrollLeft );
 };
 
 qahm.addIframeEvent = function() {
-	jQuery( qahm.iframeWin ).scroll(function () {
-		qahm.correctScroll();
-	});
+	if (typeof qahm.iframeWin.jQuery !== 'undefined') {
+		jQuery( qahm.iframeWin ).scroll(function () {
+			qahm.correctScroll();
+		});
+	} else {
+		qahm.iframeWin.addEventListener('scroll', function() {
+			qahm.correctScroll();
+		});
+	}
 };
-
 
 // マップの更新チェック
 qahm.checkUpdateMap = function(){
@@ -97,13 +119,10 @@ qahm.checkUpdateMap = function(){
 		return;
 	}
 
-	qahm.docHeight = Math.max.apply(
-		null,
-		[qahm.iframeDoc.body.clientHeight,
-		qahm.iframeDoc.body.scrollHeight,
-		qahm.iframeDoc.documentElement.clientHeight,
-		qahm.iframeDoc.documentElement.scrollHeight]
-	);
+    let bodyHeight = qahm.iframeDoc.body.scrollHeight;
+    //let elementHeight = qahm.iframeDoc.documentElement.scrollHeight;
+    //let clientHeight = qahm.iframeDoc.documentElement.clientHeight;
+    qahm.docHeight = bodyHeight;
 
 	qahm.docWidth = Math.max.apply(
 		null,
@@ -113,10 +132,23 @@ qahm.checkUpdateMap = function(){
 		qahm.iframeDoc.documentElement.scrollWidth]
 	);
 
-	let scrollTop = jQuery( qahm.iframeWin ).scrollTop();
+	let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	
+	if( qahm.prevDocWidth !== qahm.docWidth ) {
+		qahm.updateHeatmapBarHeight();
+	}
+	
 	if( jQuery( '#heatmap-content' ).height() !== qahm.docHeight ||
-		qahm.prevDocWidth !== qahm.docWidth ) {
+		qahm.prevDocWidth !== qahm.docWidth ||
+		jQuery( '#heatmap-iframe-container' ).height() !== qahm.docHeight ||
+		jQuery( '#heatmap-iframe' ).height() !== qahm.docHeight ) {
+		
+		// すべてのコンテナ要素に正しい高さを設定 
+		jQuery( '#heatmap-iframe-container' ).css( 'height', qahm.docHeight );
+		jQuery( '#heatmap-iframe' ).css( 'height', qahm.docHeight );
 		jQuery( '#heatmap-content' ).css( 'height', qahm.docHeight );
+		
+		// ヒートマップの再構築 
 		qahm.createBlockArray();
 		qahm.createClickCountMap();
 		qahm.createClickHeatMap();
@@ -128,6 +160,7 @@ qahm.checkUpdateMap = function(){
 		scrollTop > qahm.heatMapCreateY + ( qahm.canvasMargin / 2 ) ||
 		scrollTop < qahm.heatMapCreateY - ( qahm.canvasMargin / 2 ) )
 	{
+		// スクロール位置が大きく変わった場合のみクリック系マップを更新  
 		qahm.createClickCountMap();
 		qahm.createClickHeatMap();
 		qahm.heatMapCreateY = scrollTop;
@@ -138,7 +171,7 @@ qahm.checkUpdateMap = function(){
 
 // 上部バーの設定を変更した際の処理
 qahm.changeBarConfig = function(){
-	jQuery( '.heatmap-bar-check' ).change( function() {
+	jQuery( '.heatmap-bar__checkbox-input' ).change( function() {
 		let classVal = jQuery(this).attr('class');
 		let classVals = classVal.split(' ');
 		let name = null;
@@ -180,7 +213,7 @@ qahm.changeBarConfig = function(){
 
 // 上部バーの操作状態変更
 qahm.disabledConfig = function( disabledFlag ){
-	jQuery( '.heatmap-bar-check' ).prop( 'disabled', disabledFlag );
+	jQuery( '.heatmap-bar__checkbox-input' ).prop( 'disabled', disabledFlag );
 }
 
 
@@ -269,7 +302,7 @@ qahm.getArrayRateValue = function( rateAry, rateVal ) {
 	}
 
 	// 降順に並んだ配列に位置する要素のインデックス
-	idx = Math.floor( ( rateAry.length * rateVal / 100 ) - 0.01 );
+	let idx = Math.floor( ( rateAry.length * rateVal / 100 ) - 0.01 );
 	return rateAry[idx];
 }
 
@@ -329,7 +362,7 @@ qahm.createClickHeatMap = function(){
 	}
 
 	// canvasの高さを確定させる
-	let canvasTop    = jQuery( qahm.iframeWin ).scrollTop();
+	let canvasTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 	let canvasBottom = jQuery(window).innerHeight() + canvasTop;
 	
 	canvasTop -= qahm.canvasMargin;
@@ -362,7 +395,7 @@ qahm.createClickHeatMap = function(){
 				continue;
 			}
 
-			bounds = sel.getBoundingClientRect();
+			let bounds = sel.getBoundingClientRect();
 			offs = {
 				top:  bounds.top + (qahm.iframeBody.scrollTop || qahm.iframeHtml.scrollTop) - qahm.iframeHtml.clientTop,
 				left: bounds.left + (qahm.iframeBody.scrollLeft || qahm.iframeHtml.scrollLeft) - qahm.iframeHtml.clientLeft
@@ -410,6 +443,7 @@ qahm.createClickHeatMap = function(){
 	const height = canvasBottom - canvasTop;
 	jQuery( '#heatmap-click-heat-' + useId ).css( 'top', canvasTop );
 	jQuery( '#heatmap-click-heat-' + useId ).css( 'height', height );
+	jQuery( '#heatmap-click-heat-' + useId ).css( 'width', '100%' );
 
 	let heatmapInstance = h337.create(
 		{
@@ -440,10 +474,10 @@ qahm.createScrollMap = function(){
 		useId = 1;
 	}
 
-	// カラーコード。スクロールマップ用の10色+黒
-	let colorCode = ["#9e0142","#d6424b","#f47d4d","#fdbe70","#feeda1","#f0f8a9","#bee5a0","#77c6a7","#438fb4","#5e4fa2","#000000"];
+	// カラーコード。スクロールマップ用の20色
+	let colorCode = ["rgba(158, 1, 66, 1)","rgba(186, 33, 72, 1)","rgba(211, 62, 75, 1)","rgba(230, 90, 73, 1)","rgba(242, 118, 75, 1)","rgba(249, 150, 87, 1)","rgba(252, 180, 105, 1)","rgba(254, 207, 126, 1)","rgba(254, 229, 151, 1)","rgba(253, 244, 171, 1)","rgba(247, 250, 175, 1)","rgba(232, 246, 164, 1)","rgba(210, 237, 158, 1)","rgba(179, 224, 161, 1)","rgba(145, 211, 164, 1)","rgba(111, 193, 168, 1)","rgba(82, 169, 175, 1)","rgba(66, 139, 181, 1)","rgba(73, 109, 175, 1)","rgba(94, 79, 162, 0)"];
 	let opacity   = 0.7;
-	scrollRateAry = [];
+	let scrollRateAry = [];
 
 	// 離脱ユーザーのパーセント位置から実際の高さに変換
 	/*
@@ -473,22 +507,21 @@ qahm.createScrollMap = function(){
 
 	let html         = '';
 	let scrollMapAry = [];
-	let nowDataNum   = scrollRateAry.length;
 
 	// 精読率100%ライン
 	scrollMapAry.push( {
 		'heightTop'   : 0,
-		'heightBottom': qahm.getArrayRateValue( scrollRateAry, 10 ),
+		'heightBottom': qahm.getArrayRateValue( scrollRateAry, 5 ),
 		'colorTop'    : colorCode[0],
 		'colorBottom' : colorCode[1],
 		'line'        : 100
 	} );
 	
-	for ( let i = 1;  i <= 9;  i++ ) {
+	for ( let i = 1;  i <= 19;  i++ ) {
 		let prevScrollMap = scrollMapAry[scrollMapAry.length - 1];
 
 		let heightTop     = prevScrollMap['heightBottom'];
-		let heightBottom  = qahm.getArrayRateValue( scrollRateAry, (i+1)*10 );
+		let heightBottom  = qahm.getArrayRateValue( scrollRateAry, (i+1)*5 );
 		if ( heightTop === heightBottom ) {
 			continue;
 		}
@@ -501,28 +534,54 @@ qahm.createScrollMap = function(){
 			'heightBottom': heightBottom,
 			'colorTop'    : colorTop,
 			'colorBottom' : colorBottom,
-			'line'        : 100 - i*10
+			'line'        : 100 - i*5
 		} );
 	}
 
 	// 精読率0%ライン
+	/*
 	if ( scrollMapAry[scrollMapAry.length - 1]['heightBottom'] !== qahm.docHeight ) {
-		scrollMapAry[scrollMapAry.length - 1]['colorBottom'] = colorCode[10];
+		scrollMapAry[scrollMapAry.length - 1]['colorBottom'] = colorCode[colorCode.length - 1];
 		scrollMapAry.push( {
 			'heightTop'   : scrollMapAry[scrollMapAry.length - 1]['heightBottom'],
 			'heightBottom': qahm.docHeight,
 			'colorTop'    : scrollMapAry[scrollMapAry.length - 1]['colorBottom'],
-			'colorBottom' : colorCode[10],
+			'colorBottom' : colorCode[colorCode.length - 1],
 			'line'        : 0
 		} );
 	}
+	*/
 
 	for ( let i = 0;  i < scrollMapAry.length;  i++ ) {
+		let nowVal  = scrollMapAry[i]['line'];
+		let nextVal = 0;
+		if ( i + 1 < scrollMapAry.length ) {
+			nextVal = scrollMapAry[i + 1]['line'];
+		}
+
+		// この計算式、おそらく微妙に間違っているが大きな問題がないのでこれで
+		const clipPadding   = 5;	// 内部に左右5%（計10%）の幅
+		const clipMargin    = clipPadding + 10;	// 左右に10%ずつの余白
+		const clipPath1     = ( 0 - clipPadding + ( 100 - nowVal ) / 2 ) * ( 100 - clipMargin * 2 ) / 100 + clipMargin;
+		const clipPath2     = ( 100 + clipPadding - ( 100 - nowVal ) / 2 ) * ( 100 - clipMargin * 2 ) / 100 + clipMargin;
+		const clipPath3     = ( 100 + clipPadding - ( 100 - nextVal ) / 2 ) * ( 100 - clipMargin * 2 ) / 100 + clipMargin;
+		const clipPath4     = ( 0 - clipPadding + ( 100 - nextVal ) / 2 ) * ( 100- clipMargin * 2 ) / 100 + clipMargin;
+
 		let styleHeight     = 'height:' + ( scrollMapAry[i]['heightBottom'] - scrollMapAry[i]['heightTop'] ) + 'px;';
-		let styleBackground = 'background: linear-gradient( ' + scrollMapAry[i]['colorTop'] + ', ' + scrollMapAry[i]['colorBottom'] + ' );';
+		let colorTop        = scrollMapAry[i]['colorTop'];
+		let colorBottom     = scrollMapAry[i]['colorBottom'];
+		// RGBAの値をアルファ値0に変更する
+		if ( i === scrollMapAry.length - 1 ) {
+			colorBottom = colorCode[colorCode.length - 1];
+		}
+		let styleBackground = 'background: linear-gradient( ' + colorTop + ', ' + colorBottom + ' );';
 		let styleOpacity    = 'opacity: ' + opacity + ';';
-		let scrollVal       = scrollMapAry[i]['line'] + '%';
-		html += '<div class="heatmap-scroll-font" style="' + styleHeight + ' ' + styleBackground + ' ' + styleOpacity + '">' + scrollVal + '</div>';
+		let scrollVal       = nowVal + '%';
+		let styleWidth      = 'width: 100%;';
+		let styleMargin     = 'margin: 0 auto;';
+		let styleTextAlign  = 'text-align: center;';
+		let styleClipPath   = 'clip-path: polygon(' + clipPath1 + '% 0%, ' + clipPath2 + '% 0%, ' + clipPath3 + '% 100%, ' + clipPath4 + '% 100%)';
+		html += '<div class="heatmap-scroll-font heatmap-scroll-font-' + qahm.dev + '" style="' + styleHeight + ' ' + styleBackground + ' ' + styleOpacity + ' ' + styleWidth + ' ' + styleMargin + ' ' + styleTextAlign + ' ' + styleClipPath + '">' + scrollVal + '</div>';
 	}
 
 	jQuery( '#heatmap-scroll-' + useId ).html( html );
@@ -543,7 +602,7 @@ qahm.addScrollMapEvent = function() {
 	/*
 	こちらの処理はスクロールマップをパーセント表示にしていないパターン
 
-	nowDataNum = qahm.dataNum;
+	let nowDataNum = qahm.dataNum;
 	qahm.stayNumAry = [];
 	for ( let blockIdx = 0; blockIdx < qahm.blockAry.length; blockIdx++ ) {
 		qahm.stayNumAry[blockIdx] = nowDataNum;
@@ -560,7 +619,7 @@ qahm.addScrollMapEvent = function() {
 	for ( let stayIdx = 0; stayIdx < 100; stayIdx++ ) {
 		qahm.stayPerAry[stayIdx] = 0;
 	}
-	nowDataNum = qahm.dataNum;
+	let nowDataNum = qahm.dataNum;
 	qahm.stayPerAry[0] = nowDataNum;
 	
 	let oldStayIdx     = 0;
@@ -585,13 +644,33 @@ qahm.addScrollMapEvent = function() {
 		oldStayDataNum = nowDataNum;
 	}
 
-	jQuery( qahm.iframeWin ).on( 'mousemove scroll', function(e) {
-		qahm.updateScrollMapTooltipDataNum( e.clientY );
-	});
+	// マウスのY座標を取得して、その座標に対応する滞在人数を更新
+	if (typeof qahm.iframeWin.jQuery !== 'undefined') {
+		jQuery( qahm.iframeWin ).mousemove(function(event) {
+			qahm.mouseY = event.pageY;
+			qahm.updateScrollMapTooltipDataNum();
+		});
+	} else {
+		qahm.iframeWin.addEventListener('mousemove', function(event) {
+			qahm.mouseY = event.pageY;
+			qahm.updateScrollMapTooltipDataNum();
+		});
+	}
+
+	// スクロールしたときに、その座標に対応する滞在人数を更新
+	if (typeof qahm.iframeWin.jQuery !== 'undefined') {
+		jQuery( qahm.iframeWin ).scroll( function() {
+			qahm.updateScrollMapTooltipDataNum();
+		});
+	} else {
+		qahm.iframeWin.addEventListener('scroll', function() {
+			qahm.updateScrollMapTooltipDataNum();
+		});
+	}
 };
 
 
-qahm.updateScrollMapTooltipDataNum = function( offsY ) {
+qahm.updateScrollMapTooltipDataNum = function() {
 	if ( ! qahm.blockAry ) {
 		return;
 	}
@@ -607,8 +686,7 @@ qahm.updateScrollMapTooltipDataNum = function( offsY ) {
 	}
 	*/
 
-	let mouseY  = jQuery( qahm.iframeWin ).scrollTop() + offsY;
-	let stayIdx = Math.floor( ( mouseY ) / qahm.docHeight * 100 );
+	let stayIdx = Math.floor( ( qahm.mouseY ) / qahm.docHeight * 100 );
 	let scrollStayNum = qahm.stayPerAry[stayIdx];
 	if ( scrollStayNum !== undefined ) {
 		jQuery( '#heatmap-scroll-data-num' ).text( scrollStayNum + qahml10n.people );
@@ -620,8 +698,8 @@ qahm.updateScrollMapTooltipDataNum = function( offsY ) {
 qahm.getAttentionColor = function( avgStayTime ) {
 	const COLOR_CODE = ["#5e4fa2","#4478b2","#4ba0b1","#72c3a7","#a0d9a3","#ccea9f","#ebf7a6","#fbf8b0","#fee89a","#fdca79","#fba35e","#f3784c","#e1524a","#c42c4a","#9e0142"];
 
-	//4.0.0.0から、アテンション値に各ユーザーの読むスピードによる補正が入り、MAX15の値となった。
-	let colorIdx = Math.round( avgStayTime  );
+	//avgStayTimeという名前だが、これは15を最大値に調整された値（ver1.1.0.0で対応され、1.1.1.0より反映する）
+	let colorIdx = Math.round( avgStayTime );
 	if( colorIdx >= COLOR_CODE.length ){
 		colorIdx = COLOR_CODE.length - 1;
 	}
@@ -679,7 +757,7 @@ qahm.createClickCountMap = function(){
 	}
 
 	// canvasの高さを確定させる
-	let canvasTop    = jQuery( qahm.iframeWin ).scrollTop();
+	let canvasTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 	let canvasBottom = jQuery( window ).innerHeight() + canvasTop;
 	
 	canvasTop -= qahm.canvasMargin;
@@ -696,7 +774,7 @@ qahm.createClickCountMap = function(){
 	const width  = qahm.iframeDoc.body.clientWidth;
 	const height = canvasBottom - canvasTop;
 	let qahmDom = '';
-	qahmDom   += '<div id="heatmap-click-count-parts-' + useId + '" style="top:' + canvasTop + 'px; height:' + height + 'px; position: absolute; line-height: 0px;">' +
+	qahmDom   += '<div id="heatmap-click-count-parts-' + useId + '" style="top:' + canvasTop + 'px; height:' + height + 'px; position: absolute; line-height: 0px; width: 100%;">' +
 			'<canvas width="' + width + '" height="' + height + '" style="position: absolute; left: 0px; top: 0px;">' +
 			'</canvas></div>';
 
@@ -763,9 +841,9 @@ qahm.createClickCountMap = function(){
 					continue;
 				}
 				
-				bounds = sel.getBoundingClientRect();
-				offsLeft = bounds.left + (qahm.iframeBody.scrollLeft || qahm.iframeHtml.scrollLeft) - qahm.iframeHtml.clientLeft;
-				offsTop  = bounds.top + (qahm.iframeBody.scrollTop || qahm.iframeHtml.scrollTop) - qahm.iframeHtml.clientTop;
+				let bounds = sel.getBoundingClientRect();
+				let offsLeft = bounds.left + (qahm.iframeBody.scrollLeft || qahm.iframeHtml.scrollLeft) - qahm.iframeHtml.clientLeft;
+				let offsTop  = bounds.top + (qahm.iframeBody.scrollTop || qahm.iframeHtml.scrollTop) - qahm.iframeHtml.clientTop;
 				if ( canvasTop > offsTop || canvasBottom < offsTop + sel.offsetHeight ) {
 					continue;
 				}

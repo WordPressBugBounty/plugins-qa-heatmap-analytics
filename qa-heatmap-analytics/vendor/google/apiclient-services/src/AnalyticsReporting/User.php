@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class User extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class User extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $type;
-    /**
-     * @var string
-     */
-    public $userId;
-    /**
-     * @param string
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-    /**
-     * @param string
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-    }
-    /**
-     * @return string
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
+  /**
+   * @var string
+   */
+  public $type;
+  /**
+   * @var string
+   */
+  public $userId;
+
+  /**
+   * @param string
+   */
+  public function setType($type)
+  {
+    $this->type = $type;
+  }
+  /**
+   * @return string
+   */
+  public function getType()
+  {
+    return $this->type;
+  }
+  /**
+   * @param string
+   */
+  public function setUserId($userId)
+  {
+    $this->userId = $userId;
+  }
+  /**
+   * @return string
+   */
+  public function getUserId()
+  {
+    return $this->userId;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(User::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_User');
+class_alias(User::class, 'Google_Service_AnalyticsReporting_User');

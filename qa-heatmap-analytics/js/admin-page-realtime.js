@@ -1,68 +1,160 @@
+/*
+■ 動作仕様
+・人数の更新は10秒に1回
+・テーブルの更新は1分に1回
+
+1. ページを開いたタイミングで更新
+2. タブがアクティブのとき上記時間経過したら更新
+3. タブが非アクティブのとき上記時間経過後タブを戻したら更新
+4. タブが非アクティブ中のときは更新関数を何度も実行しないよう対応
+5. タブがアクティブのとき、かつウインドウのフォーカスが非アクティブの場合でも更新
+*/
+
 var qahm = qahm || {};
 
 qahm.updateRealtimeListCnt = 0;
-qahm.updateSessionNumCnt   = 0;
+qahm.updateSessionNumCnt = 0;
+qahm.nextRealtimeUpdate = 0;  // 次のテーブル更新時刻を保持
+qahm.nextSessionUpdate = 0;   // 次の人数更新時刻を保持
 
-var tdayTable = '';
+let intervalSessionNum;
+
+// 人数とテーブルの更新をチェックして実行
+function checkAndUpdate() {
+    const now = new Date().getTime();
+
+    // 人数の更新 (10秒ごと)
+    if (now >= qahm.nextSessionUpdate) {
+        qahm.updateSessionNum();
+        qahm.nextSessionUpdate = now + 10000; // 次回更新は10秒後
+    }
+
+    // テーブルの更新 (1分ごと)
+    if (now >= qahm.nextRealtimeUpdate) {
+        qahm.updateRealtimeList();
+        qahm.nextRealtimeUpdate = now + 60000; // 次回更新は1分後
+    }
+}
+
+function startIntervals() {
+    if (!intervalSessionNum) {
+        intervalSessionNum = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                checkAndUpdate();
+            }
+        }, 1000 * 10); // 10秒ごとにチェックして更新
+    }
+}
+
+function stopIntervals() {
+    if (intervalSessionNum) {
+        clearInterval(intervalSessionNum);
+        intervalSessionNum = null;
+    }
+}
+
+// タブの可視状態変更時のイベント
+function handleVisibilityChange() {
+    const now = new Date().getTime();
+
+    if (document.visibilityState === 'visible') {
+        // 1分以上経過している場合は即時更新を実行
+        if (now >= qahm.nextSessionUpdate || now >= qahm.nextRealtimeUpdate) {
+            checkAndUpdate();
+        }
+        // 定期更新を再開
+        startIntervals();
+    } else {
+        // タブが非アクティブのとき、定期更新を停止
+        stopIntervals();
+    }
+}
+
+// ページがロードされたときの初期処理
 window.addEventListener('DOMContentLoaded', function() {
-// window.onload = function () {
-	tdayTable = new QATableGenerator();
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_tanmatsu'],type:'string',colParm:'style="width: 10%;"'});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_ridatsujikoku'],type: 'unixtime',colParm:'style="width: 15%;"',tdParm:'style="text-align:center;"', format:(unixtime) => {let date = new Date(1000*unixtime);
-		let isostr = date.toISOString();
-	// return  (isostr.slice(0,10) + ' ' + isostr.slice(11,19));
-		let year = date.getFullYear();
-		let month = Number(date.getMonth()) + 1;
-		let day = date.getDate();
-		let hour = date.getHours();
-		year  = year.toString();
-		month = ('0' + month.toString()).slice(-2);
-		day   = ('0' + day.toString()).slice(-2);
-		hour   = ('0' + hour.toString()).slice(-2);
-		return `${year}-${month}-${day} ${hour}:${isostr.slice(14,19)}`;
-	}});
-	tdayTable.dataObj.body.header.push({isHide:true});
-	tdayTable.dataObj.body.header.push({isHide:true});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_1page_me'],type: 'string',colParm:'style="width: 20%;"',tdHtml:'<a href="%!02" target="_blank" class="qahm-tooltip" data-qahm-tooltip="%!03">%!me</a>'});
-	tdayTable.dataObj.body.header.push({isHide:true});
-	tdayTable.dataObj.body.header.push({isHide:true});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_ridatsu_page'],type: 'string',colParm:'style="width: 20%;"',tdHtml:'<a href="%!05" target="_blank" class="qahm-tooltip" data-qahm-tooltip="%!06">%!me</a>'});
-	tdayTable.dataObj.body.header.push({isHide:true});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_sanshoumoto'],type: 'string',colParm:'style="width: 15%;"',format:(text, tableidx, vrowidx, visibleary) => {
-		let ret = text;
-		if (text !== 'direct') {
-			let referrer = visibleary[vrowidx][tableidx];
-			ret = `<a href="//${referrer}" target="_blank" rel="noopener" class="qahm-tooltip" data-qahm-tooltip="${referrer}">${text}</a>`;
+    qahm.openReplayView();
+
+    // ページを開いた直後の即時更新
+    checkAndUpdate();
+
+    // 次回の更新時刻を設定し、定期更新を開始
+    const now = new Date().getTime();
+    qahm.nextSessionUpdate = now + 10000; // 次回の人数更新時刻は10秒後
+    qahm.nextRealtimeUpdate = now + 60000; // 次回のテーブル更新時刻は1分後
+
+    startIntervals();
+
+    // 可視状態の変更を監視
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);  // フォーカス時もチェック
+});
+
+
+window.addEventListener('DOMContentLoaded', function() {
+	// create session recoding table
+	sesRecHeader = [
+		{ key: 'tanmatsu', label: qahml10n['table_tanmatsu'], width: 7 },
+		{ key: 'ridatsujikoku', label: qahml10n['table_ridatsujikoku'], width: 15, textAlign: 'center',
+			formatter: function(value, row) {
+				if (!value) return '';
+				// Unixタイムスタンプは秒単位なので、ミリ秒に変換
+				var date = new Date(value * 1000);
+				
+				// 各要素を2桁に揃える
+				var y = date.getFullYear();
+				var m = String(date.getMonth() + 1).padStart(2, '0');
+				var d = String(date.getDate()).padStart(2, '0');
+				var h = String(date.getHours()).padStart(2, '0');
+				var min = String(date.getMinutes()).padStart(2, '0');
+				var s = String(date.getSeconds()).padStart(2, '0');
+				
+				return y + '/' + m + '/' + d + ' ' + h + ':' + min + ':' + s;
+			}
+		},
+		{ key: 'landing_page_url', hidden: true },
+		{ key: 'landing_page', label: qahml10n['table_1page_me'], width: 20,
+			formatter: function(value, row) {
+				return `<a href="${row.landing_page_url}" target="_blank" rel="noopener">${value}</a>`;
+			}
+		},
+		{ key: 'ridatsu_page_url', hidden: true },
+		{ key: 'ridatsu_page', label: qahml10n['table_ridatsu_page'], width: 20,
+			formatter: function(value, row) {
+				return `<a href="${row.ridatsu_page_url}" target="_blank" rel="noopener">${value}</a>`;
+			}
+		},
+		{ key: 'referrer_url', hidden: true },
+		{ key: 'referrer', label: qahml10n['table_referrer'], width: 14, formatter: function(value, row) {
+			if ( value !== 'direct' && value !== qahml10n['table_total'] ) {
+				ret = `<a href="${row.referrer_url}" target="_blank" rel="noopener">${value}</a>`;
+			} else {
+				ret = value;
+			}
+			return ret;
+    	} },
+		{ key: 'pv', label: qahml10n['table_pv'], width: 7, type: 'integer' },
+		{ key: 'site_taizaijikan', label: qahml10n['table_site_taizaijikan'], width: 10, type: 'duration' },
+		{ key: 'saisei', label: qahml10n['table_saisei'], width: 7, sortable: false, exportable: false, filtering: false, formatter: function(value, row) {
+			return `<div class="qa-table-replay-container">
+					<span class="icon-replay" data-work_base_name="${value}"><span class="dashicons dashicons-format-video"></span></span>
+				</div>`;
+    	} },
+	];
+	sesRecOptions = {
+		perPage: 100,
+		pagination: true,
+		exportable: true,
+		sortable: true,
+        filtering: true,
+		maxHeight: 600,
+		stickyHeader: true,
+		initialSort: {
+			column: 'ridatsujikoku',
+			direction: 'desc'
 		}
-		return ret;
-	}, itemformat:(text)=>{return text;}});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_pv'],type: 'number',colParm:'style="width: 10%;"',tdParm:'style="text-align:right;"',calc:'avg'});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_site_taizaijikan'],type: 'second',colParm:'style="width: 10%;"',tdParm:'style="text-align:center;"',calc:'avg', format:(totalsec, _tableidx, _vrowidx, _visibleary) => {
-		let sec  = totalsec % 60;
-		let remainmin = (totalsec-sec) / 60;
-		let min  = remainmin % 60;
-		let hour = (remainmin-min) / 60;
-		const timestr = (time) => { return ( '0' + time ).slice(-2)};
-		return `${timestr(hour)}:${timestr(min)}:${timestr(sec)}`;
-	}});
-	tdayTable.dataObj.body.header.push({title:qahml10n['table_saisei'],type: 'string',colParm:'style="width: 5%;"',tdParm:'style="text-align:center;"',hasFilter:false,tdHtml:'<span class="icon-replay" data-work_base_name="%!me"><i class="fa fa-play-circle fa-2x"></i></span></td>'});
-	tdayTable.visibleSort.index = 2;
-	tdayTable.visibleSort.order = 'dsc';
-	tdayTable.targetID = 'tday_table';
-	tdayTable.progBarDiv = 'tday-table-progbar';
-	tdayTable.dataTRNowBlocks.divheight = 500;
-	tdayTable.prefix = 'qatday';
-	let plugindir = qahm.plugin_dir_url;
-	tdayTable.workerjs = plugindir.replace(/^.*\/\/[^\/]+/, '') + 'js/tableworker.js';
-
-
-	if ( typeof qahm.updateRealtimeList === 'function' ) {
-		qahm.updateRealtimeList();
-		setInterval( qahm.updateRealtimeList, 1000 * 60 );
-	} else {
-		setTimeout( qahm.updateRealtimeList, 1000 * 5 );
-		setInterval( qahm.updateRealtimeList, 1000 * 60 );
-	}
+	};
+	sesRecTable = qaTable.createTable('#tday_table', sesRecHeader, sesRecOptions);
+	sesRecTable.showLoading();
 });
 
 qahm.openReplayView = function() {
@@ -82,22 +174,31 @@ qahm.openReplayView = function() {
 				},
 			}
 		).done(
-			function( data ){
-				// 最低読み込み時間経過後に処理実行
-				let now_time  = new Date().getTime();
-				let load_time = now_time - start_time;
-				let min_time  = 400;
+			function( url ){
+				if ( url.startsWith("http")) {
+					// 最低読み込み時間経過後に処理実行
+					let now_time  = new Date().getTime();
+					let load_time = now_time - start_time;
+					let min_time  = 400;
 
-				if ( load_time < min_time ) {
-					// ロードアイコンを削除して新しいウインドウを開く
-					setTimeout(
-						function(){
-							window.open( data, '_blank' );
-						},
-						(min_time - load_time)
-					);
+					if ( load_time < min_time ) {
+						// ロードアイコンを削除して新しいウインドウを開く
+						setTimeout(
+							function(){
+								window.open( url, '_blank' );
+							},
+							(min_time - load_time)
+						);
+					} else {
+						window.open( url, '_blank' );
+					}
 				} else {
-					window.open( data, '_blank' );
+					AlertMessage.alert(
+						qahml10n['realtime_replay_alert1'],
+						qahml10n['realtime_replay_alert2'],
+						'error',
+						function(){}
+					);
 				}
 			}
 		).fail(
@@ -113,7 +214,7 @@ qahm.openReplayView = function() {
 }
 
 qahm.updateSessionNum = function() {
-	if ( qahm.updateSessionNumCnt > 0 ) {
+	if ( jQuery('#session_num').length === 0 || qahm.updateSessionNumCnt > 0 ) {
 		return;
 	}
 	qahm.updateSessionNumCnt++;
@@ -166,116 +267,13 @@ qahm.updateRealtimeList = function() {
 	).done(
 		function( data ){
 			if ( ! data ) {
+				sesRecTable.updateData([]);
 				return;
 			}
-			if (typeof tdayTable !== 'undefined' && tdayTable !== '') {
+			if (typeof sesRecTable !== 'undefined' && sesRecTable !== '') {
 				if ( data['realtime_list'].length > 0 ) {
-					tdayTable.rawDataArray = data['realtime_list'];
-					//table
-					if ( ! tdayTable.headerTableByID ) {
-						jQuery( '#update_time' ).hide().text(data['update_time']).fadeIn(4000,'swing');
-						tdayTable.generateTable();
-					} else {
-						if ( tdayTable.isNoCheck() && tdayTable.countActiveFilterBoxes() === 0 && tdayTable.isScrolled() === false ) {
-							jQuery('#update_time').hide().text(data['update_time']).fadeIn(4000, 'swing');
-							tdayTable.updateTable();
-						}
-					}
-					//graph
-					let now = new Date();
-					let nowHour = now.getHours();
-					let zerojiUnixtime = new Date( now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0 )/1000;
-					let eachHourPvsAry = [];
-					let eachHourLabel = [];
-					for ( let hhh = 23; 0 <= hhh; hhh-- ) {
-						if ( hhh > nowHour ) {
-							eachHourPvsAry[hhh] = null;
-							eachHourLabel.push( hhh.toString() );
-						} else if ( hhh === nowHour ) {
-							eachHourPvsAry[hhh] = 0;
-							eachHourLabel.push( '(now)' + hhh.toString() );
-						} else {
-							eachHourPvsAry[hhh] = 0;
-							eachHourLabel.push( hhh.toString() );
-						}
-					}
-
-
-					for ( let iii = 0; iii < data['realtime_list'].length; iii++ ) {
-						for ( let hhh = nowHour; 0 <= hhh; hhh-- ) {
-							if ( zerojiUnixtime + hhh * 3600 < Number( data['realtime_list'][iii][1] ) ) {
-								++eachHourPvsAry[hhh];
-								break;
-							}
-						}
-					}
-
-					let realChart;
-
-					//clear pre-chart when updating
-					if ( realChart !== undefined ) {
-						qahm.clearPreChart( realChart );
-						qahm.resetCanvas( 'realtime' );
-					}
-					
-					let ctxreal = document.getElementById('realtime').getContext('2d');
-					realChart = new Chart(ctxreal, {
-						type: 'bar',
-						data: {
-						labels: eachHourLabel.reverse(),
-						datasets: [{
-							label: qahml10n['graph_hourly_sessions'],
-							fill: false,
-							lineTension: 0,
-							data: eachHourPvsAry,
-							backgroundColor: function(context) {
-								var index = context.dataIndex;
-								return index == nowHour ? '#FCC800' : '#69A4E2'; // draw hour of now in 'sun-flower'-yellow             
-							},
-						}],
-						},
-						options: {
-							responsive: true,
-							maintainAspectRatio: false,
-							title: {
-								display: true,
-								text: qahml10n['sessions_today'],
-							},
-							legend: {
-								display: false,
-								labels: {
-									fontSize: 9
-								},
-							},
-							scales: {
-								xAxes: [{
-									scaleLabel: {
-										display: true,
-										labelString: qahml10n['graph_hours'],
-										fontColor: "#black",
-										fontSize: 12
-									}
-								}],
-								yAxes: [{
-									scaleLabel: {
-										display: true,
-										labelString: qahml10n['graph_sessions'],
-										fontColor: "black",
-										fontSize: 12
-									},
-									ticks: {
-										min: 0,
-									},
-									beforeBuildTicks: function(axis) {
-										if( axis.max <= 5 ) {
-											axis.max = 5;
-											axis.options.ticks.stepSize = 1;
-										}									
-									},
-								}],
-							}
-						},
-					});
+					jQuery( '#update_time' ).hide().text(data['update_time']).fadeIn(4000,'swing');
+					sesRecTable.updateData(data['realtime_list']);
 				}
 			}
 		}
@@ -290,17 +288,6 @@ qahm.updateRealtimeList = function() {
 		}
 	);
 }
-
-
-jQuery(
-	function(){
-
-		qahm.openReplayView();
-		qahm.updateSessionNum();
-
-		setInterval( qahm.updateSessionNum, 1000 * 10 );
-	}
-);
 
 
 /**-------------------------------

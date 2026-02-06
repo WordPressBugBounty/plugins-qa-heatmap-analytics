@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2019 Google LLC
  *
@@ -15,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google\Auth;
 
-use QAAnalyticsVendor\Google\Auth\HttpHandler\HttpClientCache;
-use QAAnalyticsVendor\Google\Auth\HttpHandler\HttpHandlerFactory;
-use QAAnalyticsVendor\GuzzleHttp\Psr7;
-use QAAnalyticsVendor\GuzzleHttp\Psr7\Utils;
+namespace Google\Auth;
+
+use Google\Auth\HttpHandler\HttpClientCache;
+use Google\Auth\HttpHandler\HttpHandlerFactory;
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Utils;
+
 /**
  * Tools for using the IAM API.
  *
@@ -31,17 +32,21 @@ class Iam
     const IAM_API_ROOT = 'https://iamcredentials.googleapis.com/v1';
     const SIGN_BLOB_PATH = '%s:signBlob?alt=json';
     const SERVICE_ACCOUNT_NAME = 'projects/-/serviceAccounts/%s';
+
     /**
      * @var callable
      */
     private $httpHandler;
+
     /**
      * @param callable $httpHandler [optional] The HTTP Handler to send requests.
      */
     public function __construct(callable $httpHandler = null)
     {
-        $this->httpHandler = $httpHandler ?: HttpHandlerFactory::build(HttpClientCache::getHttpClient());
+        $this->httpHandler = $httpHandler
+            ?: HttpHandlerFactory::build(HttpClientCache::getHttpClient());
     }
+
     /**
      * Sign a string using the IAM signBlob API.
      *
@@ -60,20 +65,36 @@ class Iam
     public function signBlob($email, $accessToken, $stringToSign, array $delegates = [])
     {
         $httpHandler = $this->httpHandler;
-        $name = \sprintf(self::SERVICE_ACCOUNT_NAME, $email);
-        $uri = self::IAM_API_ROOT . '/' . \sprintf(self::SIGN_BLOB_PATH, $name);
+        $name = sprintf(self::SERVICE_ACCOUNT_NAME, $email);
+        $uri = self::IAM_API_ROOT . '/' . sprintf(self::SIGN_BLOB_PATH, $name);
+
         if ($delegates) {
             foreach ($delegates as &$delegate) {
-                $delegate = \sprintf(self::SERVICE_ACCOUNT_NAME, $delegate);
+                $delegate = sprintf(self::SERVICE_ACCOUNT_NAME, $delegate);
             }
         } else {
             $delegates = [$name];
         }
-        $body = ['delegates' => $delegates, 'payload' => \base64_encode($stringToSign)];
-        $headers = ['Authorization' => 'Bearer ' . $accessToken];
-        $request = new Psr7\Request('POST', $uri, $headers, Utils::streamFor(\json_encode($body)));
+
+        $body = [
+            'delegates' => $delegates,
+            'payload' => base64_encode($stringToSign),
+        ];
+
+        $headers = [
+            'Authorization' => 'Bearer ' . $accessToken
+        ];
+
+        $request = new Psr7\Request(
+            'POST',
+            $uri,
+            $headers,
+            Utils::streamFor(json_encode($body))
+        );
+
         $res = $httpHandler($request);
-        $body = \json_decode((string) $res->getBody(), \true);
+        $body = json_decode((string) $res->getBody(), true);
+
         return $body['signedBlob'];
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,27 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class OrFiltersForSegment extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class OrFiltersForSegment extends \Google\Collection
 {
-    protected $collection_key = 'segmentFilterClauses';
-    protected $segmentFilterClausesType = SegmentFilterClause::class;
-    protected $segmentFilterClausesDataType = 'array';
-    /**
-     * @param SegmentFilterClause[]
-     */
-    public function setSegmentFilterClauses($segmentFilterClauses)
-    {
-        $this->segmentFilterClauses = $segmentFilterClauses;
-    }
-    /**
-     * @return SegmentFilterClause[]
-     */
-    public function getSegmentFilterClauses()
-    {
-        return $this->segmentFilterClauses;
-    }
+  protected $collection_key = 'segmentFilterClauses';
+  protected $segmentFilterClausesType = SegmentFilterClause::class;
+  protected $segmentFilterClausesDataType = 'array';
+
+  /**
+   * @param SegmentFilterClause[]
+   */
+  public function setSegmentFilterClauses($segmentFilterClauses)
+  {
+    $this->segmentFilterClauses = $segmentFilterClauses;
+  }
+  /**
+   * @return SegmentFilterClause[]
+   */
+  public function getSegmentFilterClauses()
+  {
+    return $this->segmentFilterClauses;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(OrFiltersForSegment::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_OrFiltersForSegment');
+class_alias(OrFiltersForSegment::class, 'Google_Service_AnalyticsReporting_OrFiltersForSegment');

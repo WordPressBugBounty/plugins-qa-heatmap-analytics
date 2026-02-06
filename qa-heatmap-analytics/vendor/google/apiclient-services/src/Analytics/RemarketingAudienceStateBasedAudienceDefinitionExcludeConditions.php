@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $exclusionDuration;
-    /**
-     * @var string
-     */
-    public $segment;
-    /**
-     * @param string
-     */
-    public function setExclusionDuration($exclusionDuration)
-    {
-        $this->exclusionDuration = $exclusionDuration;
-    }
-    /**
-     * @return string
-     */
-    public function getExclusionDuration()
-    {
-        return $this->exclusionDuration;
-    }
-    /**
-     * @param string
-     */
-    public function setSegment($segment)
-    {
-        $this->segment = $segment;
-    }
-    /**
-     * @return string
-     */
-    public function getSegment()
-    {
-        return $this->segment;
-    }
+  /**
+   * @var string
+   */
+  public $exclusionDuration;
+  /**
+   * @var string
+   */
+  public $segment;
+
+  /**
+   * @param string
+   */
+  public function setExclusionDuration($exclusionDuration)
+  {
+    $this->exclusionDuration = $exclusionDuration;
+  }
+  /**
+   * @return string
+   */
+  public function getExclusionDuration()
+  {
+    return $this->exclusionDuration;
+  }
+  /**
+   * @param string
+   */
+  public function setSegment($segment)
+  {
+    $this->segment = $segment;
+  }
+  /**
+   * @return string
+   */
+  public function getSegment()
+  {
+    return $this->segment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions::class, 'QAAnalyticsVendor\\Google_Service_Analytics_RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions');
+class_alias(RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions::class, 'Google_Service_Analytics_RemarketingAudienceStateBasedAudienceDefinitionExcludeConditions');

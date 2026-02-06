@@ -1,0 +1,1048 @@
+/*
+ 元々のadmin-page-home-common.cssとadmin-page-home-realtime.cssはリアルタイム画面しか使用していなかった。
+ そのためこれらのファイルを統合した。
+
+ 前半は元々のadmin-page-home-common.cssの内容
+ 後半は元々のadmin-page-home-realtime.cssの内容
+ 
+ となっている。
+*/
+
+/**
+ 色
+ #5ab4bd = rgb(90, 180, 189)　//緑
+ #a1cce4 = rgb(161, 204, 228) //青
+*/
+html {
+    scroll-behavior: smooth;
+}
+.mainblue {
+    color: #69A4E2
+}
+.el_warning {
+    color: #EB8281;
+}
+
+.bl_reportField {
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+.bl_dashBoardH h2,.bl_reportField h2 {
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem 2rem 1.5rem 130px;
+    /*border-top: 2px solid #886174;*/
+    border-top: 1px solid #5A6E83;
+    background-color: white;
+    margin: 30px 0 0 0;
+    font-size: 22px;
+    color: #363D46;
+}
+.bl_dashBoardH h2#h_dashboard {
+    margin: 0;
+}
+
+.bl_dashBoardH h2:before,.bl_reportField h2:before {
+    position: absolute;
+    top: -150%;
+    left: -100px;
+    width: 200px;
+    height: 300%;
+    content: '';
+    -webkit-transform: rotate(25deg);
+    transform: rotate(25deg);
+    /*background: #886174;*/
+    background: #5A6E83;
+}
+
+.bl_dashBoardH h2 span,.bl_reportField h2 span {
+    font-size: 40px;
+    font-size: 4rem;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    display: block;
+    padding-top: 3px;
+    padding-left: 16px;
+    color: #fff;
+}
+.bl_reportField h3 {
+    background-color: #adb4bb;
+    border-radius: 3px;
+    width: 250px;
+    color: white;
+    padding: 5px;
+    text-align: center;
+    margin: 5px 0 10px 0;
+    font-weight: normal;
+    font-size: 14px;
+}
+@media screen and (min-width:769px) {
+    .bl_reportField .bl_contentsArea {
+        padding: 10px 30px 25px;
+    }
+}
+.flex{
+    display:flex;
+}
+.flex_column {
+    display:flex;
+    flex-direction: column;
+}
+.flex_item {
+    align-self: left;
+}
+.flex_w_auto {
+    flex-basis: auto;
+}
+/* インフォーメーションエリア */
+.bl_infoArea {
+    background-color: white;
+    padding: 20px;
+}
+
+/* ダッシュボード */
+.bl_dashBoard {
+    padding: 0;
+    margin: 0;
+	flex-wrap: wrap;
+}
+
+
+/* お知らせとグラフエリア */
+.bl_dashContents {
+    flex-grow: 4;
+	margin-bottom: 24px;
+}
+.bl_news {
+    width: 900px;
+	max-width: 100%;
+}
+#wpbody-content .metabox-holder {
+    padding: 0 !important;
+}
+.bl_news .postbox {
+    border-radius: 3px;
+}
+.bl_news ul{
+    margin: 0;
+    padding: 10px;
+    font-size: 12px;
+    border: rgba(114, 120, 128, .2) solid 1px;
+    border-radius: 3px;
+}
+.bl_grapharea {
+    max-width: 900px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+.bl_grapharea .bl_data {
+    width: 400px;
+}
+.bl_grapharea .bl_data table{
+    width: 100%;
+    border-spacing: 0;
+	margin-bottom: 24px;
+}
+.bl_grapharea .bl_data table th{
+    text-align: center;
+    font-size:20px;
+    height: 40px;
+    width: 50%;
+}
+.bl_grapharea .bl_data table tr{
+    text-align: center;
+    font-size:28px;
+    font-weight: bold;
+}
+.bl_grapharea .bl_data table tr.yosoku{
+    text-align: center;
+    font-size:14px;
+}
+.bl_grapharea .bl_data table td{
+    height: 40px;
+}
+
+.bl_grapharea .bl_graph {
+    width: 500px;
+}
+
+.bl_report {
+    width: 900px;
+}
+.bl_report .bl_reportmenu {
+    width: 225px;
+}
+.bl_report .bl_reportmenu h4 a{
+    color: black;
+}
+
+@media screen and (max-width: 1124px){
+	.bl_grapharea div {
+		flex-wrap: wrap;
+		flex-direction: column;
+	}
+}
+
+/* アノテーションエリア */
+.bl_anotation {
+    flex-grow: 1;
+	max-width: 660px;
+}
+.bl_infobox {
+    background-color: #F0F0EA;
+    padding: 10px 15px 10px 15px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+}
+.bl_infobox h3 {
+    margin: 0 0 5px 0;
+    border-bottom: rgba(114, 120, 128, .2) solid 1px;
+    font-size: 110%;
+}
+.bl_infobox a {
+    text-decoration: none;
+}
+.bl_infobox p {
+    color: #727880;
+    font-size: 90%;
+}
+.bl_infobox .btn {
+    background-color: #96A587;
+    cursor: pointer;
+    font-size: 14px;
+    border: 1px solid #96A587;
+    margin: 10px 20px 0;
+    border-radius: 5px;
+    text-align: center;
+
+}
+.bl_infobox .btn p {
+    color: white;
+    text-decoration: none;
+}
+.bl_infobox .btn:hover {
+    background-color: #BEC7B4;
+    border: 1px solid #BEC7B4;
+}
+.bl_infobox .status {
+    font-size: 14px;
+    margin: 10px 20px 0;
+    text-align: center;
+}
+.bl_infobox .status {
+    font-size: 14px;
+    margin: 10px 20px 0;
+    text-align: center;
+}
+.bl_infobox .status p {
+    /*color: #29470a;*/
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+.bl_infobox .loadsec p {
+    margin-top: 5px;
+    text-align: center;
+}
+
+#bl_paid_bar {
+    padding-top: 1px;
+    /*padding: 10px;*/
+    background-color: #5A6E83;
+    /*background-color: #886174;*/
+    color: white;
+}
+#bl_pay_announce {
+    padding: 10px;
+    background-color: #886174;
+    color: white;
+}
+#bl_pay_announce a{
+    color: white;
+}
+.freetext {
+    color: #FF0000;
+    font-size: 125%;
+    display: inline-block;
+}
+.paidtext {
+    color: #29470a;
+    font-size: 90%;
+    display: inline-block;
+}
+.el_useStatus {
+    display: flex;
+    justify-content: space-between;
+}
+.limit_label {
+    margin: 1em 0;
+    background-color: #bec7b4;
+    color: black;
+    font-size: 9px;
+    display: inline-block;
+    padding: 1px 3px 1px 3px;
+    border-radius: 2px;
+}
+.used_label {
+    margin: 1em 0;
+    color: #727880;
+    font-size: 9px;
+    display: inline-block;
+    padding: 1px 3px 1px 3px;
+}
+.used_num {
+    font-size: 10px;
+}
+.bl_infobox progress {
+    margin: 2px auto 2px auto;
+    height: 8px;
+    width: 100%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+}
+p.qasafegreen {
+    color: #29470a;
+}
+p.qagreen {
+    color: #96A587;
+}
+p.qapink  {
+    color: #EB8281;
+}
+p.qapinklimit  {
+    color: #FF0000;
+}
+.bl_infobox progress.qagreen {
+    background-color: #CDD4DA;
+}
+.bl_infobox progress.qagreen::-webkit-progress-bar {
+    background-color: #CDD4DA;
+}
+
+/* バーの進捗率の表示を変える */
+.bl_infobox progress.qagreen::-moz-progress-bar {
+    background-color: #96A587;
+}
+
+.bl_infobox progress.qagreen::-webkit-progress-value {
+    background-color: #96A587;
+}
+
+.bl_infobox progress.qapink {
+    background-color: #CDD4DA;
+}
+.bl_infobox progress.qapink::-webkit-progress-bar {
+    background-color: #CDD4DA;
+}
+
+/* バーの進捗率の表示を変える */
+.bl_infobox progress.qapink::-moz-progress-bar {
+    background-color: #EB8281;
+}
+
+.bl_infobox progress.qapink::-webkit-progress-value {
+    background-color: #EB8281;
+}
+
+.bl_infobox progress.qapinklimit {
+    background-color: #000;
+}
+.bl_infobox progress.qapinklimit::-webkit-progress-bar {
+    background-color: #000;
+}
+
+/* バーの進捗率の表示を変える */
+.bl_infobox progress.qapinklimit::-moz-progress-bar {
+    background-color: #FF0000;
+}
+
+.bl_infobox progress.qapinklimit::-webkit-progress-value {
+    background-color: #FF0000;
+}
+.realtime_num {
+    margin: 10px 0 10px 0;
+}
+.realtime_num .num_title {
+    background-color: #3A3A6B;
+    font-size: 12px;
+    color: white;
+    width: 250px;
+    text-align: center;
+    padding: 5px;
+    margin-right: 10px;
+}
+.bl_dayGraph {
+    width: calc(100% - 30px);
+    height: 200px;
+    flex-grow: 4;
+}
+#bl_calStickey {
+    margin-bottom: 150px;
+}
+#bl_calenderAndMenu {
+    position: -webkit-sticky;
+    position: sticky;
+    z-index: +11;
+    top: 0;
+    background-color: #F0F0EA;
+    padding: 5px 10px 5px 10px;
+    border: 1px solid #727880;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    margin-top: 10px;
+}
+#bl_homeFooter {
+    background-color: white;
+    padding: 10px;
+}
+#bl_homeFooter .bl_reportmenu {
+    width: 200px;
+}
+
+hr.el_viewseparator {
+    color: #ddd;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    border-top: 0;
+    border-top: 0;
+}
+
+#jsSearchPageUrl {
+	max-width: 100%;
+}
+
+/** 枠組み、hタグ　------------------------------------------ */ 
+.tab_container {
+  margin: 0;
+  padding: 0 25px;
+}
+.tab_content_description {
+  margin: 0;
+}
+.tab_content_item {
+  margin: 10px;
+  padding: 20px 0;
+}
+.tab_content_item_thinbottom {
+  margin: 10px;
+  padding: 20px 0 0 0;
+}
+
+
+.left-blue_div {
+  border-left: 5px solid rgba(161, 204, 228, 0.8);
+  padding: 5px 0 5px 15px;
+}
+.back-blue_h3 {
+  background-color: rgba(161, 204, 228, 0.4);
+  padding: 8px 4px 4px;
+  border-radius: 3px;
+}
+.back-blue-grad_h3 {
+  background: linear-gradient(to right,  rgba(101, 153, 180, 0.2), #fff 75%);
+  padding: 8px 4px 4px;
+  border-radius: 3px;
+}
+.back-blue-grad-center_h3 {
+  background: linear-gradient(to right, #fff 10%, rgba(101, 153, 180, 0.2), #fff 90%);
+  padding: 8px 4px 4px;
+}
+
+
+.tab_content hr {
+  border: none;
+  background: linear-gradient(to right, white, #5ab4bd, #a1cce4, white);
+  height: 2px;
+}
+
+
+/* pタグの前に三角を付ける。二重下線を引く。（ds抽出件数表示）*/
+.underline-double {
+  margin-bottom: 1px;
+  border-bottom: 3px rgba(161,204,228,0.8) double;
+  display: inline-block;
+}
+.sankaku:before {
+  content: "";
+  display: inline-block;
+  border: 6px solid transparent;
+  border-left-width: 1.2em;
+  box-sizing: border-box;
+  border-left-color: #2271b1;
+}
+
+.margin-eight {
+  margin: 8px 0;
+}
+
+
+
+/** タブ表示切替 ------------------------------------------ */  
+  /*タブのスタイル*/
+  .tab_item {
+	min-width: 165px;
+	height: 50px;
+	margin-right: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  /*border-bottom: 3px solid #5ab4bd;*/
+	background-color: #5ab4bd;
+	line-height: 50px;
+	font-size: max(1em, min(16px, 2vw));
+	text-align: center;
+	color: #fff;
+	display: block;
+	float: left;
+	text-align: center;
+	font-weight: bold;
+	transition: all 0.2s ease;
+  }
+  .tab_item:hover {
+	opacity: 0.75;
+  }
+  
+  /*ラジオボタンを全て消す*/
+  input[name="tab_item"] {
+	display: none;
+  }
+
+  /*タブ切り替えの中身のスタイル*/
+  .tabs {
+	  position: relative;
+  }
+  /*タブ切り替えの中身のスタイル*/
+  .tab_content {
+	visibility: hidden;
+	position: absolute;
+	top:50px;
+	width: 100%;
+	clear: both;
+	overflow: hidden;
+	z-index: -1;
+  background-color: #fdfdfd;
+  padding-bottom: 20px;
+  }
+  
+  /*選択されているタブのコンテンツのみを表示*/
+  #tab_realtime:checked ~ #tab_realtime_content,
+  #tab_stats:checked ~ #tab_stats_content,
+  #tab_ds:checked ~ #tab_ds_content,
+  #design:checked ~ #design_content {
+	visibility: visible;
+	position: absolute;
+	z-index: 1;
+  }
+  
+  /*選択されているタブのスタイルを変える*/
+  .tabs input:checked + .tab_item {
+    /*
+	background-color: #5ab4bd;
+	color: #fff;
+  */
+  background-color: #fff;
+  color: #5ab4bd;
+  /*
+  border-bottom: solid 3px #fff;
+  border-top: solid 5px #5ab4bd;
+  */
+  }
+  .visible_animation {
+    visibility: visible;
+    animation-duration: 0.5s;
+    animation-name: fade-in;
+  }
+  @keyframes fade-in {
+  0% {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  50% {
+    visibility: visible;
+    opacity: 0.5;
+  }
+
+  100% {
+    visibility: visible;
+    opacity: 1;
+  }
+
+}
+/* Goal */
+.bl_goalradio {
+    display: flex;
+    gap: 1ch;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.bl_goalradio label {
+    display: inline-block;
+    margin-right: 10px;
+}
+.bl_goalBox {
+    margin: 10px;
+    border: 1px dotted #ccc;
+    padding: 5px;
+}
+.bl_goalBoxFlex {
+    width: 25%;
+}
+.bl_goalBoxChecked {
+    border: 3px rgba(161,204,228,0.8) double;
+}
+.bl_goalBox p {
+    text-align: center;
+}
+.bl_goalSummary {
+    text-align: center;
+    padding: 0 5px 0 5px;
+}
+.bl_goalSummary div.flex {
+    text-align: center;
+    -webkit-justify-content: space-between; /* Safari */
+    justify-content: space-between;
+}
+.bl_goalAll {
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* 以下 元々のrealtime.css */
+
+
+
+
+
+
+
+
+
+.tab_wrap{width:100%; margin:40px 0 80px auto;}
+
+
+/*---------- 本日のデータ（丸山追加） ----------*/
+#tday_container{
+margin:0;
+padding: 0 15px;
+}
+/*
+@media screen and (min-width:769px){
+#tday_container{
+width:98%;
+margin:0;
+padding:45px 0;
+}
+}
+*/
+
+#tday_top{
+margin:0;
+/*padding:20px 20px 25px 20px;*/
+
+}
+.tday_now_box{
+margin:0;
+padding:0;
+}
+.tday_now_number{
+margin:0;
+padding:0;
+background-color:#fff;
+box-shadow:0 0 1px rgba(0,0,0,0.2);
+-webkit-box-sizing:border-box;
+box-sizing:border-box;
+}
+.tday_now_title{
+margin:0;
+padding:10px 0;
+font-size:100%;
+font-weight:bold;
+line-height:100%;
+text-align:center;
+color:#fff;
+background:#20aadb;
+position: relative;
+}
+.tday_now_title::before {
+	position: absolute;
+  content: '';
+  top: 100%;
+  right: 50px;
+  border: 10px solid transparent;
+  border-top: 8px solid #20aadb;
+  width: 0;
+  height: 0;
+}
+
+
+.tday_now_rtn {
+margin:0 !important;
+padding:10px 0 0 0 !important;
+font-size:750% !important;
+line-height:100%;
+text-align:center;
+font-family:Arial, Helvetica, sans-serif;
+}
+.tday_now_detail{
+margin:0;
+padding:0;
+}
+.tday_session_box{
+margin:0;
+padding:0;
+}
+.tday_session_now,.tday_session_before{
+width:100%;
+margin:0;
+padding:15px 0;
+display:table;
+border-bottom:dotted 1px #ccc;
+}
+.tday_session_txt{
+width:120px;
+margin:0;
+padding:0;
+display:table-cell;
+vertical-align:middle;
+font-size:100%;
+font-weight:bold;
+line-height:100%;
+}
+.tday_session_pict{
+margin:0;
+padding:0;
+display:table-cell;
+vertical-align:middle;
+}
+.tday_session_pict img{
+height:45px;
+margin-left:5px;
+}
+.tday_terminal_box{
+margin:0;
+padding:0;
+}
+.tday_terminal_pc,.tday_terminal_tablet,.tday_terminal_sp{
+width:100%;
+margin:0;
+padding:15px 0;
+display:table;
+border-bottom:dotted 1px #ccc;
+}
+.tday_terminal_icon{
+width:90px;
+margin:0;
+padding:0;
+text-align:center;
+display:table-cell;
+vertical-align:middle;
+}
+.tday_terminal_graph{
+margin:0;
+padding:0;
+display:table-cell;
+vertical-align:middle;
+}
+.tday_graph {
+position:relative; /* IE is dumb */
+width:100%;
+margin:0;
+padding:0;
+}
+.tday_graph .tday_bar {
+display:block;
+position:relative;
+background:#12aebe;
+text-align:center;
+color:#fff;
+height:2em;
+line-height:2em;
+}
+.tday_graph .tday_bar span {position:absolute;}
+
+@media screen and (min-width:769px){
+#tday_top{padding:25px 25px 30px 25px;}
+.tday_now_box{
+display:-webkit-flex;
+display:-moz-flex;
+display:-ms-flex;
+display:-o-flex;
+display:flex;
+-webkit-flex-wrap:wrap;
+-ms-flex-wrap:wrap;
+flex-wrap:wrap;
+justify-content:space-between;
+}
+.tday_now_number{width:25%;}
+.tday_now_title{font-size:18px;}
+.tday_now_rtn{
+padding:20px 0 20px 0 !important;
+font-size:120px !important;
+}
+.tday_now_detail{
+width:72%;
+display:-webkit-flex;
+display:-moz-flex;
+display:-ms-flex;
+display:-o-flex;
+display:flex;
+-webkit-flex-wrap:wrap;
+-ms-flex-wrap:wrap;
+flex-wrap:wrap;
+justify-content:space-between;
+}
+.tday_session_box{
+width:60%;
+display:-webkit-flex;
+display:-moz-flex;
+display:-ms-flex;
+display:-o-flex;
+display:flex;
+-webkit-flex-flow:column;
+-ms-flex-flow:column;
+flex-flow:column;
+}
+.tday_session_now,.tday_session_before{
+height:50%;
+padding:0;
+}
+.tday_session_txt{
+width:130px;
+font-size:16px;
+letter-spacing:1px;
+}
+.tday_session_pict img{
+height:60px;
+margin-left:5px;
+}
+.tday_terminal_box{
+width:42%;
+display:-webkit-flex;
+display:-moz-flex;
+display:-ms-flex;
+display:-o-flex;
+display:flex;
+-webkit-flex-flow:column;
+-ms-flex-flow:column;
+flex-flow:column;
+}
+.tday_terminal_pc,.tday_terminal_tablet,.tday_terminal_sp{
+height:33%;
+padding:0;
+}
+}
+
+
+#tday_upper{
+margin:20px 0;
+padding:0 20px 25px 20px;
+background-color:#fff;
+/*box-shadow: 0 2px 3px rgba(0,0,0,0.2);*/
+border-bottom: solid 1.5px #eee;
+-webkit-box-sizing:border-box;
+box-sizing:border-box;
+}
+.tday_upper_title{
+width:100%;
+margin:0 !important;
+padding:0 0 15px 0 !important;
+display:table;
+border-bottom:1px solid #ddd !important;
+}
+.tday_upper_txt{
+margin:0 !important;
+padding:0 0 0 15px !important;
+display:table-cell;
+vertical-align:middle !important;
+}
+.tday_upper_eng{
+margin:0 !important;
+padding:0 !important;
+font-size:80% !important;
+line-height:150%;
+font-family:Arial, Helvetica, sans-serif;
+}
+.tday_upper_jpn{
+margin:0 !important;
+padding:0 !important;
+font-size:150% !important;
+font-weight:bold;
+line-height:150%;
+}
+.tday_data_box{
+margin:0;
+padding:20px 0 0 0;
+}
+.tday_data_box img{width:100%;}
+
+@media screen and (min-width:769px){
+#tday_upper{
+padding:10px 25px 60px 25px;
+}
+/*#tday_upper table th{font-size:16px;}*/
+/*#tday_upper table td{font-size:16px;}*/
+.tday_upper_eng{font-size:16px !important;}
+.tday_upper_jpn{font-size:28px !important;}
+.tday_scroll-table {
+margin:0;
+padding:0;
+}
+}
+
+
+#tday_bottom{
+margin:20px 0 0 0;
+padding:0;
+}
+.tday_news{}
+.tday_advice{}
+.tday_news,.tday_advice{
+margin:0 0 20px 0;
+padding:20px 20px 25px 20px;
+background-color:#fff;
+box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+-webkit-box-sizing:border-box;
+box-sizing:border-box;
+}
+.tday_title_box{
+width:100%;
+margin:0;
+padding:0 0 15px 0;
+display:table;
+border-bottom:1px solid #ddd;
+}
+.tday_title_icon{
+width:90px !important;
+height:90px !important;
+margin:0 !important;
+padding:0 !important;
+display:table-cell;
+vertical-align:middle !important;
+text-align:center;
+}
+.tday_title_icon img{width:50%;}
+.tday_title_txt{
+margin:0;
+padding:0 0 0 15px;
+display:table-cell;
+vertical-align:middle;
+}
+.tday_title_eng{
+margin:0;
+padding:0;
+font-size:75%;
+line-height:150%;
+font-family:Arial, Helvetica, sans-serif;
+}
+.tday_title_jpn{
+margin:0;
+padding:0;
+font-size:120%;
+font-weight:bold;
+line-height:150%;
+}
+#tday_bottom dl{
+width:100%;
+margin:0;
+padding:8px 0 0 0;
+font-size:100%;
+line-height:150%;
+}
+#tday_bottom dt{
+margin:0;
+padding:8px 0 0 0;
+font-family:Arial, Helvetica, sans-serif;
+}
+#tday_bottom dd{
+margin:0;
+padding:0;
+}
+@media screen and (min-width:769px){
+#tday_bottom{
+margin:30px 0 0 0;
+display:-webkit-flex;
+display:-moz-flex;
+display:-ms-flex;
+display:-o-flex;
+display:flex;
+-webkit-flex-wrap:wrap;
+-ms-flex-wrap:wrap;
+flex-wrap:wrap;
+justify-content:space-between;
+}
+.tday_news{}
+.tday_advice{}
+.tday_news,.tday_advice{
+width:49%;
+margin:0;
+padding:25px;
+}
+.tday_title_icon{
+width:115px !important;
+height:115px !important;
+}
+.tday_title_eng{font-size:14px;}
+.tday_title_jpn{font-size:18px;}
+dl{font-size:16px;}
+}
+
+.tday_bg_blue{background-color:#00c0ef !important;}
+.tday_bg_green{background-color:#00a65a !important;}
+.tday_bg_org{background-color:#f39c12 !important;}
+.tday_bg_red{background-color:#dd4b39 !important;}
+
+.tday_color_blue{color:#00c0ef !important;}
+.tday_color_green{color:#00a65a !important;}
+.tday_color_org{color:#f39c12 !important;}
+.tday_color_red{color:#dd4b39 !important;}
+
+
+/*---------- 文字位置 ----------*/
+
+.tday_center{text-align:center;}
+.tday_right{text-align:right;}
+
+
+.icon-replay {
+	cursor: pointer;
+	color: #0073aa;
+}
+
+.icon-replay:hover {
+    color: #00a0d2;
+}
+
+.icon-replay-disable {
+	cursor: pointer;
+	color: #656565;
+}
+
+.icon-replay-disable:hover {
+    color: #b9b9b9;
+}
+
+/*---------- placeholder ----------*/
+::placeholder {
+  color: #bbb;
+}
+/* 旧Edge対応 */
+::-ms-input-placeholder {
+  color: #bbb;
+}
+/* IE対応 */
+:-ms-input-placeholder {
+  color: #bbb;
+}

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,10 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting\Resource;
 
-use QAAnalyticsVendor\Google\Service\AnalyticsReporting\SearchUserActivityRequest;
-use QAAnalyticsVendor\Google\Service\AnalyticsReporting\SearchUserActivityResponse;
+namespace Google\Service\AnalyticsReporting\Resource;
+
+use Google\Service\AnalyticsReporting\SearchUserActivityRequest;
+use Google\Service\AnalyticsReporting\SearchUserActivityResponse;
+
 /**
  * The "userActivity" collection of methods.
  * Typical usage is:
@@ -27,21 +28,22 @@ use QAAnalyticsVendor\Google\Service\AnalyticsReporting\SearchUserActivityRespon
  *   $userActivity = $analyticsreportingService->userActivity;
  *  </code>
  */
-class UserActivity extends \QAAnalyticsVendor\Google\Service\Resource
+class UserActivity extends \Google\Service\Resource
 {
-    /**
-     * Returns User Activity data. (userActivity.search)
-     *
-     * @param SearchUserActivityRequest $postBody
-     * @param array $optParams Optional parameters.
-     * @return SearchUserActivityResponse
-     */
-    public function search(SearchUserActivityRequest $postBody, $optParams = [])
-    {
-        $params = ['postBody' => $postBody];
-        $params = \array_merge($params, $optParams);
-        return $this->call('search', [$params], SearchUserActivityResponse::class);
-    }
+  /**
+   * Returns User Activity data. (userActivity.search)
+   *
+   * @param SearchUserActivityRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return SearchUserActivityResponse
+   */
+  public function search(SearchUserActivityRequest $postBody, $optParams = [])
+  {
+    $params = ['postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('search', [$params], SearchUserActivityResponse::class);
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(UserActivity::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_Resource_UserActivity');
+class_alias(UserActivity::class, 'Google_Service_AnalyticsReporting_Resource_UserActivity');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,100 +14,103 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class FilterRef extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class FilterRef extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $accountId;
-    /**
-     * @var string
-     */
-    public $href;
-    /**
-     * @var string
-     */
-    public $id;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @var string
-     */
-    public $name;
-    /**
-     * @param string
-     */
-    public function setAccountId($accountId)
-    {
-        $this->accountId = $accountId;
-    }
-    /**
-     * @return string
-     */
-    public function getAccountId()
-    {
-        return $this->accountId;
-    }
-    /**
-     * @param string
-     */
-    public function setHref($href)
-    {
-        $this->href = $href;
-    }
-    /**
-     * @return string
-     */
-    public function getHref()
-    {
-        return $this->href;
-    }
-    /**
-     * @param string
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
+  /**
+   * @var string
+   */
+  public $accountId;
+  /**
+   * @var string
+   */
+  public $href;
+  /**
+   * @var string
+   */
+  public $id;
+  /**
+   * @var string
+   */
+  public $kind;
+  /**
+   * @var string
+   */
+  public $name;
+
+  /**
+   * @param string
+   */
+  public function setAccountId($accountId)
+  {
+    $this->accountId = $accountId;
+  }
+  /**
+   * @return string
+   */
+  public function getAccountId()
+  {
+    return $this->accountId;
+  }
+  /**
+   * @param string
+   */
+  public function setHref($href)
+  {
+    $this->href = $href;
+  }
+  /**
+   * @return string
+   */
+  public function getHref()
+  {
+    return $this->href;
+  }
+  /**
+   * @param string
+   */
+  public function setId($id)
+  {
+    $this->id = $id;
+  }
+  /**
+   * @return string
+   */
+  public function getId()
+  {
+    return $this->id;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(FilterRef::class, 'QAAnalyticsVendor\\Google_Service_Analytics_FilterRef');
+class_alias(FilterRef::class, 'Google_Service_Analytics_FilterRef');

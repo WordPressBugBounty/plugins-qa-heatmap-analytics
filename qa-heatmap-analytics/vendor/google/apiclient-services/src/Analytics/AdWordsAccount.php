@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,64 +14,67 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class AdWordsAccount extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class AdWordsAccount extends \Google\Model
 {
-    /**
-     * @var bool
-     */
-    public $autoTaggingEnabled;
-    /**
-     * @var string
-     */
-    public $customerId;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @param bool
-     */
-    public function setAutoTaggingEnabled($autoTaggingEnabled)
-    {
-        $this->autoTaggingEnabled = $autoTaggingEnabled;
-    }
-    /**
-     * @return bool
-     */
-    public function getAutoTaggingEnabled()
-    {
-        return $this->autoTaggingEnabled;
-    }
-    /**
-     * @param string
-     */
-    public function setCustomerId($customerId)
-    {
-        $this->customerId = $customerId;
-    }
-    /**
-     * @return string
-     */
-    public function getCustomerId()
-    {
-        return $this->customerId;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
+  /**
+   * @var bool
+   */
+  public $autoTaggingEnabled;
+  /**
+   * @var string
+   */
+  public $customerId;
+  /**
+   * @var string
+   */
+  public $kind;
+
+  /**
+   * @param bool
+   */
+  public function setAutoTaggingEnabled($autoTaggingEnabled)
+  {
+    $this->autoTaggingEnabled = $autoTaggingEnabled;
+  }
+  /**
+   * @return bool
+   */
+  public function getAutoTaggingEnabled()
+  {
+    return $this->autoTaggingEnabled;
+  }
+  /**
+   * @param string
+   */
+  public function setCustomerId($customerId)
+  {
+    $this->customerId = $customerId;
+  }
+  /**
+   * @return string
+   */
+  public function getCustomerId()
+  {
+    return $this->customerId;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(AdWordsAccount::class, 'QAAnalyticsVendor\\Google_Service_Analytics_AdWordsAccount');
+class_alias(AdWordsAccount::class, 'Google_Service_Analytics_AdWordsAccount');

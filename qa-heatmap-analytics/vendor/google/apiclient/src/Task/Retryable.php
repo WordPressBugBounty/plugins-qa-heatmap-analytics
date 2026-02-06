@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google\Task;
+
+namespace Google\Task;
 
 /**
  * Interface for checking how many times a given task can be retried following

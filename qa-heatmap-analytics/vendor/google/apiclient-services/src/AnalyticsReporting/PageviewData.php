@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class PageviewData extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class PageviewData extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $pagePath;
-    /**
-     * @var string
-     */
-    public $pageTitle;
-    /**
-     * @param string
-     */
-    public function setPagePath($pagePath)
-    {
-        $this->pagePath = $pagePath;
-    }
-    /**
-     * @return string
-     */
-    public function getPagePath()
-    {
-        return $this->pagePath;
-    }
-    /**
-     * @param string
-     */
-    public function setPageTitle($pageTitle)
-    {
-        $this->pageTitle = $pageTitle;
-    }
-    /**
-     * @return string
-     */
-    public function getPageTitle()
-    {
-        return $this->pageTitle;
-    }
+  /**
+   * @var string
+   */
+  public $pagePath;
+  /**
+   * @var string
+   */
+  public $pageTitle;
+
+  /**
+   * @param string
+   */
+  public function setPagePath($pagePath)
+  {
+    $this->pagePath = $pagePath;
+  }
+  /**
+   * @return string
+   */
+  public function getPagePath()
+  {
+    return $this->pagePath;
+  }
+  /**
+   * @param string
+   */
+  public function setPageTitle($pageTitle)
+  {
+    $this->pageTitle = $pageTitle;
+  }
+  /**
+   * @return string
+   */
+  public function getPageTitle()
+  {
+    return $this->pageTitle;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(PageviewData::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_PageviewData');
+class_alias(PageviewData::class, 'Google_Service_AnalyticsReporting_PageviewData');

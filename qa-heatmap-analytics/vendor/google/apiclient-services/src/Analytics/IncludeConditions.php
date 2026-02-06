@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,100 +14,103 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class IncludeConditions extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class IncludeConditions extends \Google\Model
 {
-    /**
-     * @var int
-     */
-    public $daysToLookBack;
-    /**
-     * @var bool
-     */
-    public $isSmartList;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @var int
-     */
-    public $membershipDurationDays;
-    /**
-     * @var string
-     */
-    public $segment;
-    /**
-     * @param int
-     */
-    public function setDaysToLookBack($daysToLookBack)
-    {
-        $this->daysToLookBack = $daysToLookBack;
-    }
-    /**
-     * @return int
-     */
-    public function getDaysToLookBack()
-    {
-        return $this->daysToLookBack;
-    }
-    /**
-     * @param bool
-     */
-    public function setIsSmartList($isSmartList)
-    {
-        $this->isSmartList = $isSmartList;
-    }
-    /**
-     * @return bool
-     */
-    public function getIsSmartList()
-    {
-        return $this->isSmartList;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param int
-     */
-    public function setMembershipDurationDays($membershipDurationDays)
-    {
-        $this->membershipDurationDays = $membershipDurationDays;
-    }
-    /**
-     * @return int
-     */
-    public function getMembershipDurationDays()
-    {
-        return $this->membershipDurationDays;
-    }
-    /**
-     * @param string
-     */
-    public function setSegment($segment)
-    {
-        $this->segment = $segment;
-    }
-    /**
-     * @return string
-     */
-    public function getSegment()
-    {
-        return $this->segment;
-    }
+  /**
+   * @var int
+   */
+  public $daysToLookBack;
+  /**
+   * @var bool
+   */
+  public $isSmartList;
+  /**
+   * @var string
+   */
+  public $kind;
+  /**
+   * @var int
+   */
+  public $membershipDurationDays;
+  /**
+   * @var string
+   */
+  public $segment;
+
+  /**
+   * @param int
+   */
+  public function setDaysToLookBack($daysToLookBack)
+  {
+    $this->daysToLookBack = $daysToLookBack;
+  }
+  /**
+   * @return int
+   */
+  public function getDaysToLookBack()
+  {
+    return $this->daysToLookBack;
+  }
+  /**
+   * @param bool
+   */
+  public function setIsSmartList($isSmartList)
+  {
+    $this->isSmartList = $isSmartList;
+  }
+  /**
+   * @return bool
+   */
+  public function getIsSmartList()
+  {
+    return $this->isSmartList;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param int
+   */
+  public function setMembershipDurationDays($membershipDurationDays)
+  {
+    $this->membershipDurationDays = $membershipDurationDays;
+  }
+  /**
+   * @return int
+   */
+  public function getMembershipDurationDays()
+  {
+    return $this->membershipDurationDays;
+  }
+  /**
+   * @param string
+   */
+  public function setSegment($segment)
+  {
+    $this->segment = $segment;
+  }
+  /**
+   * @return string
+   */
+  public function getSegment()
+  {
+    return $this->segment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(IncludeConditions::class, 'QAAnalyticsVendor\\Google_Service_Analytics_IncludeConditions');
+class_alias(IncludeConditions::class, 'Google_Service_Analytics_IncludeConditions');

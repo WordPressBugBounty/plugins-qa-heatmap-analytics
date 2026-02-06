@@ -8,7 +8,8 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Formatter;
+
+namespace Monolog\Formatter;
 
 /**
  * Interface for formatters
@@ -24,6 +25,7 @@ interface FormatterInterface
      * @return mixed The formatted record
      */
     public function format(array $record);
+
     /**
      * Formats a set of log records.
      *

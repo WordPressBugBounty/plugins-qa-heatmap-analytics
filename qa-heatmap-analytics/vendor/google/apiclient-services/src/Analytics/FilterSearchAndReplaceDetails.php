@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,100 +14,103 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class FilterSearchAndReplaceDetails extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class FilterSearchAndReplaceDetails extends \Google\Model
 {
-    /**
-     * @var bool
-     */
-    public $caseSensitive;
-    /**
-     * @var string
-     */
-    public $field;
-    /**
-     * @var int
-     */
-    public $fieldIndex;
-    /**
-     * @var string
-     */
-    public $replaceString;
-    /**
-     * @var string
-     */
-    public $searchString;
-    /**
-     * @param bool
-     */
-    public function setCaseSensitive($caseSensitive)
-    {
-        $this->caseSensitive = $caseSensitive;
-    }
-    /**
-     * @return bool
-     */
-    public function getCaseSensitive()
-    {
-        return $this->caseSensitive;
-    }
-    /**
-     * @param string
-     */
-    public function setField($field)
-    {
-        $this->field = $field;
-    }
-    /**
-     * @return string
-     */
-    public function getField()
-    {
-        return $this->field;
-    }
-    /**
-     * @param int
-     */
-    public function setFieldIndex($fieldIndex)
-    {
-        $this->fieldIndex = $fieldIndex;
-    }
-    /**
-     * @return int
-     */
-    public function getFieldIndex()
-    {
-        return $this->fieldIndex;
-    }
-    /**
-     * @param string
-     */
-    public function setReplaceString($replaceString)
-    {
-        $this->replaceString = $replaceString;
-    }
-    /**
-     * @return string
-     */
-    public function getReplaceString()
-    {
-        return $this->replaceString;
-    }
-    /**
-     * @param string
-     */
-    public function setSearchString($searchString)
-    {
-        $this->searchString = $searchString;
-    }
-    /**
-     * @return string
-     */
-    public function getSearchString()
-    {
-        return $this->searchString;
-    }
+  /**
+   * @var bool
+   */
+  public $caseSensitive;
+  /**
+   * @var string
+   */
+  public $field;
+  /**
+   * @var int
+   */
+  public $fieldIndex;
+  /**
+   * @var string
+   */
+  public $replaceString;
+  /**
+   * @var string
+   */
+  public $searchString;
+
+  /**
+   * @param bool
+   */
+  public function setCaseSensitive($caseSensitive)
+  {
+    $this->caseSensitive = $caseSensitive;
+  }
+  /**
+   * @return bool
+   */
+  public function getCaseSensitive()
+  {
+    return $this->caseSensitive;
+  }
+  /**
+   * @param string
+   */
+  public function setField($field)
+  {
+    $this->field = $field;
+  }
+  /**
+   * @return string
+   */
+  public function getField()
+  {
+    return $this->field;
+  }
+  /**
+   * @param int
+   */
+  public function setFieldIndex($fieldIndex)
+  {
+    $this->fieldIndex = $fieldIndex;
+  }
+  /**
+   * @return int
+   */
+  public function getFieldIndex()
+  {
+    return $this->fieldIndex;
+  }
+  /**
+   * @param string
+   */
+  public function setReplaceString($replaceString)
+  {
+    $this->replaceString = $replaceString;
+  }
+  /**
+   * @return string
+   */
+  public function getReplaceString()
+  {
+    return $this->replaceString;
+  }
+  /**
+   * @param string
+   */
+  public function setSearchString($searchString)
+  {
+    $this->searchString = $searchString;
+  }
+  /**
+   * @return string
+   */
+  public function getSearchString()
+  {
+    return $this->searchString;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(FilterSearchAndReplaceDetails::class, 'QAAnalyticsVendor\\Google_Service_Analytics_FilterSearchAndReplaceDetails');
+class_alias(FilterSearchAndReplaceDetails::class, 'Google_Service_Analytics_FilterSearchAndReplaceDetails');

@@ -1,15 +1,21 @@
 <?php
 try {
-	$wp_load_path = dirname( __FILE__, 4 ) . '/wp-load.php';
-	
-    if ( file_exists( $wp_load_path ) ) {
-        require_once( $wp_load_path );
-    } else {
-        exit('wp-load.php could not be found at the following path: ' . '<br>' . esc_html( $wp_load_path ) );
-    }
-
 	$work_base_name    = filter_input( INPUT_GET, 'work_base_name' );
 	$replay_id         = (int) filter_input( INPUT_GET, 'replay_id' );
+
+	$config_path = dirname(dirname(dirname(__DIR__))) . '/wp-content/qa-zero-data/qa-config.php';
+
+	if (file_exists($config_path)) {
+		require_once $config_path;
+	}
+
+	if (defined('QAHM_CONFIG_WP_ROOT_PATH') && file_exists(QAHM_CONFIG_WP_ROOT_PATH . 'wp-load.php')) {
+		require_once QAHM_CONFIG_WP_ROOT_PATH . 'wp-load.php';
+		require_once QAHM_CONFIG_WP_ROOT_PATH . 'wp-settings.php';
+	} else {
+		require_once '../../../wp-load.php';
+		require_once '../../../wp-settings.php';
+	}
 
 	// GETパラメーター判定
 	if ( ! $work_base_name || ! $replay_id ) {
@@ -18,6 +24,7 @@ try {
 
 	global $qahm_time;
 	global $wp_filesystem;
+    global $qahm_view_replay;
 	$replay_view_work_dir = $qahm_view_replay->get_data_dir_path( 'replay-view-work' );
 	$replay_view_work_url = $qahm_view_replay->get_work_dir_url();
 	
@@ -28,20 +35,19 @@ try {
 	$info_path = $replay_view_work_dir . $work_base_name . '_' . $replay_id . '-info.php';
 	$info_ary  = $qahm_view_replay->get_contents_info( $info_path );
 
-	// アクセス権限判定
-	if ( ! $qahm_view_replay->check_qahm_access_cap( 'qahm_view_reports' ) ) {
-		throw new Exception( esc_html( 'You do not have access privileges.' ) );
+	// ログイン判定
+	if ( ! $qahm_view_replay->check_access_role( 'qazero-view' ) ) {
+		throw new Exception( 'You do not have access privileges.' );
 	}
 
-	// 翻訳ファイルの読み込み
-	load_plugin_textdomain( 'qa-heatmap-analytics', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+	// 翻訳ファイルの読み込みはここでしなくてもプラグイン全体で読み込まれている
+	//load_plugin_textdomain( 'qa-heatmap-analytics', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
 	// パラメータ設定
 	$ajax_url       = admin_url( 'admin-ajax.php' );
 	$plugin_version = QAHM_PLUGIN_VERSION;
 	$debug_level    = wp_json_encode( QAHM_DEBUG_LEVEL );
 	$debug          = QAHM_DEBUG;
-	$event_ary_json = wp_json_encode( $event_ary );
 	$cap_url        = $replay_view_work_url . $work_base_name . '_' . $replay_id . '-cap.php';
 	$img_dir_url    = $qahm_view_replay->get_img_dir_url();
 
@@ -84,7 +90,7 @@ try {
 		if ( $i === $replay_id_idx ) {
 			$active .= ' playlist-item-active';
 		}
-		$html_playlist .= '<div class="playlist-item' . $active . '" data-replay_id="' . ($i+1) . '" data-access_time="' . $page['access_time'] . '">';
+		$html_playlist .= '<div class="playlist-item' . $active . '" data-replay_id="' . ($i+1) . '" data-access_time="' . $page['access_time'] . '" data-page-url="' . esc_attr($page['url']) . '">';
 
 		// プレイリストの順番
 		$html_playlist .= '<div class="playlist-item-number"><span>';
@@ -194,10 +200,10 @@ try {
 		$user_device =  __( 'Tablet', 'qa-heatmap-analytics' );
 		$user_device_icon = '<i class="fas fa-tablet-alt fa-fw session-icon"></i>';
 	} elseif ( $user_device === 'smp' ) {
-		$user_device =  __( 'Smartphone', 'qa-heatmap-analytics' );
+		$user_device =  __( 'Mobile', 'qa-heatmap-analytics' );
 		$user_device_icon = '<i class="fas fa-mobile-alt fa-fw session-icon"></i>';
 	} else {
-		$user_device =  __( 'PC', 'qa-heatmap-analytics' );
+		$user_device =  __( 'Desktop', 'qa-heatmap-analytics' );
 		$user_device_icon = '<i class="fas fa-desktop fa-fw session-icon"></i>';
 	}
 
@@ -231,7 +237,11 @@ try {
 
 	// htmlタグ
 	$html_user_info  = '<ul id="session-info">';
-	$html_user_info .= '<li class="qahm-tooltip-bottom" data-qahm-tooltip="' . __( 'An anonymized ID which is assigned uniquely by QA Analytics.', 'qa-heatmap-analytics' ) . '"><i class="fas fa-id-card fa-fw session-icon"></i>' . $user_id . '</li>';
+	$html_user_info .= '<li class="qahm-tooltip-bottom" data-qahm-tooltip="' . esc_attr( sprintf(
+		/* translators: %s is for the plugin name */
+		__( 'An anonymized ID which is assigned uniquely by %1$s.', 'qa-heatmap-analytics' ),
+		QAHM_PLUGIN_NAME_SHORT
+	) ) . '"><i class="fas fa-id-card fa-fw session-icon"></i>' . $user_id . '</li>';
 	$html_user_info .= '<li class="qahm-tooltip-bottom" data-qahm-tooltip="' . __( 'Whether this user visited the site for the first time (New User) or more than once (Returning User).', 'qa-heatmap-analytics' ) . '"><i class="fas fa-user fa-fw session-icon"></i>' . $user_is_new . '</li>';
 	
 	if ( $user_country !== __( 'Unkown', 'qa-heatmap-analytics' ) ) {
@@ -251,12 +261,10 @@ try {
 	$html_device_info .= '<li class="qahm-tooltip-bottom" data-qahm-tooltip="' . __( 'Browser', 'qa-heatmap-analytics' ) . '">' . $user_browser_icon . $user_browser . '</li>';
 	$html_device_info .= '</ul>';
 
-	//add_action( 'wp_enqueue_scripts', array( $qahm_view_replay, 'enqueue_scripts' ), 100 );
-
 } catch ( Exception $e ) {
 	echo '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>';
 	echo '<p>Error : ' . esc_html( $e->getMessage() ) . '</p>';
-	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html( 'HELP' ) . '</a></p>';
+	echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=qahm-help' ) ) . '" target="_blank">' . esc_html__( 'HELP', 'qa-heatmap-analytics' ) . '</a></p>';
 	echo '</body></html>';
 	exit();
 }
@@ -271,22 +279,21 @@ try {
 
 		<title>QA Replay View</title>
 
-		<?php //wp_head(); ?>
-
 		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
-		<link rel="stylesheet" type="text/css" href="./css/doctor-reset.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/reset.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/lib/sweet-alert-2/sweetalert2.min.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
 		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
 		<link rel="stylesheet" type="text/css" href="./css/replay-view.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
 		<link rel="stylesheet" type="text/css" href="./css/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
-		<?php // phpcs:enable ?>
+		<?php // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet ?>
 
 		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
-		<script src="./js/lib/jquery/jquery-3.6.0.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
+		<script src="<?php echo esc_url( includes_url( 'js/jquery/jquery.min.js' ) ); ?>"></script>
 		<script src="./js/lib/sweet-alert-2/sweetalert2.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
 		<script src="./js/alert-message.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
 		<script src="./js/lib/font-awesome/all.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
 		<script src="./js/lib/jquery-custom-content-scroller/jquery.mCustomScrollbar.min.js?ver=<?php echo esc_attr( $plugin_version ); ?>"></script>
-		<?php // phpcs:enable ?>
+		<?php // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript ?>
 	</head>
 	<body class="qa_is_sideOpen">
 		        
@@ -294,7 +301,7 @@ try {
 			
 			<div id="url-container">
 				<p id="url-replay">
-					URL: <a href="<?php echo esc_url( $info_ary['base_url'] ); ?>" target="_blank"><?php echo esc_html( urldecode( $info_ary['base_url'] ) ); ?></a>
+					URL: <a href="<?php echo esc_url($info_ary['base_url']); ?>" target="_blank"><?php echo esc_html(urldecode($info_ary['base_url'])); ?></a>
 				</p>
 			</div>
 
@@ -354,47 +361,44 @@ try {
 					<p class="title"><?php esc_html_e( 'the Page(s) viewed by this user', 'qa-heatmap-analytics' ); ?></p>
 					<?php echo wp_kses_post( $html_playlist ); ?>
 				</div>
-				<!--
-				<div>
-					<p class="footer">
-						<a href="https://quarka.org/" target="_blank" rel="noopener">QA Analytics powered by QuarkA</a>
-					</p>
-				</div>
-				-->
 			</div>
 		</div>
 
 		<script>
-		var qahm = {
-			'ajax_url': '<?php echo esc_js( esc_url( $ajax_url ) ); ?>',
-			'data_type': '<?php echo esc_js( $info_ary["data_type"] ); ?>',
-			'const_debug_level': <?php echo intval( $debug_level ); ?>,
-			'const_debug': <?php echo intval( $debug ); ?>,
-			'event_ary': '<?php echo wp_json_encode( $event_ary ); ?>',
-			'work_base_name': '<?php echo esc_js( $work_base_name ); ?>',
-			'access_time': '<?php echo esc_js( $user_access_time ); ?>',
-			'reader_id': '<?php echo esc_js( $info_ary["reader_id"] ); ?>',
-			'replay_id': <?php echo intval( $replay_id ); ?>,
-			'replay_id_max': <?php echo intval( $replay_id_max ); ?>,
-			'data_col_head': '<?php echo esc_js( $data_col_head ); ?>',
-			'data_col_body': '<?php echo esc_js( $data_col_body ); ?>',
-			'data_row_win_w': '<?php echo esc_js( $data_row_win_w ); ?>',
-			'data_row_win_h': '<?php echo esc_js( $data_row_win_h ); ?>',
-			'data_row_type': '<?php echo esc_js( $data_row_type ); ?>',
-			'data_row_time': '<?php echo esc_js( $data_row_time ); ?>',
-			'data_row_click_x': '<?php echo esc_js( $data_row_click_x ); ?>',
-			'data_row_click_y': '<?php echo esc_js( $data_row_click_y ); ?>',
-			'data_row_mouse_x': '<?php echo esc_js( $data_row_mouse_x ); ?>',
-			'data_row_mouse_y': '<?php echo esc_js( $data_row_mouse_y ); ?>',
-			'data_row_scroll_y': '<?php echo esc_js( $data_row_scroll_y ); ?>',
-			'data_row_resize_x': '<?php echo esc_js( $data_row_resize_x ); ?>',
-			'data_row_resize_y': '<?php echo esc_js( $data_row_resize_y ); ?>',
-		};
+			var qahm = {
+				'ajax_url':'<?php echo esc_js( esc_url( $ajax_url ) ); ?>',
+				'data_type':'<?php echo esc_js( $info_ary["data_type"] ); ?>',
+				'debug_level':<?php echo intval( $debug_level ); ?>,
+				'debug':<?php echo intval( $debug ); ?>,
+				'type':<?php echo intval( QAHM_TYPE ); ?>,
+				'type_zero':<?php echo intval( QAHM_TYPE_ZERO ); ?>,
+				'type_wp':<?php echo intval( QAHM_TYPE_WP ); ?>,
+				'event_ary':'<?php echo wp_json_encode( $event_ary ); ?>',
+				'work_base_name':'<?php echo esc_js( $work_base_name ); ?>',
+				'access_time':'<?php echo esc_js( $user_access_time ); ?>',
+				'reader_id':'<?php echo esc_js( $info_ary["reader_id"] ); ?>',
+				'replay_id':<?php echo intval( $replay_id ); ?>,
+				'replay_id_max':<?php echo intval( $replay_id_max ); ?>,
+				'data_col_head':'<?php echo esc_js( $data_col_head ); ?>',
+				'data_col_body':'<?php echo esc_js( $data_col_body ); ?>',
+				'data_row_win_w':'<?php echo esc_js( $data_row_win_w ); ?>',
+				'data_row_win_h':'<?php echo esc_js( $data_row_win_h ); ?>',
+				'data_row_type':'<?php echo esc_js( $data_row_type ); ?>',
+				'data_row_time':'<?php echo esc_js( $data_row_time ); ?>',
+				'data_row_click_x':'<?php echo esc_js( $data_row_click_x ); ?>',
+				'data_row_click_y':'<?php echo esc_js( $data_row_click_y ); ?>',
+				'data_row_mouse_x':'<?php echo esc_js( $data_row_mouse_x ); ?>',
+				'data_row_mouse_y':'<?php echo esc_js( $data_row_mouse_y ); ?>',
+				'data_row_scroll_y':'<?php echo esc_js( $data_row_scroll_y ); ?>',
+				'data_row_resize_x':'<?php echo esc_js( $data_row_resize_x ); ?>',
+				'data_row_resize_y':'<?php echo esc_js( $data_row_resize_y ); ?>',
+			};
 
-		var qahml10n = {
-			'event_data_not_found': '<?php echo esc_html( __( 'There is no data to replay. The (thinkable) major reason would be: \n - A visitor quickly moved on to the next page.\n - No event happened and time passed.', 'qa-heatmap-analytics' ) ); ?>',
-			'page_change_failed': '<?php echo esc_html( __( 'Failed to switch pages.', 'qa-heatmap-analytics' ) ); ?>',
-		};
+			var qahml10n = {
+				'event_data_not_found':'<?php echo esc_attr__( 'There is no data to replay. The (thinkable) major reason would be: \n - A visitor quickly moved on to the next page.\n - No event happened and time passed.', 'qa-heatmap-analytics' ); ?>',
+				'page_change_failed':'<?php echo esc_attr__( 'Failed to switch pages.', 'qa-heatmap-analytics' ); ?>',
+
+			};
 		</script>
 		
 		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
@@ -402,8 +406,6 @@ try {
 		<script type="text/javascript" src="./js/load-screen.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
 		<script type="text/javascript" src="./js/replay-class.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
 		<script type="text/javascript" src="./js/replay-view.js?ver=<?php echo esc_attr( QAHM_PLUGIN_VERSION ); ?>"></script>
-		<?php // phpcs:enable ?>
-
-		<?php //wp_footer(); ?>
+		<?php // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript ?>
 	</body>
 </html>

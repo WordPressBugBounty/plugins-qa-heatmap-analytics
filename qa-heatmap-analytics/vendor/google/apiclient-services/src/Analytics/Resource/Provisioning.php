@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,11 +14,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
 
-use QAAnalyticsVendor\Google\Service\Analytics\AccountTicket;
-use QAAnalyticsVendor\Google\Service\Analytics\AccountTreeRequest;
-use QAAnalyticsVendor\Google\Service\Analytics\AccountTreeResponse;
+namespace Google\Service\Analytics\Resource;
+
+use Google\Service\Analytics\AccountTicket;
+use Google\Service\Analytics\AccountTreeRequest;
+use Google\Service\Analytics\AccountTreeResponse;
+
 /**
  * The "provisioning" collection of methods.
  * Typical usage is:
@@ -28,34 +29,35 @@ use QAAnalyticsVendor\Google\Service\Analytics\AccountTreeResponse;
  *   $provisioning = $analyticsService->provisioning;
  *  </code>
  */
-class Provisioning extends \QAAnalyticsVendor\Google\Service\Resource
+class Provisioning extends \Google\Service\Resource
 {
-    /**
-     * Creates an account ticket. (provisioning.createAccountTicket)
-     *
-     * @param AccountTicket $postBody
-     * @param array $optParams Optional parameters.
-     * @return AccountTicket
-     */
-    public function createAccountTicket(AccountTicket $postBody, $optParams = [])
-    {
-        $params = ['postBody' => $postBody];
-        $params = \array_merge($params, $optParams);
-        return $this->call('createAccountTicket', [$params], AccountTicket::class);
-    }
-    /**
-     * Provision account. (provisioning.createAccountTree)
-     *
-     * @param AccountTreeRequest $postBody
-     * @param array $optParams Optional parameters.
-     * @return AccountTreeResponse
-     */
-    public function createAccountTree(AccountTreeRequest $postBody, $optParams = [])
-    {
-        $params = ['postBody' => $postBody];
-        $params = \array_merge($params, $optParams);
-        return $this->call('createAccountTree', [$params], AccountTreeResponse::class);
-    }
+  /**
+   * Creates an account ticket. (provisioning.createAccountTicket)
+   *
+   * @param AccountTicket $postBody
+   * @param array $optParams Optional parameters.
+   * @return AccountTicket
+   */
+  public function createAccountTicket(AccountTicket $postBody, $optParams = [])
+  {
+    $params = ['postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('createAccountTicket', [$params], AccountTicket::class);
+  }
+  /**
+   * Provision account. (provisioning.createAccountTree)
+   *
+   * @param AccountTreeRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return AccountTreeResponse
+   */
+  public function createAccountTree(AccountTreeRequest $postBody, $optParams = [])
+  {
+    $params = ['postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('createAccountTree', [$params], AccountTreeResponse::class);
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Provisioning::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Resource_Provisioning');
+class_alias(Provisioning::class, 'Google_Service_Analytics_Resource_Provisioning');

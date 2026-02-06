@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,38 +14,41 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
 
-use QAAnalyticsVendor\Google\Service\Analytics\Segments;
+namespace Google\Service\Analytics\Resource;
+
+use Google\Service\Analytics\Segments;
+
 /**
  * The "segments" collection of methods.
  * Typical usage is:
  *  <code>
  *   $analyticsService = new Google\Service\Analytics(...);
- *   $segments = $analyticsService->management_segments;
+ *   $segments = $analyticsService->segments;
  *  </code>
  */
-class ManagementSegments extends \QAAnalyticsVendor\Google\Service\Resource
+class ManagementSegments extends \Google\Service\Resource
 {
-    /**
-     * Lists segments to which the user has access.
-     * (segments.listManagementSegments)
-     *
-     * @param array $optParams Optional parameters.
-     *
-     * @opt_param int max-results The maximum number of segments to include in this
-     * response.
-     * @opt_param int start-index An index of the first segment to retrieve. Use
-     * this parameter as a pagination mechanism along with the max-results
-     * parameter.
-     * @return Segments
-     */
-    public function listManagementSegments($optParams = [])
-    {
-        $params = [];
-        $params = \array_merge($params, $optParams);
-        return $this->call('list', [$params], Segments::class);
-    }
+  /**
+   * Lists segments to which the user has access.
+   * (segments.listManagementSegments)
+   *
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param int max-results The maximum number of segments to include in this
+   * response.
+   * @opt_param int start-index An index of the first segment to retrieve. Use
+   * this parameter as a pagination mechanism along with the max-results
+   * parameter.
+   * @return Segments
+   */
+  public function listManagementSegments($optParams = [])
+  {
+    $params = [];
+    $params = array_merge($params, $optParams);
+    return $this->call('list', [$params], Segments::class);
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ManagementSegments::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Resource_ManagementSegments');
+class_alias(ManagementSegments::class, 'Google_Service_Analytics_Resource_ManagementSegments');

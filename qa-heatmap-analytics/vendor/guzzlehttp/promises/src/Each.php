@@ -1,6 +1,6 @@
 <?php
 
-namespace QAAnalyticsVendor\GuzzleHttp\Promise;
+namespace GuzzleHttp\Promise;
 
 final class Each
 {
@@ -23,10 +23,17 @@ final class Each
      *
      * @return PromiseInterface
      */
-    public static function of($iterable, callable $onFulfilled = null, callable $onRejected = null)
-    {
-        return (new EachPromise($iterable, ['fulfilled' => $onFulfilled, 'rejected' => $onRejected]))->promise();
+    public static function of(
+        $iterable,
+        callable $onFulfilled = null,
+        callable $onRejected = null
+    ) {
+        return (new EachPromise($iterable, [
+            'fulfilled' => $onFulfilled,
+            'rejected'  => $onRejected
+        ]))->promise();
     }
+
     /**
      * Like of, but only allows a certain number of outstanding promises at any
      * given time.
@@ -42,10 +49,19 @@ final class Each
      *
      * @return PromiseInterface
      */
-    public static function ofLimit($iterable, $concurrency, callable $onFulfilled = null, callable $onRejected = null)
-    {
-        return (new EachPromise($iterable, ['fulfilled' => $onFulfilled, 'rejected' => $onRejected, 'concurrency' => $concurrency]))->promise();
+    public static function ofLimit(
+        $iterable,
+        $concurrency,
+        callable $onFulfilled = null,
+        callable $onRejected = null
+    ) {
+        return (new EachPromise($iterable, [
+            'fulfilled'   => $onFulfilled,
+            'rejected'    => $onRejected,
+            'concurrency' => $concurrency
+        ]))->promise();
     }
+
     /**
      * Like limit, but ensures that no promise in the given $iterable argument
      * is rejected. If any promise is rejected, then the aggregate promise is
@@ -57,10 +73,18 @@ final class Each
      *
      * @return PromiseInterface
      */
-    public static function ofLimitAll($iterable, $concurrency, callable $onFulfilled = null)
-    {
-        return self::ofLimit($iterable, $concurrency, $onFulfilled, function ($reason, $idx, PromiseInterface $aggregate) {
-            $aggregate->reject($reason);
-        });
+    public static function ofLimitAll(
+        $iterable,
+        $concurrency,
+        callable $onFulfilled = null
+    ) {
+        return each_limit(
+            $iterable,
+            $concurrency,
+            $onFulfilled,
+            function ($reason, $idx, PromiseInterface $aggregate) {
+                $aggregate->reject($reason);
+            }
+        );
     }
 }

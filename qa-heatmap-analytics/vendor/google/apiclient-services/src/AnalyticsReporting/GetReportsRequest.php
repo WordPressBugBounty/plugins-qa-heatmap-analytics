@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class GetReportsRequest extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class GetReportsRequest extends \Google\Collection
 {
-    protected $collection_key = 'reportRequests';
-    protected $reportRequestsType = ReportRequest::class;
-    protected $reportRequestsDataType = 'array';
-    /**
-     * @var bool
-     */
-    public $useResourceQuotas;
-    /**
-     * @param ReportRequest[]
-     */
-    public function setReportRequests($reportRequests)
-    {
-        $this->reportRequests = $reportRequests;
-    }
-    /**
-     * @return ReportRequest[]
-     */
-    public function getReportRequests()
-    {
-        return $this->reportRequests;
-    }
-    /**
-     * @param bool
-     */
-    public function setUseResourceQuotas($useResourceQuotas)
-    {
-        $this->useResourceQuotas = $useResourceQuotas;
-    }
-    /**
-     * @return bool
-     */
-    public function getUseResourceQuotas()
-    {
-        return $this->useResourceQuotas;
-    }
+  protected $collection_key = 'reportRequests';
+  protected $reportRequestsType = ReportRequest::class;
+  protected $reportRequestsDataType = 'array';
+  /**
+   * @var bool
+   */
+  public $useResourceQuotas;
+
+  /**
+   * @param ReportRequest[]
+   */
+  public function setReportRequests($reportRequests)
+  {
+    $this->reportRequests = $reportRequests;
+  }
+  /**
+   * @return ReportRequest[]
+   */
+  public function getReportRequests()
+  {
+    return $this->reportRequests;
+  }
+  /**
+   * @param bool
+   */
+  public function setUseResourceQuotas($useResourceQuotas)
+  {
+    $this->useResourceQuotas = $useResourceQuotas;
+  }
+  /**
+   * @return bool
+   */
+  public function getUseResourceQuotas()
+  {
+    return $this->useResourceQuotas;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GetReportsRequest::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_GetReportsRequest');
+class_alias(GetReportsRequest::class, 'Google_Service_AnalyticsReporting_GetReportsRequest');

@@ -29,11 +29,6 @@
 class QAHM_File_Data extends QAHM_File_Base {
 
 	// 全てのデータに共通する行番号の指定（column）
-	// wrap_get_contentsを使用する場合や、DB、ファイルに保存されているデータを抽出しようとした場合、
-	// securityの部分が強制的に削除されている状態のため、この通りにならなくなってきた問題あり
-	//const DATA_COLUMN_SECURITY = 0;
-	//const DATA_COLUMN_HEADER   = 1;
-	//const DATA_COLUMN_BODY     = 2;
 
 	// security部は存在しないものと想定
 	const DATA_COLUMN_HEADER   = 0;
@@ -50,77 +45,6 @@ class QAHM_File_Data extends QAHM_File_Base {
 	 * そのため各定数内にはバージョン情報を含めていない。
 	 */ 
 	const DATA_HEADER_VERSION = 0;
-
-	// セッションデータ（temp） バージョン1
-	const DATA_SESSION_TEMP_1 = array(
-		// header
-		'TRACKING_ID'       => 1,       // トラッキングID
-		'DEVICE_NAME'       => 2,       // デバイス
-		'IS_NEW_USER'       => 3,       // 新規ユーザー判定。1なら新規
-		'USER_AGENT'        => 4,       // ユーザーエージェント
-		'FIRST_REFERRER'    => 5,       // リファラ
-		'UTM_SOURCE'        => 6,       // UTM_SOURCE
-		'UTM_MEDIUM'        => 7,       // UTM_MEDIUM
-		'UTM_CAMPAIGN'      => 8,       // UTM_CAMPAIGN
-		'UTM_TERM'          => 9,       // UTM_TERM
-		'ORIGINAL_ID'       => 10,      // オリジナルID
-
-		// body
-		'PAGE_URL'          => 0,       // URL
-		'PAGE_TITLE'        => 1,       // タイトル
-		'PAGE_TYPE'         => 2,       // タイプ
-		'PAGE_ID'           => 3,       // ID
-		'ACCESS_TIME'       => 4,       // 最初にアクセスした時刻（timestamp）
-		'PAGE_SPEED'        => 5,       // document.readyが終わるまでの時間
-	);
-
-	// セッションデータ（finish） バージョン1
-	const DATA_SESSION_FINISH_1 = array(
-		// header
-		'TRACKING_ID'       => 1,       // トラッキングID
-		'DEVICE_NAME'       => 2,       // デバイス名
-		'IS_NEW_USER'       => 3,       // 新規ユーザー判定。1なら新規
-		'USER_AGENT'        => 4,       // ユーザーエージェント
-		'FIRST_REFERRER'    => 5,       // リファラ
-		'UTM_SOURCE'        => 6,       // UTM_SOURCE
-		'UTM_MEDIUM'        => 7,       // UTM_MEDIUM
-		'UTM_CAMPAIGN'      => 8,       // UTM_CAMPAIGN
-		'UTM_TERM'          => 9,       // UTM_TERM
-		'ORIGINAL_ID'       => 10,      // オリジナルID
-
-		// body
-		'PAGE_URL'          => 0,       // URL
-		'PAGE_TITLE'        => 1,       // タイトル
-		'PAGE_TYPE'         => 2,       // タイプ
-		'PAGE_ID'           => 3,       // ID
-		'ACCESS_TIME'       => 4,       // 最初にアクセスした時刻（timestamp）
-		'PAGE_SPEED'        => 5,       // ページスピード（document.readyが終わるまでの時間）
-		'TIME_ON_PAGE'      => 6,       // ページ滞在時間
-	);
-
-	// リアルタイムビューデータ バージョン1
-	const DATA_REALTIME_VIEW_1 = array(
-		// body
-		'SESSION_FILE'      => 0,       // セッションファイル名
-		'TRACKING_ID'       => 1,       // トラッキングID
-		'DEVICE_NAME'       => 2,       // デバイス名
-		'IS_NEW_USER'       => 3,       // 新規ユーザー判定
-		'USER_AGENT'        => 4,       // ユーザーエージェント
-		'FIRST_REFERRER'    => 5,       // リファラ
-		'UTM_SOURCE'        => 6,       // UTM_SOURCE
-		'UTM_MEDIUM'        => 7,       // UTM_MEDIUM
-		'UTM_CAMPAIGN'      => 8,       // UTM_CAMPAIGN
-		'UTM_TERM'          => 9,       // UTM_TERM
-		'ORIGINAL_ID'       => 10,      // オリジナルID
-		'FIRST_ACCESS_TIME' => 11,      // 流入ページの最初にアクセスした時刻（timestamp）
-		'FIRST_URL'         => 12,      // 流入ページのURL
-		'FIRST_TITLE'       => 13,      // 流入ページのタイトル
-		'LAST_EXIT_TIME'    => 14,      // 離脱ページの離脱時刻（timestamp）
-		'LAST_URL'          => 15,      // 離脱ページのURL
-		'LAST_TITLE'        => 16,      // 離脱ページのタイトル
-		'PV_NUM'            => 17,      // PV数
-		'TIME_ON_SITE'      => 18,      // サイト滞在時間
-	);
 
 	// 位置データ バージョン1
 	const DATA_POS_1 = array(
@@ -143,6 +67,23 @@ class QAHM_File_Data extends QAHM_File_Base {
 		'SELECTOR_X'        => 1,       // セレクタ左上からの相対座標X
 		'SELECTOR_Y'        => 2,       // セレクタ左上からの相対座標Y
 		'TRANSITION'        => 3,       // 遷移先のURL
+	);
+
+	// クリックデータ バージョン2
+	const DATA_CLICK_2 = array(
+		// body
+		'SELECTOR_NAME'     => 0,       // セレクタ名
+		'SELECTOR_X'        => 1,       // セレクタ左上からの相対座標X
+		'SELECTOR_Y'        => 2,       // セレクタ左上からの相対座標Y
+		'TRANSITION'        => 3,       // 遷移先のURL
+		'EVENT_SEC'         => 4,       // イベント発生秒（ページ閲覧開始から何秒後か）
+		'ELEMENT_TEXT'      => 5,       // ボタン・リンクのテキスト
+		'ELEMENT_ID'        => 6,       // DOM id属性
+		'ELEMENT_CLASS'     => 7,       // class属性
+		'ELEMENT_DATA_ATTR' => 8,       // data-*属性
+		'ACTION_ID'         => 9,       // アクション分類（1:click, 2:submit, 3:tel, 4:mailto）
+		'PAGE_X_PCT'        => 10,      // ページ内クリック位置X（％）整数値
+		'PAGE_Y_PCT'        => 11,      // ページ内クリック位置Y（％）整数値
 	);
 
 	// イベントデータ バージョン1

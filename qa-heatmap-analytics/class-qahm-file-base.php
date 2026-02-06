@@ -24,7 +24,7 @@ class QAHM_File_Base extends QAHM_Base {
 		}
 	}
 
-	protected function wrap_dirlist( $path ) {
+	public function wrap_dirlist( $path ) {
 		global $wp_filesystem;
 		$ret_ary = array();
 		if ( is_readable( $path ) ) {
@@ -83,6 +83,53 @@ class QAHM_File_Base extends QAHM_Base {
 			return false;
 		}
 	}
+
+	//QA ZERO ADD START
+
+	/**
+	 * lsコマンドの結果をwrap_dirlistの戻り値と同じ形式で返します。
+	 * 
+	 * 引数：
+	 * $dir       string : 必須。対象となるディレクトリのパスを指定
+	 * $wildcard  string : 省略化。lsに渡すファイル抽出条件を指定。
+	 * 
+	 * 備考：
+	 * ・ファイルパスにスペースが入る場合は無視されます。
+	 * ・wrap_dirlistはアルファベット順の”自然順”で返しますが、
+	 * 　当関数はls結果をそのまま（アルファベット順）で返します。
+	 * 　自然順で返すことを期待して使用しないでください。
+	 * ・「ls -l --time-style=full-iso」
+	 * 　が標準的な列名
+	 * 　パーミッション, ハードリンクの数, ファイルの所有者名, 
+	 * 　ファイルの所有グループ名, ファイルサイズ（バイト単位）, 
+	 * 　ファイルの最終更新日時（ISO 8601形式）, ファイル名、
+	 * 　で返ることを想定していますので、OSや設定によっては使用不可です。
+	 * 　(使用する場合は、オプションで切り替え可能とすること)
+	 * ・osコマンドインジェクションの可能性がある場合は使用しないでください
+	 * 　（POSTされた値をそのままチェックせず入力することは不可）
+	 */
+	public function listfiles_ls($dir, $wildcard = "*") {
+
+		$output = array();
+		exec("ls -l --time-style=full-iso ".$dir.$wildcard, $files);
+
+		foreach ($files as $file) {
+			#$fileInfo = preg_split('/\s+/', $file, null, PREG_SPLIT_NO_EMPTY);
+			$fileInfo  = explode(' ', $file);
+			if ($this->wrap_count($fileInfo) != 9 || $this->wrap_substr($fileInfo[0], 0, 1) == "d") {
+				continue;
+			}
+
+			$fileName = basename($fileInfo[8]);
+			$lastModUnix = filemtime($fileInfo[8]);
+			#$lastModUnix = strtotime($fileInfo[5] . " " . $fileInfo[6]. " " .$fileInfo[7]);
+			$fileSize = intval($fileInfo[4]);
+			$output[] = array("name" => $fileName, "lastmodunix" => $lastModUnix, "size" => $fileSize);
+		}
+		return $output;
+
+	}
+	//QA ZERO ADD END
 
 	/**
 	 * wp_remote_getをqahm用にラップした関数
@@ -152,6 +199,190 @@ class QAHM_File_Base extends QAHM_Base {
 	/**
 	 * rawデータのディレクトリのパスを取得
 	 */
+
+	//QA ZERO start
+	public function get_raw_dir_path( $tracking_id, $url_hash ){
+
+		$dir = $this->get_data_dir_path();
+		
+		$dir .= $tracking_id . '/';
+		if ( ! $this->wrap_mkdir( $dir ) ) {
+			return false;
+		}
+
+		if ( $url_hash ) {
+			$dir .= $url_hash . '/';
+			if ( ! $this->wrap_mkdir( $dir ) ) {
+				return false;
+			}
+		}
+
+		return $dir;
+	}
+
+	/**
+	 * セキュリティを強化するためのトラッキングハッシュ配列を取得する。なければ作成
+	 */
+	public function get_tracking_hash_array( $tracking_id = null, $hash_update = true ) {
+	
+		if( !$tracking_id ){
+			$tracking_id = $this->get_tracking_id( );
+		}
+		//$tracking_id = $this->get_tracking_id( $url );
+		$data_dir    = $this->get_data_dir_path();
+		$thash_file  = $data_dir . $tracking_id . '_tracking_hash.php';
+
+		$new_thash_ary = [];
+		//get now hash
+		global $wp_filesystem;
+		global $qahm_time;
+		$now_utime = $qahm_time->now_unixtime();
+		// 旧: $newhash = hash('fnv164', (string) mt_rand());
+		$newhash = hash('fnv164', (string) random_int(0, mt_getrandmax()));
+		if ( $wp_filesystem->exists( $thash_file ) ) {
+			$th_serial = $this->wrap_get_contents( $thash_file );
+			$thash_ary = $this->wrap_unserialize( $th_serial );
+
+			$recent_utime = $thash_ary[0]['create_utime'];
+			$th_interval  = $now_utime - $recent_utime;
+			if ( 3600 * 24 < $th_interval && $hash_update ) {
+				$new_thash_ary[0] = ['create_utime' => $now_utime, 'tracking_hash' => $newhash];
+				$new_thash_ary[1] = $thash_ary[0];
+				$new_th_serial    = $this->wrap_serialize( $new_thash_ary );
+				$this->wrap_put_contents( $thash_file, $new_th_serial );
+			} else {
+				$new_thash_ary = $thash_ary;
+			}
+		} else {
+				$new_thash_ary[0] = ['create_utime' => $now_utime, 'tracking_hash' => $newhash];
+				$new_th_serial   = $this->wrap_serialize( $new_thash_ary );
+				$this->wrap_put_contents( $thash_file, $new_th_serial );
+		}
+		return $new_thash_ary;
+	}
+
+	/**
+	 * hash値があればtrue。なければfalse
+	 */
+	public function check_tracking_hash( $checkhash, $tracking_id ) {
+
+		$hash_ary = $this->get_tracking_hash_array( $tracking_id, false );
+		$is_in    = false;
+		foreach ( $hash_ary as $hash ) {
+			if ( $checkhash === $hash['tracking_hash'] ) {
+				$is_in = true;
+			}
+		}
+		return $is_in;
+	}
+
+	/**
+	 * tracking_id毎のqtag.jsを作成する
+	 */
+	public function create_qtag( $tracking_id, $exists_ok = true ){
+
+		if( empty( $tracking_id ) ){
+			return false;
+		}
+
+		$qtag_file_name   = "qtag.js";
+		$js_dir_path      = $this->get_js_dir_path();
+
+		$qtag_subdir_path = $this->get_qtag_dir_path( $tracking_id );
+		$qtag_file_path   = $qtag_subdir_path.$qtag_file_name;
+
+		//すでに存在していれば作り直さない
+		if( !$exists_ok && file_exists( $qtag_file_path ) ){
+			return $qtag_file_path;
+		}
+
+		$qtag_tmp_file_path = $js_dir_path.$qtag_file_name;
+		$qtag_content       = file_get_contents( $qtag_tmp_file_path );
+
+		if( !$qtag_content ){
+			return false;
+		}
+
+		$tracking_hash = $this->get_tracking_hash_array( $tracking_id )[0]['tracking_hash'];
+		$ajax_url      = plugin_dir_url( __FILE__ )."qahm-ajax.php";
+
+		$qtag_content = str_replace('{tracking_hash}', $tracking_hash, $qtag_content);
+		$qtag_content = str_replace('{ajax_url}', $ajax_url, $qtag_content);
+
+		if ( !file_put_contents( $qtag_file_path , $qtag_content ) ){
+			return false;
+		}
+
+		return $qtag_file_path;
+
+	}
+
+	/**
+	 * tracking_id毎のqtag.jsの保存先ディレクトリを取得。なければ作成。
+	 */
+	public function get_qtag_dir_path( $tracking_id, $mkdir = true ){
+
+		$data_dir_path  = $this->get_data_dir_path();
+
+		$qtag_dir_name  = "qtag_js";
+		$qtag_dir_path  = $data_dir_path.$qtag_dir_name;
+
+		if( $mkdir ){
+			$this->wrap_mkdir( $qtag_dir_path );
+		}
+
+		$qtag_subdir_path   = $qtag_dir_path."/".$tracking_id;
+
+		if( $mkdir ){
+			$this->wrap_mkdir( $qtag_subdir_path );
+		}
+
+		return $qtag_subdir_path."/";
+
+	}
+
+    /**  
+     * tracking_id毎のqtag.jsのURL取得  
+     *   
+     * 指定されたtracking_idに対応するqtag.jsファイルが格納される  
+     * ディレクトリのWebアクセス可能なURLを取得します。  
+     *   
+     * @param string $tracking_id トラッキングID  
+     * @return string qtagディレクトリのURL（末尾にスラッシュ付き）  
+     */ 
+    public function get_qtag_dir_url( $tracking_id ) {  
+        $data_dir_url = $this->get_data_dir_url();  
+        $qtag_dir_name = "qtag_js";  
+        $qtag_dir_url = $data_dir_url . $qtag_dir_name;  
+        $qtag_subdir_url = $qtag_dir_url . "/" . $tracking_id;  
+        return $qtag_subdir_url . "/";  
+    }
+
+	/**
+	 * tracking_id毎のqtag.jsを削除する
+	 */
+	function delete_qtag( $tracking_id ) {
+
+		if ( empty( $tracking_id ) ) {
+			return false;
+		}
+
+		$qtag_file_name = 'qtag.js';
+		$qtag_dir_path  = $this->get_qtag_dir_path( $tracking_id, false );
+		$qtag_file_path = $qtag_dir_path . $qtag_file_name;
+
+		if ( $this->wrap_exists( $qtag_file_path ) ) {
+			$this->wrap_delete( $qtag_file_path );
+		}
+
+		global $wp_filesystem;
+		return $wp_filesystem->rmdir( $qtag_dir_path );
+	}
+
+
+	//QA ZERO end
+
+	/*
 	protected function get_raw_dir_path( $type, $id, $dev_name, $tracking_id = null ) {
 		// $wp_filesystemオブジェクトの呼び出し
 		global $wp_filesystem;
@@ -193,7 +424,7 @@ class QAHM_File_Base extends QAHM_Base {
 		}
 
 		return $dir;
-	}
+	} QA ZERO del */
 
 	/**
 	 * ディレクトリのURL or パスから要素を求める
@@ -202,7 +433,7 @@ class QAHM_File_Base extends QAHM_Base {
 		$url_exp = explode( '/', $url );
 
 		$data_num = null;
-		for ( $i = 0; $i < count( $url_exp ); $i++ ) {
+		for ( $i = 0; $i < $this->wrap_count( $url_exp ); $i++ ) {
 			// dataフォルダの位置を求める
 			if ( $url_exp[ $i ] === 'data' ) {
 				$data_num = $i;
@@ -275,7 +506,7 @@ class QAHM_File_Base extends QAHM_Base {
 								$rowsize += 4;
 							}
 						} else {
-							$rowsize += strlen( $val );
+							$rowsize += $this->wrap_strlen( $val );
 						}
 					}
 				}
@@ -284,9 +515,9 @@ class QAHM_File_Base extends QAHM_Base {
 				$rowsize = 100;
 			}
 
-			$query = 'SELECT count(*) from ' . $tablename;
+			$query = 'SELECT $this->wrap_count(*) from ' . $tablename;
 			$res   = $qahm_db->get_results( $query );
-			$count = (int)$res[0]->{'count(*)'};
+			$count = (int)$res[0]->{'$this->wrap_count(*)'};
 			$byte = $rowsize * $count;
 			$alldbsize_ary[] =  [ 'tablename' => $tablename, 'count' => $count, 'byte' => $byte ];
 		}
@@ -310,7 +541,7 @@ class QAHM_File_Base extends QAHM_Base {
 		$search_dirs =  array( $data_dir );
 		$allfile_cnt = 0;
 		$allfilesize = 0;
-		for ( $iii = 0; $iii < count( $search_dirs ); $iii++ ) {   // 再帰のためループ毎にcount関数を実行しなければならない
+		for ( $iii = 0; $iii < $this->wrap_count( $search_dirs ); $iii++ ) {   // 再帰のためループ毎にcount関数を実行しなければならない
 			$dir = $search_dirs[ $iii ];
 			if ( $wp_filesystem->is_dir( $dir ) && $wp_filesystem->exists( $dir ) ) {
 
@@ -335,26 +566,33 @@ class QAHM_File_Base extends QAHM_Base {
 	}
 
 	//days pv
-	public function count_this_month_pv() {
+	public function count_this_month_pv($tracking_id = 'all') {
 		$ret_count = 0;
 
 		global $qahm_db;
 		global $qahm_time;
+
 		$data_dir = $this->get_data_dir_path();
 		$view_dir          = $data_dir . 'view/';
-		$traking_id        = $this->get_tracking_id();
-		$myview_dir        = $view_dir . $traking_id . '/';
+		$myview_dir        = $view_dir . $tracking_id . '/';
 		$vw_summary_dir     = $myview_dir . 'summary/';
+
 		if ( $this->wrap_exists($vw_summary_dir . 'days_access.php' ) ) {
 			$daysum_ary = $this->wrap_unserialize($qahm_db->wrap_get_contents($vw_summary_dir . 'days_access.php'));
+			if (!is_array($daysum_ary)) {
+				return $ret_count; // 0を返す
+			}
+
 			$month = $qahm_time->month();
 			if ((int)$month < 10 ) {
 				$month = '0' . (string)$month;
 			} else {
 				$month = (string)$month;
 			}
+
 			$this_month_1st = $qahm_time->year() . '-' . $month . '-01 00:00:00';
 			$this_month_1st_unix = $qahm_time->str_to_unixtime( $this_month_1st );
+			
 			foreach ($daysum_ary as $val ) {
 				$nowunixtime = $qahm_time->str_to_unixtime( $val['date'] . ' 00:00:00' );
 				if ($this_month_1st_unix <= $nowunixtime) {
@@ -366,7 +604,7 @@ class QAHM_File_Base extends QAHM_Base {
 	}
 
 	//days pv
-	public function get_pvterm_start_date() {
+	public function get_pvterm_start_date($tracking_id = "all") {
 
 		global $qahm_db;
 		global $qahm_time;
@@ -374,25 +612,69 @@ class QAHM_File_Base extends QAHM_Base {
 
 		$data_dir = $this->get_data_dir_path();
 		$view_dir          = $data_dir . 'view/';
-		$traking_id        = $this->get_tracking_id();
-		$myview_dir        = $view_dir . $traking_id . '/';
+		$myview_dir        = $view_dir . $tracking_id . '/';
 		$vw_summary_dir     = $myview_dir . 'summary/';
 
-		$daysum_ary = $this->wrap_unserialize($qahm_db->wrap_get_contents($vw_summary_dir . 'days_access.php'));
-		if ( isset ( $daysum_ary[0] ) ) {
-			$ret_day = $daysum_ary[0]['date'];
+		if ( $this->wrap_exists($vw_summary_dir . 'days_access.php' ) ) {
+			$daysum_ary = $this->wrap_unserialize($qahm_db->wrap_get_contents($vw_summary_dir . 'days_access.php'));
+			if ( isset ( $daysum_ary[0] ) ) {
+				$ret_day = $daysum_ary[0]['date'];
+			}
 		}
 		return $ret_day;
 	}
 
+	public function get_pvterm_latest_date($tracking_id = "all") {
+
+		global $qahm_db;
+		global $qahm_time;
+		$ret_day = $qahm_time->now_str('Y-m-d');
+
+		$data_dir = $this->get_data_dir_path();
+		$view_dir          = $data_dir . 'view/';
+		$myview_dir        = $view_dir . $tracking_id . '/';
+		$vw_summary_dir     = $myview_dir . 'summary/';
+
+		if ( $this->wrap_exists($vw_summary_dir . 'days_access.php' ) ) {
+			$daysum_ary = $this->wrap_unserialize($qahm_db->wrap_get_contents($vw_summary_dir . 'days_access.php'));
+			$last_index = $this->wrap_count( $daysum_ary ) - 1;
+			if ( isset ( $daysum_ary[$last_index] ) ) {
+				$ret_day = $daysum_ary[$last_index]['date'];
+			}
+		}
+		return $ret_day;
+	}
+
+	public function get_pvterm_both_end_date($tracking_id = "all") {
+
+		global $qahm_db;
+		$ret_days = [];
+
+		$data_dir = $this->get_data_dir_path();
+		$view_dir          = $data_dir . 'view/';
+		$myview_dir        = $view_dir . $tracking_id . '/';
+		$vw_summary_dir     = $myview_dir . 'summary/';
+
+		if ( $this->wrap_exists($vw_summary_dir . 'days_access.php' ) ) {
+			$daysum_ary = $this->wrap_unserialize($qahm_db->wrap_get_contents($vw_summary_dir . 'days_access.php'));
+			if ( is_array( $daysum_ary ) ) {
+				$last_index = $this->wrap_count( $daysum_ary ) - 1;
+				if ( isset ( $daysum_ary[0] ) ) {
+					$ret_days[ 'start' ] = $daysum_ary[0]['date'];
+					$ret_days[ 'latest' ] = $daysum_ary[$last_index]['date'];
+				}
+			}
+		}
+		return $ret_days;
+	}
+
 	//days heatmap
-	public function get_hmterm_start_date() {
+	public function get_hmterm_start_date($tracking_id = "all") {
 		global $qahm_time;
 
 		$data_dir = $this->get_data_dir_path();
 		$view_dir          = $data_dir . 'view/';
-		$traking_id        = $this->get_tracking_id();
-		$myview_dir        = $view_dir . $traking_id . '/view_pv';
+		$myview_dir        = $view_dir . $tracking_id . '/view_pv';
 		$raw_p_dir         = $myview_dir . '/raw_p/';
 
 		$allfiles = $this->wrap_dirlist( $raw_p_dir );
@@ -401,7 +683,7 @@ class QAHM_File_Base extends QAHM_Base {
 			foreach ( $allfiles as $file ) {
 				$filename = $file[ 'name' ];
 				if ( is_file( $raw_p_dir . $filename ) ) {
-					$f_date = substr( $filename, 0, 10 );
+					$f_date = $this->wrap_substr( $filename, 0, 10 );
 					$f_datetime = $f_date . ' 00:00:00';
 				}
 				$f_unixt = $qahm_time->str_to_unixtime( $f_datetime );
@@ -411,7 +693,7 @@ class QAHM_File_Base extends QAHM_Base {
 			}
 		}
 		$mindate = $qahm_time->unixtime_to_str( $minunixt );
-		$ret_day = substr( $mindate, 0, 10 );
+		$ret_day = $this->wrap_substr( $mindate, 0, 10 );
 		return $ret_day;
 	}
 
@@ -522,7 +804,6 @@ class QAHM_File_Base extends QAHM_Base {
 		$newstr  = '<?php http_response_code(404);exit; ?>'.PHP_EOL;
 		$newstr .= $data;
 		return $wp_filesystem->put_contents( $file, $newstr );
-
 	}
 
 	/**
@@ -534,7 +815,7 @@ class QAHM_File_Base extends QAHM_Base {
 		$string = $wp_filesystem->get_contents( $file );
 		if ( $string ) {
 			if ( strpos ( $string, 'http_response_code(404)' ) ) {
-				return substr(strstr( $string, PHP_EOL ),1);
+				return $this->wrap_substr(strstr( $string, PHP_EOL ),1);
 			} else {
 				return $string;
 			}
@@ -551,7 +832,7 @@ class QAHM_File_Base extends QAHM_Base {
 		$ary    = $wp_filesystem->get_contents_array( $file );
 		if ( $ary ) {
 			$retary = array();
-			$maxcnt = count( $ary );
+			$maxcnt = $this->wrap_count( $ary );
 			if ( strpos( $ary[0],'http_response_code(404)' ) ) {
 				$startn = 1;
 			} else {
@@ -575,147 +856,6 @@ class QAHM_File_Base extends QAHM_Base {
 	}
 	
 	/**
-	 * wp_json_encodeのラップ関数。ファイル書込用
-	 */
-	protected function wrap_json_encode( $data ) {
-		return wp_json_encode( $data );
-	}
-
-
-	/**
-	 * json_decodeのラップ関数。ファイル読み出し用。1行目の 404を抜く
-	 * 簡易的なserialzeデータのチェックも行う
-	 * この関数を使用する際は引数$dataの先頭に$aryの中身のいずれかの値を入れないこと
-	 */
-	function wrap_json_decode( $data ) {
-		$str = substr( $data, 0, 2 );
-		$ary = array( 'a:', 'b:', 'd:', 'i:', 'O:', 's:' );
-		if( in_array( $str, $ary, true ) ) {
-			return $this->wrap_unserialize( $data );
-		}else{
-			return json_decode( $data );
-		}
-	}
-
-
-	/**
-	 * serializeのラップ関数
-	 */
-	protected function wrap_serialize( $value ) {
-		return serialize( $value );
-	}
-
-
-	/**
-	 * serializeのラップ関数
-	 */
-	public function wrap_unserialize( $data ){
-
-		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- ini_set() is required here to adjust runtime configuration dynamically for specific functionality.
-		ini_set('pcre.backtrack_limit', 5000000);
-
-		$arr = @unserialize($data);
-
-		if ($arr !== FALSE) {
-			return $arr;
-		}
-
-		$pattern = "/(;s:[0-9]+:\")([\s\S]+?)([\"N];s:[0-9]+:)/";
-		//$pattern = "/(\"base_html\";s:[0-9]+:\")(.+)/";
-
-		$fixed_data = preg_replace_callback($pattern, function ($matches) {
-
-			if(!preg_match("/^N/",$matches[3])){
-				$matchfix = str_replace("\"","'",$matches[2]);
-			}else{
-				$matchfix = $matches[2];
-			}
-
-			#return $matches[1].$matchfix.$matches[3];
-			return $matches[1].$matchfix.$matches[3];
-
-		}, $data );
-
-
-		$strFixed  = preg_replace_callback(
-			'/s:([0-9]+):\"(.*?)\";/',
-			function ($matches) { return "s:" . strlen($matches[2]) . ':"' . $matches[2] . '";'; },
-			$fixed_data
-		);
-		$arr = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-			return $arr;
-		}
-
-		$strFixed  = preg_replace_callback(
-			'/s:([0-9]+):\"(.*?)\";/',
-			function ($match) {
-				return "s:" . strlen($match[2]) . ':"' . $match[2] . '";';
-			},
-			$fixed_data);
-
-		$arr = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-			return $arr;
-		}
-
-		$strFixed = preg_replace("%\n%", "", $fixed_data);
-		$data     = preg_replace('%";%', "µµµ", $strFixed);
-		$tab      = explode("µµµ", $data);
-		$new_data = '';
-		foreach ($tab as $line) {
-			$new_data .= preg_replace_callback(
-				'%\bs:(\d+):"(.*)%',
-				function ($matches) {
-					$string       = $matches[2];
-					$right_length = strlen($string); // yes, strlen even for UTF-8 characters, PHP wants the mem size, not the char count
-
-					return 's:' . $right_length . ':"' . $string . '";';
-				},
-				$line);
-		}
-		$strFixed = $new_data;
-		$arr = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-			return $arr;
-		}
-
-
-		$strFixed  = preg_replace_callback(
-			'/s:([0-9]+):"(.*?)";/',
-			function ($match) {
-				return "s:" . strlen($match[2]) . ":\"" . $match[2] . "\";";
-			},
-			$fixed_data
-		);
-
-		$arr = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-			return $arr;
-		}
-
-		$strFixed  = preg_replace_callback('/s\:(\d+)\:\"(.*?)\";/s', function ($matches) { return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";'; }, $fixed_data);
-		$arr       = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-			return $arr;
-		}
-
-		$strFixed  = preg_replace_callback(
-			'/s\:(\d+)\:\"(.*?)\";/s',
-			function ($matches) { return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";'; },
-			$fixed_data);;
-		$arr = @unserialize($strFixed);
-		if (FALSE !== $arr) {
-
-			return $arr;
-		}
-
-		return FALSE;
-
-	}
-
-
-	/**
 	 * tsv形式の文字列データを二次元配列に変換して返す
 	 */
 	protected function convert_tsv_to_array( $tsv ) {
@@ -737,8 +877,8 @@ class QAHM_File_Base extends QAHM_Base {
 	protected function convert_array_to_tsv( $ary ) {
 		$tsv = '';
 
-		for ( $i = 0, $col_cnt = count( $ary ); $i < $col_cnt; $i++ ) {
-			for ( $j = 0, $raw_cnt = count( $ary[$i] ); $j < $raw_cnt; $j++ ) {
+		for ( $i = 0, $col_cnt = $this->wrap_count( $ary ); $i < $col_cnt; $i++ ) {
+			for ( $j = 0, $raw_cnt = $this->wrap_count( $ary[$i] ); $j < $raw_cnt; $j++ ) {
 				// 値にPHP_EOLや\tが入っていた場合はtsvの形が崩れる可能性があるので無視
 				$replace = str_replace( PHP_EOL, '', $ary[ $i ][ $j ] );
 				$replace = str_replace( "\t", '', $replace );

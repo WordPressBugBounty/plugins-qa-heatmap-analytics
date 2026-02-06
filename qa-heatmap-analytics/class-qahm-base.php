@@ -5,7 +5,7 @@
  * @package qa_heatmap
  */
 
-class QAHM_Base {
+class QAHM_Base extends QAHM_WP_Base {
 	/**
 	 * wordpressのget_option関数をqahm用に使いやすくした関数
 	 */
@@ -27,20 +27,95 @@ class QAHM_Base {
 		return get_option( QAHM_OPTION_PREFIX . $option, $default );
 	}
 
+	public function wrap_get_zero_option( $option, $default = false, $tracking_id = 'all' ) {
+		$all_options_json = $this->wrap_get_option( $option, $default );
+		if ( $all_options_json ) {
+			$all_options_ary = json_decode( $all_options_json, true );
+			if ( isset( $all_options_ary[$tracking_id] ) ) {
+				return $this->wrap_json_encode( $all_options_ary[$tracking_id] );
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * データ保持期間を取得
+	 * 優先順位: wp-config.php定数 > WordPressオプション > デフォルト値
+	 */
+    public function get_data_retention_days() {  
+        if (defined('QAHM_CONFIG_DATA_RETENTION_DAYS') && QAHM_CONFIG_DATA_RETENTION_DAYS !== false) {  
+            $days = (int) QAHM_CONFIG_DATA_RETENTION_DAYS;  
+            
+            // 範囲外の値を適切な範囲内に丸める  
+            if ($days < 1) {  
+                return 1; // 最小値: 1日  
+            }  
+            if ($days > 30000) {  
+                return 30000; // 最大値: 30000日  
+            }  
+            return $days;  
+        }  
+        
+        // 万が一の場合のフォールバック: プロダクト別のデフォルト値  
+        // Differs between ZERO and QA - Start ----------  
+        if (defined('QAHM_TYPE') && QAHM_TYPE === QAHM_TYPE_ZERO) {  
+            return 740;
+        } else {  
+            return 120;
+        }  
+        // Differs between ZERO and QA - End ----------  
+    }
+
+	/**
+	 * wp-config.phpでデータ保持期間が設定されているかチェック
+	 */
+	public function is_data_retention_days_defined_in_config() {
+		return defined('QAHM_CONFIG_DATA_RETENTION_DAYS') && QAHM_CONFIG_DATA_RETENTION_DAYS !== false;
+	}
+
+	public function wrap_get_goals_option( $option, $default, $tracking_id ) {
+		$all_goals_json = $this->wrap_get_option( $option, $default );
+		if ( $all_goals_json ) {
+			$all_goals_ary = json_decode( $all_goals_json, true );
+			if ( isset( $all_goals_ary[$tracking_id] ) ) {
+				return $this->wrap_json_encode( $all_goals_ary[$tracking_id] );
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 * wordpressのupdate_option関数をqahm用に使いやすくした関数
 	 */
 	public function wrap_update_option( $option, $value ) {
-		/*
-			DBオプションが既に存在した状態でfalseを指定すると空文字になる
-			DBオプションが存在しない状態でfalseを指定するとDBにオプションが登録されない
-			このif文はその差異を吸収している
-		*/
-		if ( $value === false ) {
-			$value = '';
-		}
 		return update_option( QAHM_OPTION_PREFIX . $option, $value );
 	}
+	
+	public function wrap_update_zero_option( $option, $value, $tracking_id ) {
+		$all_options_ary = []; 
+		$all_options_json = $this->wrap_get_option( $option, false );
+		if ( $all_options_json ) {
+			$all_options_ary = json_decode( $all_options_json, true );
+		}
+		$all_options_ary[$tracking_id] = json_decode($value);
+		return $this->wrap_update_option( $option, $this->wrap_json_encode($all_options_ary) );
+	}
+	
+	public function wrap_update_goals_option( $option, $value, $tracking_id ) {
+		$all_goals_json = $this->wrap_get_option( $option, false );
+		if ( $all_goals_json ) {
+			$all_goals_ary = json_decode( $all_goals_json, true );
+		}
+		$all_goals_ary[$tracking_id] = json_decode($value);
+		return $this->wrap_update_option( $option, $this->wrap_json_encode($all_goals_ary) );
+	}
+	// zero end
 
 	/**
 	 * wordpressのget_user_meta関数をqahm用に使いやすくした関数
@@ -64,21 +139,20 @@ class QAHM_Base {
 	/**
 	 * phpの$this->filter_inputのラップ関数
 	 */
-	public function wrap_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, $options = 0 )
+	public function wrap_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT )
 	{
 		$checkTypes =[
 			INPUT_GET,
 			INPUT_POST,
 			INPUT_COOKIE
 		];
-
-		if (in_array($type, $checkTypes) || filter_has_var($type, $variable_name)) {
-			return filter_input($type, $variable_name, $filter, $options);
+	
+		if ($this->wrap_in_array($type, $checkTypes) || filter_has_var($type, $variable_name)) {
+			return filter_input($type, $variable_name, $filter);
 		} else if ($type == INPUT_SERVER && isset($_SERVER[$variable_name])) {
-			$sanitized_value = sanitize_text_field(wp_unslash($_SERVER[$variable_name]));
-			return filter_var($sanitized_value, $filter, $options);
+			return filter_var($_SERVER[$variable_name], $filter);
 		} else if ($type == INPUT_ENV && isset($_ENV[$variable_name])) {
-			return filter_var($_ENV[$variable_name], $filter, $options);
+			return filter_var($_ENV[$variable_name], $filter);
 		} else {
 			return null;
 		}
@@ -88,14 +162,13 @@ class QAHM_Base {
 	 * wordpressのwp_mailをベースにQAから送れるようにしたもの
 	 */
 	public function qa_mail( $subject, $message ) {
-		global $qahm_data_api;
-		//$subject = mb_encode_mimeheader($subject, 'UTF-8');
 		$homeurl = get_home_url();
 		$domain  = wp_parse_url( $homeurl, PHP_URL_HOST );
 		$from    = 'wordpress@' . $domain;
 		$return  = false;
 
-		$headers = array("From: QA Analytics <{$from}>", "Content-Type: text/plain; charset=UTF-8");
+		$plugin_name = QAHM_PLUGIN_NAME;
+		$headers = array("From: {$plugin_name} <{$from}>", "Content-Type: text/plain; charset=UTF-8");
 		$to = $this->wrap_get_option( 'send_email_address' );
 		$return = wp_mail( $to, $subject, $message, $headers );
 		return $return;
@@ -104,28 +177,7 @@ class QAHM_Base {
 	/**
 	 * アクセス権限判定
 	 */
-	public function check_access_role() {
-		if ( ! is_user_logged_in() ) {
-			return false;
-		}
-		$user   = wp_get_current_user();
-		$roles  = (array) $user->roles;
-		$role   = $roles[0];
-		$access = $this->wrap_get_option( 'access_role', 'administrator' );
-
-		switch ( $role ) {
-			case 'administrator':
-				return ( 'administrator' === $access || 'editor' === $access ) ? true : false;
-			case 'editor':
-				return ( 'editor' === $access ) ? true : false;
-			default:
-				return false;
-		}
-	}
-	public function check_qahm_access_cap( $cap ) {
-		if ( ! is_user_logged_in() ) {
-			return false;
-		}
+	public function check_access_role( $cap ) {
 		$user = wp_get_current_user();
 		switch ( $cap ) {
 			case 'manage_options':
@@ -136,16 +188,16 @@ class QAHM_Base {
 				}
 				break;
 
-			case 'qahm_manage_settings':
-				if ( $user->has_cap( 'manage_options' ) || $user->has_cap( 'qahm_manage_settings' ) ) {
+			case 'qazero-admin':
+				if ( $user->has_cap( 'manage_options' ) || $user->has_cap( 'qazero-admin' ) ) {
 					return true;
 				} else {
 					return false;
 				}
 				break;
 
-			case 'qahm_view_reports':
-				if ( $user->has_cap( 'manage_options' ) || $user->has_cap( 'qahm_view_reports' ) ) {
+			case 'qazero-view':
+				if ( $user->has_cap( 'manage_options' ) || $user->has_cap( 'qazero-admin' ) || $user->has_cap( 'qazero-view' ) ) {
 					return true;
 				} else {
 					return false;
@@ -155,54 +207,77 @@ class QAHM_Base {
 				return false;
 		}
 	}
-	
 
 
 	/**
-	 * 有料メンバーかどうかの判別（画面表示用）
+	 * ZERO only
+	 * ライセンス認証済みか判定
 	 */
-	public function is_subscribed() {
-		$plans = $this->wrap_get_option( 'license_plans' );
-		if ( $plans && $plans['paid'] === true ) {
+	public function lic_authorized() {
+		$lic_auth = $this->wrap_get_option( 'license_authorized' );
+		if ( $lic_auth ) {
 			return true;
+		} else {
+			return false;
 		}
-		return false;
-	}
-
+	}	
 
 	/**
-	* 該当のライセンスプランが組み込まれていればその値を返す
-	*/
-	public function get_license_plan( $plan_name ) {
-		$plan_ary = $this->wrap_get_option( 'license_plans' );
-
-		if ( $plan_ary && array_key_exists( $plan_name, $plan_ary ) ) {
-			return $plan_ary[$plan_name];
-		} else {
-			return null;
-		}
-	}
-
-
+	 * ==============================
+	 * QAHM only
+	 * ※呼ばれている箇所がないので削除予定
+	 */
 	/**
-	* 該当のライセンスオプションが組み込まれていればその値を返す
-	*/
-	public function get_license_option( $option_name ) {
-		$option_ary = $this->wrap_get_option( 'license_option' );
-
-		if ( $option_ary && array_key_exists( $option_name, $option_ary ) ) {
-			return $option_ary[$option_name];
-		} else {
+	 * ライセンスプラン配列を取得
+	 */
+	public function get_plan() {
+		$plans = $this->wrap_get_option( 'license_plans' );
+		if ( ! $plans ) {
 			return null;
 		}
-	}
+		return json_decode( $plans, true );
+	}	
+	/**
+	* 該当のプランが組み込まれているかチェック
+	* 組み込まれていればその値を返す
+	*/
+   public function check_plan( $plan_name ) {
+	   $plans = $this->get_plan();
 
+	   if ( $plans && $this->wrap_array_key_exists( $plan_name, $plans ) ) {
+		   return $plans[$plan_name];
+	   } else {
+		   return false;
+	   }
+   }
+   /**
+	* ==============================
+    */
 
 	/**
 	 * プラグインのメインファイルパスを取得
 	 */
 	public function get_plugin_main_file_path() {
-		return dirname( __FILE__ ) . '/' . QAHM_NAME . '.php';
+		// 現在のファイルのディレクトリパスを取得
+		$current_dir = dirname(__FILE__);
+		
+		// 同じディレクトリにファイルが存在するかチェック
+		$same_dir_path = $current_dir . '/' . QAHM_NAME . '.php';
+		
+		if (file_exists($same_dir_path)) {
+			return $same_dir_path;
+		}
+		
+		// 存在しなければ親ディレクトリから検索
+		// 親ディレクトリ + テキストドメインディレクトリ + ファイル名
+		$parent_dir_path = dirname($current_dir) . '/' . QAHM_TEXT_DOMAIN . '/' . QAHM_NAME . '.php';
+		
+		if (file_exists($parent_dir_path)) {
+			return $parent_dir_path;
+		}
+		
+		// どちらも見つからない場合はデフォルトパスを返す
+		return $parent_dir_path;
 	}
 
 	/**
@@ -258,14 +333,19 @@ class QAHM_Base {
 	 */
 	public function get_data_dir_path( $data_rel_path = '' ) {
 		global $wp_filesystem;
-		$path = $wp_filesystem->wp_content_dir() . QAHM_TEXT_DOMAIN . '-data/';
+		
+		if ( empty( $wp_filesystem ) ) {
+		    $this->init_wp_filesystem();
+		}
+		
+		$path = $wp_filesystem->wp_content_dir() . 'qa-zero-data/';
 		if ( ! $wp_filesystem->exists( $path ) ) {
 			$wp_filesystem->mkdir( $path );
 		}
 
 		if ( $data_rel_path ) {
 			$path .= $data_rel_path;
-			if ( substr( $path, -1 ) !== '/' ) {
+			if ( $this->wrap_substr( $path, -1 ) !== '/' ) {
 				$path .= '/';
 			}
 
@@ -281,11 +361,11 @@ class QAHM_Base {
 	 * dataディレクトリのURLを取得
 	 */
 	public function get_data_dir_url( $data_rel_path = '' ) {
-		$path = content_url() . '/' . QAHM_TEXT_DOMAIN . '-data/';
+		$path = content_url() . '/' . 'qa-zero-data/';
 
 		if ( $data_rel_path ) {
 			$path .= $data_rel_path;
-			if ( substr( $path, -1 ) !== '/' ) {
+			if ( $this->wrap_substr( $path, -1 ) !== '/' ) {
 				$path .= '/';
 			}
 		}
@@ -338,22 +418,39 @@ class QAHM_Base {
 	 * トラッキングIDを取得
 	 */
 	public function get_tracking_id( $url = null ) {
+
+		/* QA ZERO del
 		if ( $this->is_wordpress() ) {
 			// auto
-			$parse_url = wp_parse_url( get_home_url() );
+			$parse_url = parse_url( get_home_url() );
 			$id = 'a&' . $parse_url['host'];
 		} else {
 			// manual
-			$parse_url = wp_parse_url( $url );
+			$parse_url = parse_url( $url );
 			$id = 'm&' . $parse_url['host'];
+		} QA ZERO del */
+//maryama add
+		if ( $url == null ) {
+			return 'all';
 		}
+//maryama add end
+		$id = 'z&' . $url;
+
 		return hash( 'fnv164', $id );
 	}
-
+//QA ZERO STSRT
+	public function get_url_hash( $url ) {
+		return hash( 'fnv164', $url );
+	}
+	public function get_qaid_from_sessionfile( $filename ) {
+		return strstr( $filename, '_', true );
+	}
+//QA ZERO END
 	/**
 	 * WPサイトか判定
 	 * この判定方法で良いのかは要検証。今後変わる可能性あり
 	 */
+	/* QA ZERO del
 	public function is_wordpress() {
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			return true;
@@ -361,6 +458,7 @@ class QAHM_Base {
 			return false;
 		}
 	}
+	*/
 
 	/**
 	 * qahm対象ページか判定
@@ -497,7 +595,7 @@ class QAHM_Base {
 		);
 
 		// 正規表現用に配列を置換
-		for ( $i = 0, $bot_len = count( $bot ); $i < $bot_len; $i++ ) {
+		for ( $i = 0, $bot_len = $this->wrap_count( $bot ); $i < $bot_len; $i++ ) {
 			$bot[ $i ] = str_replace( '.', '\.', $bot[ $i ] );
 			$bot[ $i ] = str_replace( '-', '\-', $bot[ $i ] );
 		}
@@ -511,18 +609,20 @@ class QAHM_Base {
 		return false;
 	}
 
-	public function os_from_ua( $ua ) {
-		$device_os = '';
-		if ( preg_match( '/(iPhone|iPod|iPad|Windows Phone|Opera Mobi|Fennec|Android)/', $ua, $match ) ) {
-			$device_os = $match[1];
-		} else {
-			if ( preg_match( '/(Mac OS X [0-9]*.[0-9]*|Windows NT [0-9]*.[0-9]*)/', $ua, $match ) ) {
-				$device_os = $match[1];
-			}
-		}
-		$device_os = str_replace( '_', '.', $device_os );
-		return $device_os;
-	}
+    public function os_from_ua( $ua ) {
+        $device_os = '';
+        if ( empty( $ua ) || !is_string( $ua ) ) {
+            return $device_os;
+        }
+        // 判別対象のデバイス/OS
+        if ( preg_match( '/(iPhone|iPod|iPad|Windows Phone|Opera Mobi|Fennec|Android TV|Android|PlayStation|Xbox|Nintendo Switch|Roku|Fire TV|Apple TV|Tizen|WebOS|SmartTV|Linux|CrOS|Fuchsia)/', $ua, $match ) ) {
+            $device_os = $match[1];
+        } else if ( preg_match( '/(Mac OS X [0-9]*.[0-9]*|Windows NT [0-9]*.[0-9]*)/', $ua, $match ) ) {
+            $device_os = $match[1];
+        }
+        $device_os = str_replace( '_', '.', $device_os );
+        return $device_os;
+    }
 
 	public function browser_from_ua( $ua ) {
 		$browser = '';
@@ -537,10 +637,10 @@ class QAHM_Base {
 
 	public function is_zip ($string) {
 		$is_zip = false;
-		if ( 3 < strlen( $string ) ) {
-			$byte1 = strtoupper( bin2hex( substr( $string,0,1 ) ) );
-			$byte2 = strtoupper( bin2hex( substr( $string,1,1 ) ) );
-			$byte3 = strtoupper( bin2hex( substr( $string,2,1 ) ) );
+		if ( 3 < $this->wrap_strlen( $string ) ) {
+			$byte1 = strtoupper( bin2hex( $this->wrap_substr( $string,0,1 ) ) );
+			$byte2 = strtoupper( bin2hex( $this->wrap_substr( $string,1,1 ) ) );
+			$byte3 = strtoupper( bin2hex( $this->wrap_substr( $string,2,1 ) ) );
 
 			if( $byte1=="1F" && $byte2=="8B" && $byte3=="08" ){
 				$is_zip = true;
@@ -548,6 +648,221 @@ class QAHM_Base {
 		}
 		return $is_zip;
 	}
+
+	//QA ZERO start
+	
+	/**
+	 * 与えられたparse_urlから第一ディレクトリまでのurlにして返す
+	 * 引数：array parse_url(対象URL)の結果
+	 * 戻り値：string 第一ディレクトリまでのURL
+	 */
+	public function to_domain_url( $parse_url, $leave_scheme = false ){
+
+		if ( $leave_scheme ){
+			$domain_url = $parse_url["scheme"]."://".$parse_url["host"]."/";
+		}else{
+			$domain_url = $parse_url["host"]."/";
+		}
+
+		// 'path'キーが存在し、空でないかチェック
+		if ( isset($parse_url['path']) && !empty($parse_url['path']) ) {
+			$path_array = explode('/', $parse_url['path']);
+			$first_directory = ($this->wrap_count($path_array) > 2) ? $path_array[1].'/' : '';
+			$domain_url = $domain_url.$first_directory;
+		}
+
+		return $domain_url;
+
+	}
+
+	/**
+	 * シリアライズに使用される特殊文字をエスケープして返す
+	 * 引数：string 入力文字
+	 * 戻り値：string 特殊文字エスケープ済みの文字列
+	 */
+	 public function serialize_escape( $text ){
+
+		$escape_target = array(':', '{', '}');
+		$escape_result = array('\:', '\{', '\}');
+
+		return str_replace($escape_target, $escape_result, $text);
+
+	 }
+	// QA ZERO MARUYAMA
+	/**
+	 * LowerURLからPath URLを求める
+	 */
+	public function to_path_url( $lower_url )	{
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- wp_parse_url() may be undefined in early-loading contexts; safe fallback to parse_url().
+		$parse_url  = parse_url( $lower_url );
+		if ( ! $parse_url ) {
+			return false;
+		}
+		if ( ! isset( $parse_url['scheme'] ) || ! isset( $parse_url['host'] ) ) {
+			return false;
+		}
+		$domain_url = $parse_url["scheme"]."://".$parse_url["host"];
+		if ( ! isset( $parse_url['path'] ) ) {
+			return $this->set_trailing_slash( $domain_url );
+		}
+		$path_str   = $parse_url['path'];
+		$path_url   = $domain_url . $path_str;
+
+		return $this->set_trailing_slash( $path_url );
+	}
+	public function set_trailing_slash( $url ) {
+		if ( $url[-1] != '/' ) {
+			$url .= '/';
+		}
+		return $url;
+	}
+
+	private function unparse_url($parsed_url) {
+		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+		$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+		$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+		$pass     = ($user || $pass) ? "$pass@" : '';
+		$path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+		$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+		$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+		return "$scheme$user$pass$host$port$path$query$fragment";
+	}
+
+	/**
+	 * 対象urlにcurlアクセスを実行する
+	 */
+	public function curl_get($url, $connectionTimeout, $timeout, $dev_name, $speed_limit = 1000, $speed_time = 5){
+
+		// ユーザーエージェントの決定
+		$bot = QAHM_NAME . 'bot/' . QAHM_PLUGIN_VERSION;
+
+		switch ($dev_name) {
+			case 'smp':
+				$ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.91 Mobile/15E148 Safari/605.1' . ' ' . $bot;
+				break;
+			case 'tab':
+				$ua = 'Mozilla/5.0 (iPad; CPU OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1' . ' ' . $bot;
+				break;
+			default:
+				$ua = 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.79 Safari/535.11' . ' ' . $bot;
+				break;
+		}
+
+		// URLの解析とエンコード処理
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.WP.AlternativeFunctions.curl_* -- wp_parse_url() and wp_remote_get() are unavailable before WordPress is fully loaded; safe fallback to parse_url() and cURL for internal use.
+		$parsed_url = parse_url($url);
+		if ($parsed_url === false) {
+			// URL解析に失敗した場合は false を返す
+			return false;
+		}
+
+		// クエリ部分が存在する場合、解析してRFC3986に準拠した形式にエンコード
+		if (isset($parsed_url['query'])) {
+			parse_str($parsed_url['query'], $query_params);
+			$encoded_query = http_build_query($query_params, '', '&', PHP_QUERY_RFC3986);
+			$parsed_url['query'] = $encoded_query;
+		}
+
+		// パースした情報からURL文字列を再構築
+		$url = $this->unparse_url($parsed_url);
+
+		// Plugin Check exclusion: Uses cURL for internal pre-WordPress HTTP request; wp_remote_get() not available in this context
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_close
+		// cURLセッションの初期化とオプション設定
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $connectionTimeout);
+		curl_setopt($curl, CURLOPT_TIMEOUT, $timeout);
+		curl_setopt($curl, CURLOPT_USERAGENT, $ua);
+		curl_setopt($curl, CURLOPT_LOW_SPEED_LIMIT, $speed_limit);
+		curl_setopt($curl, CURLOPT_LOW_SPEED_TIME,  $speed_time);
+		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($curl, CURLOPT_FAILONERROR, true);
+
+		// HTTPSの場合のSSL検証（必要に応じて設定変更）
+		if (stripos($url, "https://") === 0) {
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+		}
+
+		// URLにアクセスしてレスポンスを取得
+		$response = curl_exec($curl);
+
+		// エラー発生時はfalseを返す
+		if (curl_errno($curl)) {
+			$response = false;
+		}
+
+		// セッションを閉じる
+		curl_close($curl);
+
+		// phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_close
+
+		return $response;
+
+	}
+
+	/**
+	 * 指定されたURLから不要なトラッキング用パラメータや除外指定のパラメータを除外して、クリーンなURLを返します。
+	 *
+	 * 除外対象として、固定のパラメータキーや "utm_" で始まるパラメータ、ユーザ指定のパラメータを除去します。
+	 *
+	 * @param string $url URL文字列
+	 * @param array  $del_param_ary ユーザ指定で除外するパラメータ名の配列（省略可能）
+	 *
+	 * @return string クリーンアップされたURL
+	 */
+	public function url_cleansing($url, $del_param_ary = array())
+	{
+		// フラグメント部分（#以降）を削除
+		$base_url = explode('#', $url, 2)[0];
+
+		// URLを「?」で分割（クエリパラメータがあるかチェック）
+		$url_parts = explode('?', $base_url, 2);
+
+		// クエリパラメータが存在しない場合は、そのまま返す
+		if (!isset($url_parts[1])) {
+			return $base_url;
+		}
+
+		// クエリパラメータを配列として解析
+		parse_str($url_parts[1], $query_ary);
+
+		// 固定で除外するパラメータ名のリスト
+		$exclude_params = array(
+			'gclid', 'gad_source', '_ga', 'uid',
+			'fbclid', 'twclid', 'gad', 'yclid',
+			'ldtag_cl', 'msclkid', 'sa_p', 'sa_cc',
+			'sa_t', 'sa_ra'
+		);
+
+		// ユーザが指定した除外パラメータがあればマージする
+		$exclude_params = array_merge($exclude_params, $del_param_ary);
+
+		// 除外条件にマッチしないパラメータのみを残す（"utm_"で始まるものも除外）
+		$filtered_query_ary = array();
+		foreach ($query_ary as $key => $value) {
+			if ($this->wrap_in_array($key, $exclude_params) || strpos($key, 'utm_') === 0) {
+				continue;
+			}
+			// パラメータの値が配列の場合、カンマ区切りの文字列に変換
+			if (is_array($value)) {
+				$value = implode(',', $value);
+			}
+			$filtered_query_ary[$key] = $value;
+		}
+
+		// http_build_query() により正しいURLエンコード済みのクエリ文字列を生成
+		$query_string = http_build_query($filtered_query_ary);
+
+		// クエリ文字列が存在すればURLを再構築し、なければベースURLを返す
+		return $query_string ? $url_parts[0] . '?' . $query_string : $url_parts[0];
+	}
+
+	//QA ZERO end
 
 	/**
 	 * qa 翻訳関数
@@ -560,13 +875,17 @@ class QAHM_Base {
 	 * qa_idの生成
 	 */
 	public function create_qa_id( $ip_address, $ua, $tracking_hash ){
+
+		global $qahm_time;
+		global $behave;
+	
 		$unique_server_value = NONCE_SALT.AUTH_SALT;
 		//$id_base       = $ip_address.$ua.$tracking_hash;
 		$id_base       = $ip_address.$ua.$unique_server_value.$tracking_hash;
 		$qa_id_hash    = hash( 'fnv164', $id_base );
-
+	
 		return '000000000000' . $qa_id_hash;
-
+	
 	}
 
 	/**
@@ -616,18 +935,102 @@ class QAHM_Base {
 				</g>
 			</g>
 			</svg>';
-			
-			// cut out from returning html
-			<!--<div class="qahm-announce-icon">{$svg_icon}</div>-->
-			*/
-		$text = esc_html__( 'QA Analytics', 'qa-heatmap-analytics' ) . ': ' . $text;
+		*/
+		$svg_icon = '';
 
-		return <<< EOH
-			<div class="qahm-announce-container qahm-announce-container-{$status}">
-				<div class="qahm-announce-text">{$text}</div>
-			</div>
-EOH;
+		//$text = esc_html__( 'QA ZERO', 'qa-heatmap-analytics' ) . ': ' . $text;
+
+		return '<div class="qahm-announce-container qahm-announce-container-' . $status . '">' .
+			   '<div class="qahm-announce-icon">' . $svg_icon . '</div>' .
+			   '<div class="qahm-announce-text">' . $text . '</div>' .
+			   '</div>';
+	}
+
+	/**
+	 * アラート用HTMLを出力する
+	 *
+	 * @param string $text   表示するテキスト
+	 * @param string $status ステータス（success/info/warning/error）
+	 */
+	public function print_qa_announce_html( $text, $status = 'success' ) {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This HTML is generated by create_qa_announce_html() which handles escaping internally
+		echo $this->create_qa_announce_html( $text, $status );
+	}
+
+	/**
+	 * APCuを利用してtracking_idの検証を行う
+	 * qahm_sitemanageに登録されているtracking_idかどうかをチェック
+	 */
+	public function get_valid_tracking_ids_with_cache() {
+		global $wpdb;
+		$cache_key = $wpdb->prefix . 'qa_tracking_ids_cache';
+		$cache_expiration = 5 * MINUTE_IN_SECONDS;
+
+		$is_apcu_enabled = function_exists('apcu_fetch');
+
+		$tracking_ids = $is_apcu_enabled ? apcu_fetch($cache_key) : false;
+
+		if ($tracking_ids === false) {
+			$sitemanage = $this->wrap_get_option('sitemanage');
+			if ($sitemanage) {
+				$sitemanage = array_filter($sitemanage, function ($item) {
+					return isset($item['status']) && $item['status'] !== 255;
+				});
+				$sitemanage = array_values($sitemanage);
+				$tracking_ids = array_column($sitemanage, 'tracking_id');
+			} else {
+				$tracking_ids = array();
+			}
+
+			if ($is_apcu_enabled) {
+				apcu_store($cache_key, $tracking_ids, $cache_expiration);
+			}
+		}
+
+		return $tracking_ids;
+	}
+
+	/**
+	 * tracking_idが有効かどうかを検証する
+	 */
+	public function validate_tracking_id($tracking_id) {
+		if (empty($tracking_id) || $tracking_id === 'all') {
+			return true;
+		}
+
+		$valid_tracking_ids = $this->get_valid_tracking_ids_with_cache();
+		return $this->wrap_in_array($tracking_id, $valid_tracking_ids, true);
+	}
+
+	/**
+	 * 安全なtracking_idを取得する
+	 * 無効な場合は'all'を返す
+	 */
+	public function get_safe_tracking_id($tracking_id) {
+		if ($this->validate_tracking_id($tracking_id)) {
+			return $tracking_id;
+		}
+
+		global $qahm_log;
+		if ($qahm_log) {
+			$ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+			$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+			$qahm_log->error(
+				"Invalid tracking_id attempt: '{$tracking_id}' from IP: {$ip_address}, UA: {$user_agent}",
+				'tracking_validation.log'
+			);
+		}
+
+		return 'all';
+	}
+
+	/**
+	 * tracking_id をサニタイズする（英数/ハイフン/アンダースコア程度に制限推奨）
+	 */
+	public function sanitize_tracking_id( $raw ) {
+		$raw = sanitize_text_field( (string) $raw );
+		// さらに厳格にするならホワイトリスト（推奨）
+		$raw = preg_replace( '/[^a-zA-Z0-9\-_]/', '', $raw );
+		return $raw;
 	}
 }
-
-?>

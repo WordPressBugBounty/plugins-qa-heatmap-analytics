@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,79 +14,82 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class EcommerceData extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class EcommerceData extends \Google\Collection
 {
-    protected $collection_key = 'products';
-    /**
-     * @var string
-     */
-    public $actionType;
-    /**
-     * @var string
-     */
-    public $ecommerceType;
-    protected $productsType = ProductData::class;
-    protected $productsDataType = 'array';
-    protected $transactionType = TransactionData::class;
-    protected $transactionDataType = '';
-    /**
-     * @param string
-     */
-    public function setActionType($actionType)
-    {
-        $this->actionType = $actionType;
-    }
-    /**
-     * @return string
-     */
-    public function getActionType()
-    {
-        return $this->actionType;
-    }
-    /**
-     * @param string
-     */
-    public function setEcommerceType($ecommerceType)
-    {
-        $this->ecommerceType = $ecommerceType;
-    }
-    /**
-     * @return string
-     */
-    public function getEcommerceType()
-    {
-        return $this->ecommerceType;
-    }
-    /**
-     * @param ProductData[]
-     */
-    public function setProducts($products)
-    {
-        $this->products = $products;
-    }
-    /**
-     * @return ProductData[]
-     */
-    public function getProducts()
-    {
-        return $this->products;
-    }
-    /**
-     * @param TransactionData
-     */
-    public function setTransaction(TransactionData $transaction)
-    {
-        $this->transaction = $transaction;
-    }
-    /**
-     * @return TransactionData
-     */
-    public function getTransaction()
-    {
-        return $this->transaction;
-    }
+  protected $collection_key = 'products';
+  /**
+   * @var string
+   */
+  public $actionType;
+  /**
+   * @var string
+   */
+  public $ecommerceType;
+  protected $productsType = ProductData::class;
+  protected $productsDataType = 'array';
+  protected $transactionType = TransactionData::class;
+  protected $transactionDataType = '';
+
+  /**
+   * @param string
+   */
+  public function setActionType($actionType)
+  {
+    $this->actionType = $actionType;
+  }
+  /**
+   * @return string
+   */
+  public function getActionType()
+  {
+    return $this->actionType;
+  }
+  /**
+   * @param string
+   */
+  public function setEcommerceType($ecommerceType)
+  {
+    $this->ecommerceType = $ecommerceType;
+  }
+  /**
+   * @return string
+   */
+  public function getEcommerceType()
+  {
+    return $this->ecommerceType;
+  }
+  /**
+   * @param ProductData[]
+   */
+  public function setProducts($products)
+  {
+    $this->products = $products;
+  }
+  /**
+   * @return ProductData[]
+   */
+  public function getProducts()
+  {
+    return $this->products;
+  }
+  /**
+   * @param TransactionData
+   */
+  public function setTransaction(TransactionData $transaction)
+  {
+    $this->transaction = $transaction;
+  }
+  /**
+   * @return TransactionData
+   */
+  public function getTransaction()
+  {
+    return $this->transaction;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(EcommerceData::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_EcommerceData');
+class_alias(EcommerceData::class, 'Google_Service_AnalyticsReporting_EcommerceData');

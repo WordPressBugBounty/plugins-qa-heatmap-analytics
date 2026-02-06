@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class DateRangeValues extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class DateRangeValues extends \Google\Collection
 {
-    protected $collection_key = 'values';
-    protected $pivotValueRegionsType = PivotValueRegion::class;
-    protected $pivotValueRegionsDataType = 'array';
-    /**
-     * @var string[]
-     */
-    public $values;
-    /**
-     * @param PivotValueRegion[]
-     */
-    public function setPivotValueRegions($pivotValueRegions)
-    {
-        $this->pivotValueRegions = $pivotValueRegions;
-    }
-    /**
-     * @return PivotValueRegion[]
-     */
-    public function getPivotValueRegions()
-    {
-        return $this->pivotValueRegions;
-    }
-    /**
-     * @param string[]
-     */
-    public function setValues($values)
-    {
-        $this->values = $values;
-    }
-    /**
-     * @return string[]
-     */
-    public function getValues()
-    {
-        return $this->values;
-    }
+  protected $collection_key = 'values';
+  protected $pivotValueRegionsType = PivotValueRegion::class;
+  protected $pivotValueRegionsDataType = 'array';
+  /**
+   * @var string[]
+   */
+  public $values;
+
+  /**
+   * @param PivotValueRegion[]
+   */
+  public function setPivotValueRegions($pivotValueRegions)
+  {
+    $this->pivotValueRegions = $pivotValueRegions;
+  }
+  /**
+   * @return PivotValueRegion[]
+   */
+  public function getPivotValueRegions()
+  {
+    return $this->pivotValueRegions;
+  }
+  /**
+   * @param string[]
+   */
+  public function setValues($values)
+  {
+    $this->values = $values;
+  }
+  /**
+   * @return string[]
+   */
+  public function getValues()
+  {
+    return $this->values;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(DateRangeValues::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_DateRangeValues');
+class_alias(DateRangeValues::class, 'Google_Service_AnalyticsReporting_DateRangeValues');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class DateRange extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class DateRange extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $endDate;
-    /**
-     * @var string
-     */
-    public $startDate;
-    /**
-     * @param string
-     */
-    public function setEndDate($endDate)
-    {
-        $this->endDate = $endDate;
-    }
-    /**
-     * @return string
-     */
-    public function getEndDate()
-    {
-        return $this->endDate;
-    }
-    /**
-     * @param string
-     */
-    public function setStartDate($startDate)
-    {
-        $this->startDate = $startDate;
-    }
-    /**
-     * @return string
-     */
-    public function getStartDate()
-    {
-        return $this->startDate;
-    }
+  /**
+   * @var string
+   */
+  public $endDate;
+  /**
+   * @var string
+   */
+  public $startDate;
+
+  /**
+   * @param string
+   */
+  public function setEndDate($endDate)
+  {
+    $this->endDate = $endDate;
+  }
+  /**
+   * @return string
+   */
+  public function getEndDate()
+  {
+    return $this->endDate;
+  }
+  /**
+   * @param string
+   */
+  public function setStartDate($startDate)
+  {
+    $this->startDate = $startDate;
+  }
+  /**
+   * @return string
+   */
+  public function getStartDate()
+  {
+    return $this->startDate;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(DateRange::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_DateRange');
+class_alias(DateRange::class, 'Google_Service_AnalyticsReporting_DateRange');

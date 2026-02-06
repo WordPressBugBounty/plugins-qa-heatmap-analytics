@@ -2,7 +2,7 @@ var qahm = qahm || {};
 
 // qahmのデバッグフラグに応じてログを表示
 qahm.log = function ( msg ) {
-	if ( qahm.const_debug !== qahm.const_debug_level['debug'] ) {
+	if ( qahm.debug !== qahm.debug_level['debug'] ) {
 		return;
 	}
 
@@ -15,7 +15,7 @@ qahm.log = function ( msg ) {
 
 // qahmのデバッグフラグに応じてアラートを表示
 qahm.alert = function ( msg ) {
-	if ( qahm.const_debug !== qahm.const_debug_level['debug'] ) {
+	if ( qahm.debug !== qahm.debug_level['debug'] ) {
 		return;
 	}
 	console.trace();
@@ -76,6 +76,21 @@ qahm.sprintfAry = function( format, ...args ) {
 	return replaced;
 }
 
+// 引数で指定したライセンスプランを契約しているかチェック
+//ZEROでは使わない
+//qahm.checkLicensePlan = function ( plan ) {
+//	if ( ! qahm.license_plans ) {
+//		return false;
+//	}
+
+//	if ( qahm.license_plans[ plan ] ) {
+//		return true;
+//	} else {
+//		return false;
+//	}
+//}
+
+
 // 引数に指定された文字列が全て大文字ならtrueを返す
 qahm.isUpper = function ( str ) {
 	return !/[a-z]/.test( str ) && /[A-Z]/.test( str );
@@ -122,6 +137,7 @@ qahm.comma = function( num ) {
 	}
 	return ret;
 };
+
 
 // 文字列をnum文字でカットし、終端に'...'を追加
 qahm.truncateStr = function( str, num ) {

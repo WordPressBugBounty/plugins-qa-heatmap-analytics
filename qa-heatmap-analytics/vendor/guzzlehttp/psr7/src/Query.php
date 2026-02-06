@@ -1,6 +1,6 @@
 <?php
 
-namespace QAAnalyticsVendor\GuzzleHttp\Psr7;
+namespace GuzzleHttp\Psr7;
 
 final class Query
 {
@@ -17,40 +17,45 @@ final class Query
      *
      * @return array
      */
-    public static function parse($str, $urlEncoding = \true)
+    public static function parse($str, $urlEncoding = true)
     {
         $result = [];
+
         if ($str === '') {
             return $result;
         }
-        if ($urlEncoding === \true) {
+
+        if ($urlEncoding === true) {
             $decoder = function ($value) {
-                return \rawurldecode(\str_replace('+', ' ', $value));
+                return rawurldecode(str_replace('+', ' ', $value));
             };
-        } elseif ($urlEncoding === \PHP_QUERY_RFC3986) {
+        } elseif ($urlEncoding === PHP_QUERY_RFC3986) {
             $decoder = 'rawurldecode';
-        } elseif ($urlEncoding === \PHP_QUERY_RFC1738) {
+        } elseif ($urlEncoding === PHP_QUERY_RFC1738) {
             $decoder = 'urldecode';
         } else {
             $decoder = function ($str) {
                 return $str;
             };
         }
-        foreach (\explode('&', $str) as $kvp) {
-            $parts = \explode('=', $kvp, 2);
+
+        foreach (explode('&', $str) as $kvp) {
+            $parts = explode('=', $kvp, 2);
             $key = $decoder($parts[0]);
             $value = isset($parts[1]) ? $decoder($parts[1]) : null;
             if (!isset($result[$key])) {
                 $result[$key] = $value;
             } else {
-                if (!\is_array($result[$key])) {
+                if (!is_array($result[$key])) {
                     $result[$key] = [$result[$key]];
                 }
                 $result[$key][] = $value;
             }
         }
+
         return $result;
     }
+
     /**
      * Build a query string from an array of key value pairs.
      *
@@ -65,26 +70,28 @@ final class Query
      *
      * @return string
      */
-    public static function build(array $params, $encoding = \PHP_QUERY_RFC3986)
+    public static function build(array $params, $encoding = PHP_QUERY_RFC3986)
     {
         if (!$params) {
             return '';
         }
-        if ($encoding === \false) {
+
+        if ($encoding === false) {
             $encoder = function ($str) {
                 return $str;
             };
-        } elseif ($encoding === \PHP_QUERY_RFC3986) {
+        } elseif ($encoding === PHP_QUERY_RFC3986) {
             $encoder = 'rawurlencode';
-        } elseif ($encoding === \PHP_QUERY_RFC1738) {
+        } elseif ($encoding === PHP_QUERY_RFC1738) {
             $encoder = 'urlencode';
         } else {
             throw new \InvalidArgumentException('Invalid type');
         }
+
         $qs = '';
         foreach ($params as $k => $v) {
             $k = $encoder($k);
-            if (!\is_array($v)) {
+            if (!is_array($v)) {
                 $qs .= $k;
                 if ($v !== null) {
                     $qs .= '=' . $encoder($v);
@@ -100,6 +107,7 @@ final class Query
                 }
             }
         }
-        return $qs ? (string) \substr($qs, 0, -1) : '';
+
+        return $qs ? (string) substr($qs, 0, -1) : '';
     }
 }

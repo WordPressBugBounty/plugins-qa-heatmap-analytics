@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -15,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google\AuthHandler;
 
-use QAAnalyticsVendor\GuzzleHttp\Client;
-use QAAnalyticsVendor\GuzzleHttp\ClientInterface;
+namespace Google\AuthHandler;
+
 use Exception;
+use GuzzleHttp\ClientInterface;
+
 class AuthHandlerFactory
 {
     /**
@@ -31,11 +31,13 @@ class AuthHandlerFactory
     public static function build($cache = null, array $cacheConfig = [])
     {
         $guzzleVersion = null;
-        if (\defined('\\QAAnalyticsVendor\\GuzzleHttp\\ClientInterface::MAJOR_VERSION')) {
+        if (defined('\GuzzleHttp\ClientInterface::MAJOR_VERSION')) {
             $guzzleVersion = ClientInterface::MAJOR_VERSION;
-        } elseif (\defined('\\QAAnalyticsVendor\\GuzzleHttp\\ClientInterface::VERSION')) {
-            $guzzleVersion = (int) \substr(ClientInterface::VERSION, 0, 1);
+        } elseif (defined('\GuzzleHttp\ClientInterface::VERSION')) {
+            // @phpstan-ignore-next-line
+            $guzzleVersion = (int) substr(ClientInterface::VERSION, 0, 1);
         }
+
         switch ($guzzleVersion) {
             case 5:
                 return new Guzzle5AuthHandler($cache, $cacheConfig);

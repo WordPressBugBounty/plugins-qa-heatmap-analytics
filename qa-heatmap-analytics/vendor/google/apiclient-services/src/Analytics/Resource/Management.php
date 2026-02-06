@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,7 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
+
+namespace Google\Service\Analytics\Resource;
 
 /**
  * The "management" collection of methods.
@@ -25,8 +25,9 @@ namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
  *   $management = $analyticsService->management;
  *  </code>
  */
-class Management extends \QAAnalyticsVendor\Google\Service\Resource
+class Management extends \Google\Service\Resource
 {
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Management::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Resource_Management');
+class_alias(Management::class, 'Google_Service_Analytics_Resource_Management');

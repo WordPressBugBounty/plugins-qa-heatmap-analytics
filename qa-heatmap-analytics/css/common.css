@@ -1,6 +1,13 @@
 /*
 	汎用
 */
+@font-face {
+    font-family: 'Kosugi';
+    src: url('../fonts/KosugiMaru-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .qahm-hide{
   /*display:none;*/
   visibility: hidden;
@@ -88,36 +95,6 @@
 #qahm-container #qahm-progress-info #qahm-progress-percent {
 	display: table-cell;
 	text-align: right;
-}
-
-
-/* ボタンのスタイル */
-.qahm_upgrade_notice {
-	margin: 20px 20px 20px 30px;
-}
-.qahm_upgrade_notice_right {
-	text-align: right;
-	margin-right: 30px;
-}
-.qahm_upgrade_button {
-display: inline-block;
-padding: 10px 20px;
-background-color: #eb8281;
-border: solid 1px #eb8281;
-color: #fff;
-border-radius: 5px;
-cursor: pointer;
-font-size: 16px;
-font-weight: bold;
-}
-.qahm_upgrade_button:hover {
-background-color: #f9cdc5; /* ホバー時の色 */
-border: solid 1px #eb8281;
-color: #fff;
-}
-.qahm_upgrade_button a {
-color: inherit; /* 親要素の色を継承 */
-text-decoration: none; /* 下線を消す */
 }
 
 
@@ -213,14 +190,14 @@ text-decoration: none; /* 下線を消す */
 [data-qahm-tooltip]:after {
 	z-index: 1000;
 	padding: 8px;
-	width: 240px;
+	width: 160px;
 	background-color: #000;
 	background-color: hsla(0, 0%, 20%, 0.9);
 	color: #fff;
 	content: attr(data-qahm-tooltip);
-	font-size: 12px;
+	font-size: 14px;
 	line-height: 1.4;
-	border-radius: 3px;
+	border-radius: 6px;
 	display: inline-block;
     text-align: left;
 }
@@ -251,7 +228,7 @@ text-decoration: none; /* 下線を消す */
 [data-qahm-tooltip]:after,
 .qahm-tooltip:after,
 .qahm-tooltip-top:after {
-	margin-left: -40px;
+	margin-left: -80px;
 }
 
 [data-qahm-tooltip]:hover:before,

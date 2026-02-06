@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,10 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting\Resource;
 
-use QAAnalyticsVendor\Google\Service\AnalyticsReporting\GetReportsRequest;
-use QAAnalyticsVendor\Google\Service\AnalyticsReporting\GetReportsResponse;
+namespace Google\Service\AnalyticsReporting\Resource;
+
+use Google\Service\AnalyticsReporting\GetReportsRequest;
+use Google\Service\AnalyticsReporting\GetReportsResponse;
+
 /**
  * The "reports" collection of methods.
  * Typical usage is:
@@ -27,21 +28,22 @@ use QAAnalyticsVendor\Google\Service\AnalyticsReporting\GetReportsResponse;
  *   $reports = $analyticsreportingService->reports;
  *  </code>
  */
-class Reports extends \QAAnalyticsVendor\Google\Service\Resource
+class Reports extends \Google\Service\Resource
 {
-    /**
-     * Returns the Analytics data. (reports.batchGet)
-     *
-     * @param GetReportsRequest $postBody
-     * @param array $optParams Optional parameters.
-     * @return GetReportsResponse
-     */
-    public function batchGet(GetReportsRequest $postBody, $optParams = [])
-    {
-        $params = ['postBody' => $postBody];
-        $params = \array_merge($params, $optParams);
-        return $this->call('batchGet', [$params], GetReportsResponse::class);
-    }
+  /**
+   * Returns the Analytics data. (reports.batchGet)
+   *
+   * @param GetReportsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return GetReportsResponse
+   */
+  public function batchGet(GetReportsRequest $postBody, $optParams = [])
+  {
+    $params = ['postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('batchGet', [$params], GetReportsResponse::class);
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Reports::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_Resource_Reports');
+class_alias(Reports::class, 'Google_Service_AnalyticsReporting_Resource_Reports');

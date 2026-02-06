@@ -7,20 +7,6 @@
 
 class QAHM_View_Base extends QAHM_File_Data {
 
-	/**
-	 * wp_loadへの相対パスをtempディレクトリのファイルに書き込み
-	 */
-	protected function write_wp_load_path() {
-		global $wp_filesystem;
-		$view_path = plugin_dir_path( __FILE__ );
-		$temp_dir  = plugin_dir_path( __FILE__ ) . 'temp/';
-		if ( ! $wp_filesystem->exists( $temp_dir ) ) {
-			$wp_filesystem->mkdir( $temp_dir );
-		}
-
-		$wp_load_rel_path      = $this->get_relative_path( $view_path, ABSPATH . 'wp-load.php' );
-		$wp_filesystem->put_contents( $temp_dir . 'wp-load-path.php', $wp_load_rel_path );
-	}
 
 	/**
 	 * 2つの絶対パス間の相対パスを取得
@@ -44,8 +30,8 @@ class QAHM_View_Base extends QAHM_File_Data {
 		array_unshift( $tar_abs_path, $t );
 
 		// 残りの要素数を数える
-		$bcount = count( $base_abs_path );
-		$tcount = count( $tar_abs_path );
+		$bcount = $this->wrap_count( $base_abs_path );
+		$tcount = $this->wrap_count( $tar_abs_path );
 
 		// ひとつずつしか残ってないので同じディレクトリ
 		if ( $bcount == 1 && $tcount == 1 ) {
@@ -71,7 +57,7 @@ class QAHM_View_Base extends QAHM_File_Data {
 	 */
 	protected function opt_base_html( $current_path, $base_html, $base_url, $dev_name ) {
 		// サイトの言語
-		$locale = get_locale();
+		//$locale = get_locale();
 
 		// htmlファイルは最低限しか書き換えないようにする方針
 		// あまり書き換えすぎると、html構成をバージョンアップした際に支障が出るため
@@ -80,8 +66,7 @@ class QAHM_View_Base extends QAHM_File_Data {
 		// セキュリティ
 		$php = '<?php ' .
 			'require_once("' . $this->get_relative_path( $current_path, ABSPATH . 'wp-load.php' ) . '");' .
-			'if( !is_user_logged_in() ){ http_response_code(404);exit; }' .
-			'if ( ! ' . $this->check_qahm_access_cap( "qahm_view_reports" ) . ') { http_response_code(404);exit; }' .
+			'$qahm_base = new QAHM_Base();if(!$qahm_base->check_access_role("qazero-view")){http_response_code(404);exit;}' .
 			'?>';
 
 		$html = $php;
@@ -96,11 +81,12 @@ class QAHM_View_Base extends QAHM_File_Data {
 		// 置き換えを実行
 		$html = preg_replace($pattern, $replacement, $html);
 
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet --  This stylesheet is safely loaded internally for admin use and does not impact the frontend or the original WordPress site.
-		$css_reset = '<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/reset.css', __FILE__ ) . '">';
-		$css_style = '<link rel="stylesheet" type="text/css" href="' . plugins_url( 'css/style.css', __FILE__ ) . '">';
-		// phpcs:enable
-		$html = str_replace( '</head>', $css_reset . $css_style . '</head>', $html );
+		// 計測タグを削除
+		$html = preg_replace(
+			'/<script[^>]*(?:qtag\.php|qtag\.js|cookie-consent-qtag\.php)[^>]*><\/script>/i',
+			'',
+			$html
+		);
 
 		return $html;
 	}
@@ -116,9 +102,9 @@ class QAHM_View_Base extends QAHM_File_Data {
 			$html_user_b = strstr( $html, $target, false );
 			if ( $html_user_f && $html_user_b ) {
 				$pos_user_f  = strrpos( $html_user_f, '<' . $tag );
-				$pos_user_b  = strpos( $html_user_b, '/' . $tag . '>' ) + strlen( '/' . $tag . '>' );
+				$pos_user_b  = strpos( $html_user_b, '/' . $tag . '>' ) + $this->wrap_strlen( '/' . $tag . '>' );
 				$pos_user_b += strpos( $html, $target );
-				$str_user    = substr( $html, $pos_user_f, $pos_user_b - $pos_user_f );
+				$str_user    = $this->wrap_substr( $html, $pos_user_f, $pos_user_b - $pos_user_f );
 				$html        = str_replace( $str_user, '', $html );
 			} else {
 				break;
@@ -132,7 +118,7 @@ class QAHM_View_Base extends QAHM_File_Data {
 	 * 存在しない場合、または値が空であれば第三引数を返す
 	 */ 
 	protected function array_key_exists_val( $key, $ary, $not_val = '' ) {
-		if ( ! array_key_exists( $key, $ary ) ) {
+		if ( ! $this->wrap_array_key_exists( $key, $ary ) ) {
 			return $not_val;
 		}
 		if ( $ary[$key] === '' ) {

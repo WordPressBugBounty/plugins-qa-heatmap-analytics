@@ -1,8 +1,8 @@
 <?php
+namespace GuzzleHttp\Exception;
 
-namespace QAAnalyticsVendor\GuzzleHttp\Exception;
+use Psr\Http\Message\RequestInterface;
 
-use QAAnalyticsVendor\Psr\Http\Message\RequestInterface;
 /**
  * Exception thrown when a connection cannot be established.
  *
@@ -10,10 +10,15 @@ use QAAnalyticsVendor\Psr\Http\Message\RequestInterface;
  */
 class ConnectException extends RequestException
 {
-    public function __construct($message, RequestInterface $request, \Exception $previous = null, array $handlerContext = [])
-    {
+    public function __construct(
+        $message,
+        RequestInterface $request,
+        \Exception $previous = null,
+        array $handlerContext = []
+    ) {
         parent::__construct($message, $request, null, $previous, $handlerContext);
     }
+
     /**
      * @return null
      */
@@ -21,11 +26,12 @@ class ConnectException extends RequestException
     {
         return null;
     }
+
     /**
      * @return bool
      */
     public function hasResponse()
     {
-        return \false;
+        return false;
     }
 }

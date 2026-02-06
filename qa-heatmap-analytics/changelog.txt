@@ -1,7 +1,86 @@
 = Changelog archive =
 
-QA Analytics
+QA Assistants
 This is an archive of older changelog entries. Most recent entries are maintained in readme.txt
+
+= 4.9.3.1 – 2025-07-30 =
+* Fixed data aggregation anomaly affecting reports when specifying date ranges from 7/21 onwards.
+* Improved PV limit handling to prevent incorrect data accumulation.
+* Enhanced data processing logic for better accuracy in traffic and device statistics.
+
+= 4.9.3.0 – 2025-08-04 =
+* Fixed tracking_id parameter scope to properly restrict to QA Advisor pages only.
+* Improved URL parameter handling to prevent unnecessary tracking on non-QA pages.
+* Enhanced performance by optimizing script loading conditions.
+
+= 4.9.0.0 – 2025-06-05 =
+* Introduced QA Advisor (Beta) – a new generation of the plugin formerly known as QA Analytics.
+* Added Brains, an assistive insight feature that suggests improvements in plain language.
+* Improved UI, including a new advanced mode with full reports.
+* This is a beta release. Please report any issues or feedback as we continue development.
+
+= 4.1.2.1 =
+
+* **Release Date:** November 1, 2024
+* Fixed bugs on the welcome page
+
+= 4.1.2.0 =
+
+* **Release Date:** October 24, 2024
+* Fixed various bugs, handled plugin security, and improved overall performance.
+* Addressed minor issues and refined plugin functionality.
+
+= 4.1.1.1 =
+
+* **Release Date:** August 29, 2024
+* Fixed a bug where the number of data measurements significantly decreased in some environments.
+
+= 4.1.1.0 =
+
+* **Release Date:** August 27, 2024
+* **Improvements and Changes:**
+  - Added a "Heatmap" link to the "Growing Landing Page" table.
+  - Fixed bugs in menu displays for plugin-specific permissions.
+  - Made various minor fixes and UI improvements.
+
+= 4.1.0.0 =
+
+* **Release Date:** July 11, 2024
+* **New Features and Improvements:**
+  - Added the option to set goals using "Link Click Event with Regular Expressions."
+  - Made it possible to create QA Analytics-specific users, selectable as a WordPress user role.
+* **Other Changes:**
+  - Monthly page view measurement limit raised to 10,000.
+  - Made various minor fixes and UI improvements.
+
+= 4.0.1.1 =
+
+* **Release Date:** April 26, 2024
+* **Improvements and Changes:**
+  - Fixing an issue where heatmap icons are not clickable under specific conditions.
+
+= 4.0.1.0 =
+
+* **Release Date:** April 26, 2024
+* **Improvements and Changes:**
+  - Basic PV limit has been set to 3,000PV.
+  - Fixed a bug where the heatmap viewing page wouldn't open from the link in the report unless a goal was set.
+  - Improved Google API integration to allow connection with both "URL prefix" and "domain."
+  - Adjusted the start time for nightly cron jobs.
+  - Made various minor fixes and UI improvements.
+
+= 4.0.0.0 =
+
+* **Release Date:** April 11, 2024
+* **New Features and Improvements:**
+  - Added support for cookie-less tracking.
+  - Implemented the following specification changes:
+    - Default PV limit has been set to 1,000PV.
+    - Default targets for heatmaps and replay views are now set to all pages.
+    - Looker Studio Connector is now accessible for free version users.
+* **Other Changes:**
+  - Made various minor fixes and improvements.
+
 
 = 3.6.0.0 =
 

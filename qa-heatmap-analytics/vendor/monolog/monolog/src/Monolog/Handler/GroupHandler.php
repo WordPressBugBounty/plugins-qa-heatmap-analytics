@@ -8,10 +8,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Handler;
 
-use QAAnalyticsVendor\Monolog\Formatter\FormatterInterface;
-use QAAnalyticsVendor\Monolog\ResettableInterface;
+namespace Monolog\Handler;
+
+use Monolog\Formatter\FormatterInterface;
+use Monolog\ResettableInterface;
+
 /**
  * Forwards records to multiple handlers
  *
@@ -20,20 +22,23 @@ use QAAnalyticsVendor\Monolog\ResettableInterface;
 class GroupHandler extends AbstractHandler
 {
     protected $handlers;
+
     /**
      * @param array $handlers Array of Handlers.
      * @param bool  $bubble   Whether the messages that are handled can bubble up the stack or not
      */
-    public function __construct(array $handlers, $bubble = \true)
+    public function __construct(array $handlers, $bubble = true)
     {
         foreach ($handlers as $handler) {
             if (!$handler instanceof HandlerInterface) {
                 throw new \InvalidArgumentException('The first argument of the GroupHandler must be an array of HandlerInterface instances.');
             }
         }
+
         $this->handlers = $handlers;
         $this->bubble = $bubble;
     }
+
     /**
      * {@inheritdoc}
      */
@@ -41,11 +46,13 @@ class GroupHandler extends AbstractHandler
     {
         foreach ($this->handlers as $handler) {
             if ($handler->isHandling($record)) {
-                return \true;
+                return true;
             }
         }
-        return \false;
+
+        return false;
     }
+
     /**
      * {@inheritdoc}
      */
@@ -53,14 +60,17 @@ class GroupHandler extends AbstractHandler
     {
         if ($this->processors) {
             foreach ($this->processors as $processor) {
-                $record = \call_user_func($processor, $record);
+                $record = call_user_func($processor, $record);
             }
         }
+
         foreach ($this->handlers as $handler) {
             $handler->handle($record);
         }
-        return \false === $this->bubble;
+
+        return false === $this->bubble;
     }
+
     /**
      * {@inheritdoc}
      */
@@ -70,25 +80,29 @@ class GroupHandler extends AbstractHandler
             $processed = array();
             foreach ($records as $record) {
                 foreach ($this->processors as $processor) {
-                    $record = \call_user_func($processor, $record);
+                    $record = call_user_func($processor, $record);
                 }
                 $processed[] = $record;
             }
             $records = $processed;
         }
+
         foreach ($this->handlers as $handler) {
             $handler->handleBatch($records);
         }
     }
+
     public function reset()
     {
         parent::reset();
+
         foreach ($this->handlers as $handler) {
             if ($handler instanceof ResettableInterface) {
                 $handler->reset();
             }
         }
     }
+
     /**
      * {@inheritdoc}
      */
@@ -97,6 +111,7 @@ class GroupHandler extends AbstractHandler
         foreach ($this->handlers as $handler) {
             $handler->setFormatter($formatter);
         }
+
         return $this;
     }
 }

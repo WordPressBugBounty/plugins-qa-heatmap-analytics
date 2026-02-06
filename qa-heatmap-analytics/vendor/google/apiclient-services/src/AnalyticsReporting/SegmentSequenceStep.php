@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SegmentSequenceStep extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class SegmentSequenceStep extends \Google\Collection
 {
-    protected $collection_key = 'orFiltersForSegment';
-    /**
-     * @var string
-     */
-    public $matchType;
-    protected $orFiltersForSegmentType = OrFiltersForSegment::class;
-    protected $orFiltersForSegmentDataType = 'array';
-    /**
-     * @param string
-     */
-    public function setMatchType($matchType)
-    {
-        $this->matchType = $matchType;
-    }
-    /**
-     * @return string
-     */
-    public function getMatchType()
-    {
-        return $this->matchType;
-    }
-    /**
-     * @param OrFiltersForSegment[]
-     */
-    public function setOrFiltersForSegment($orFiltersForSegment)
-    {
-        $this->orFiltersForSegment = $orFiltersForSegment;
-    }
-    /**
-     * @return OrFiltersForSegment[]
-     */
-    public function getOrFiltersForSegment()
-    {
-        return $this->orFiltersForSegment;
-    }
+  protected $collection_key = 'orFiltersForSegment';
+  /**
+   * @var string
+   */
+  public $matchType;
+  protected $orFiltersForSegmentType = OrFiltersForSegment::class;
+  protected $orFiltersForSegmentDataType = 'array';
+
+  /**
+   * @param string
+   */
+  public function setMatchType($matchType)
+  {
+    $this->matchType = $matchType;
+  }
+  /**
+   * @return string
+   */
+  public function getMatchType()
+  {
+    return $this->matchType;
+  }
+  /**
+   * @param OrFiltersForSegment[]
+   */
+  public function setOrFiltersForSegment($orFiltersForSegment)
+  {
+    $this->orFiltersForSegment = $orFiltersForSegment;
+  }
+  /**
+   * @return OrFiltersForSegment[]
+   */
+  public function getOrFiltersForSegment()
+  {
+    return $this->orFiltersForSegment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SegmentSequenceStep::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SegmentSequenceStep');
+class_alias(SegmentSequenceStep::class, 'Google_Service_AnalyticsReporting_SegmentSequenceStep');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,60 +14,63 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SegmentFilter extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class SegmentFilter extends \Google\Model
 {
-    /**
-     * @var bool
-     */
-    public $not;
-    protected $sequenceSegmentType = SequenceSegment::class;
-    protected $sequenceSegmentDataType = '';
-    protected $simpleSegmentType = SimpleSegment::class;
-    protected $simpleSegmentDataType = '';
-    /**
-     * @param bool
-     */
-    public function setNot($not)
-    {
-        $this->not = $not;
-    }
-    /**
-     * @return bool
-     */
-    public function getNot()
-    {
-        return $this->not;
-    }
-    /**
-     * @param SequenceSegment
-     */
-    public function setSequenceSegment(SequenceSegment $sequenceSegment)
-    {
-        $this->sequenceSegment = $sequenceSegment;
-    }
-    /**
-     * @return SequenceSegment
-     */
-    public function getSequenceSegment()
-    {
-        return $this->sequenceSegment;
-    }
-    /**
-     * @param SimpleSegment
-     */
-    public function setSimpleSegment(SimpleSegment $simpleSegment)
-    {
-        $this->simpleSegment = $simpleSegment;
-    }
-    /**
-     * @return SimpleSegment
-     */
-    public function getSimpleSegment()
-    {
-        return $this->simpleSegment;
-    }
+  /**
+   * @var bool
+   */
+  public $not;
+  protected $sequenceSegmentType = SequenceSegment::class;
+  protected $sequenceSegmentDataType = '';
+  protected $simpleSegmentType = SimpleSegment::class;
+  protected $simpleSegmentDataType = '';
+
+  /**
+   * @param bool
+   */
+  public function setNot($not)
+  {
+    $this->not = $not;
+  }
+  /**
+   * @return bool
+   */
+  public function getNot()
+  {
+    return $this->not;
+  }
+  /**
+   * @param SequenceSegment
+   */
+  public function setSequenceSegment(SequenceSegment $sequenceSegment)
+  {
+    $this->sequenceSegment = $sequenceSegment;
+  }
+  /**
+   * @return SequenceSegment
+   */
+  public function getSequenceSegment()
+  {
+    return $this->sequenceSegment;
+  }
+  /**
+   * @param SimpleSegment
+   */
+  public function setSimpleSegment(SimpleSegment $simpleSegment)
+  {
+    $this->simpleSegment = $simpleSegment;
+  }
+  /**
+   * @return SimpleSegment
+   */
+  public function getSimpleSegment()
+  {
+    return $this->simpleSegment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SegmentFilter::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SegmentFilter');
+class_alias(SegmentFilter::class, 'Google_Service_AnalyticsReporting_SegmentFilter');

@@ -52,7 +52,7 @@ class QAHM_Time {
 	}
 
 	/**
-	 * 現在月の数値
+	 * 現在月の数値（先頭にゼロなし）
 	 */
 	public function month( $datetime_str = 'now' ) {
 		$d = new DateTime( $datetime_str, $this->timezone_obj);
@@ -60,7 +60,7 @@ class QAHM_Time {
 	}
 
 	/**
-	 * 現在月の数値
+	 * 現在月の数値（先頭にゼロあり）
 	 */
 	public function monthstr( $datetime_str = 'now' ) {
 		$d = new DateTime( $datetime_str, $this->timezone_obj);
@@ -113,6 +113,14 @@ class QAHM_Time {
 	public function now_unixtime() {
 		$d = new DateTime( '', $this->timezone_obj);
 		return $d->getTimestamp();
+	}
+
+	/**
+	 * 現在月の日数の数値（月末日）
+	 */
+	public function month_daynum( $datetime_str = 'now' ) {
+		$d = new DateTime( $datetime_str, $this->timezone_obj);
+		return (int) $d->format( 't' );
 	}
 
 	/**
@@ -181,8 +189,7 @@ class QAHM_Time {
 
 	/**
 	 * 引数に渡された２つの日付文字列の差分を求めて日数を返す
-	 * 対象の日付を過ぎていた場合はマイナスの値が返る
-	 * 関数名は上記関数に合わせましたが、適切ではない場合は変更していただいて構いません。imai
+	 * $start_datetime_strを基軸に、$end_datetime_strが未来の日付であれば正の数、過去の日付であれば負の数が返る
 	 */
 	public function xday_num( $end_datetime_str, $start_datetime_str = 'now' ) {
 		$start = new DateTime( $start_datetime_str, $this->timezone_obj );
@@ -256,4 +263,111 @@ class QAHM_Time {
 
 		return $str;
 	}
+
+	/**
+	 * 日付文字列が有効かチェックする
+	 */
+	public function is_date( $date_str ) {
+		// nullや空文字列チェック
+		if ( empty( $date_str ) ) {
+			return false;
+		}
+		
+		// 特殊な文字列は許可
+		$special_strings = ['now', 'today', 'yesterday', 'tomorrow'];
+		if ( $this->wrap_in_array( $date_str, $special_strings ) ) {
+			return true;
+		}
+		
+		// 無効なプレースホルダーパターンをチェック
+		$invalid_patterns = ['dd', 'mm', 'yyyy', 'hh', 'ii', 'ss'];
+		foreach ( $invalid_patterns as $pattern ) {
+			if ( strpos( $date_str, $pattern ) !== false ) {
+				return false;
+			}
+		}
+		
+		// 基本的なフォーマットチェック（正規表現は最後に）
+		$formats = [
+			'/^\d{4}-\d{2}-\d{2}$/',                    // YYYY-MM-DD
+			'/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/',  // YYYY-MM-DD HH:MM:SS
+			'/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/',        // YYYY-MM-DD HH:MM
+		];
+		
+		foreach ( $formats as $format ) {
+			if ( preg_match( $format, $date_str ) ) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+}
+
+
+/*
+	2つの日付の間の日付をループで処理できるクラス
+	日付の逆順ループも制御可能
+
+	パフォーマンスのポイント
+	メモリ使用量の削減: カスタムイテレータを使用することで、大量の日付を配列に変換する必要がなくなり、メモリ使用量を削減できます。
+
+	// 使い方
+	$start = new DateTime('2023-01-01');
+	$end = new DateTime('2023-01-10');
+
+	// 順方向のイテレーション例
+	$iterator = new Qahm_Flexible_Date_Iterator($start, $end);
+	foreach ($iterator as $date) {
+		echo $date->format('Y-m-d') . PHP_EOL;
+	}
+
+	// 逆順のイテレーション例
+	$reverse_iterator = new Qahm_Flexible_Date_Iterator($start, $end, true);
+	foreach ($reverse_iterator as $date) {
+		echo $date->format('Y-m-d') . PHP_EOL;
+	}
+*/
+class Qahm_Flexible_Date_Iterator implements Iterator {
+    private $current;
+    private $start;
+    private $end;
+    private $interval;
+    private $reverse; // イテレーションの方向を制御
+
+    public function __construct(DateTime $start, DateTime $end, bool $reverse = false) {
+        $this->start = $start;
+        $this->end = $end;
+        $this->interval = new DateInterval('P1D');
+        $this->reverse = $reverse;
+        $this->rewind();
+    }
+
+    public function rewind(): void {
+        $this->current = $this->reverse ? $this->end : $this->start;
+    }
+
+    public function current(): DateTime {
+        return $this->current;
+    }
+
+    public function key(): string {
+        return $this->current->format('Y-m-d');
+    }
+
+    public function next(): void {
+        if ($this->reverse) {
+            $this->current = (clone $this->current)->sub($this->interval);
+        } else {
+            $this->current = (clone $this->current)->add($this->interval);
+        }
+    }
+
+    public function valid(): bool {
+        if ($this->reverse) {
+            return $this->current->getTimestamp() >= $this->start->getTimestamp();
+        } else {
+            return $this->current->getTimestamp() <= $this->end->getTimestamp();
+        }
+    }
 }

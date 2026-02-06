@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,60 +14,63 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SegmentFilterClause extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class SegmentFilterClause extends \Google\Model
 {
-    protected $dimensionFilterType = SegmentDimensionFilter::class;
-    protected $dimensionFilterDataType = '';
-    protected $metricFilterType = SegmentMetricFilter::class;
-    protected $metricFilterDataType = '';
-    /**
-     * @var bool
-     */
-    public $not;
-    /**
-     * @param SegmentDimensionFilter
-     */
-    public function setDimensionFilter(SegmentDimensionFilter $dimensionFilter)
-    {
-        $this->dimensionFilter = $dimensionFilter;
-    }
-    /**
-     * @return SegmentDimensionFilter
-     */
-    public function getDimensionFilter()
-    {
-        return $this->dimensionFilter;
-    }
-    /**
-     * @param SegmentMetricFilter
-     */
-    public function setMetricFilter(SegmentMetricFilter $metricFilter)
-    {
-        $this->metricFilter = $metricFilter;
-    }
-    /**
-     * @return SegmentMetricFilter
-     */
-    public function getMetricFilter()
-    {
-        return $this->metricFilter;
-    }
-    /**
-     * @param bool
-     */
-    public function setNot($not)
-    {
-        $this->not = $not;
-    }
-    /**
-     * @return bool
-     */
-    public function getNot()
-    {
-        return $this->not;
-    }
+  protected $dimensionFilterType = SegmentDimensionFilter::class;
+  protected $dimensionFilterDataType = '';
+  protected $metricFilterType = SegmentMetricFilter::class;
+  protected $metricFilterDataType = '';
+  /**
+   * @var bool
+   */
+  public $not;
+
+  /**
+   * @param SegmentDimensionFilter
+   */
+  public function setDimensionFilter(SegmentDimensionFilter $dimensionFilter)
+  {
+    $this->dimensionFilter = $dimensionFilter;
+  }
+  /**
+   * @return SegmentDimensionFilter
+   */
+  public function getDimensionFilter()
+  {
+    return $this->dimensionFilter;
+  }
+  /**
+   * @param SegmentMetricFilter
+   */
+  public function setMetricFilter(SegmentMetricFilter $metricFilter)
+  {
+    $this->metricFilter = $metricFilter;
+  }
+  /**
+   * @return SegmentMetricFilter
+   */
+  public function getMetricFilter()
+  {
+    return $this->metricFilter;
+  }
+  /**
+   * @param bool
+   */
+  public function setNot($not)
+  {
+    $this->not = $not;
+  }
+  /**
+   * @return bool
+   */
+  public function getNot()
+  {
+    return $this->not;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SegmentFilterClause::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SegmentFilterClause');
+class_alias(SegmentFilterClause::class, 'Google_Service_AnalyticsReporting_SegmentFilterClause');

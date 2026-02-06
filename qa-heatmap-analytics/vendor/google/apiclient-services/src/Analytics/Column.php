@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,64 +14,67 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class Column extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class Column extends \Google\Model
 {
-    /**
-     * @var string[]
-     */
-    public $attributes;
-    /**
-     * @var string
-     */
-    public $id;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @param string[]
-     */
-    public function setAttributes($attributes)
-    {
-        $this->attributes = $attributes;
-    }
-    /**
-     * @return string[]
-     */
-    public function getAttributes()
-    {
-        return $this->attributes;
-    }
-    /**
-     * @param string
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
+  /**
+   * @var string[]
+   */
+  public $attributes;
+  /**
+   * @var string
+   */
+  public $id;
+  /**
+   * @var string
+   */
+  public $kind;
+
+  /**
+   * @param string[]
+   */
+  public function setAttributes($attributes)
+  {
+    $this->attributes = $attributes;
+  }
+  /**
+   * @return string[]
+   */
+  public function getAttributes()
+  {
+    return $this->attributes;
+  }
+  /**
+   * @param string
+   */
+  public function setId($id)
+  {
+    $this->id = $id;
+  }
+  /**
+   * @return string
+   */
+  public function getId()
+  {
+    return $this->id;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Column::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Column');
+class_alias(Column::class, 'Google_Service_Analytics_Column');

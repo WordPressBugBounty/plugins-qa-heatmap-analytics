@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,29 +14,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class PivotValueRegion extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class PivotValueRegion extends \Google\Collection
 {
-    protected $collection_key = 'values';
-    /**
-     * @var string[]
-     */
-    public $values;
-    /**
-     * @param string[]
-     */
-    public function setValues($values)
-    {
-        $this->values = $values;
-    }
-    /**
-     * @return string[]
-     */
-    public function getValues()
-    {
-        return $this->values;
-    }
+  protected $collection_key = 'values';
+  /**
+   * @var string[]
+   */
+  public $values;
+
+  /**
+   * @param string[]
+   */
+  public function setValues($values)
+  {
+    $this->values = $values;
+  }
+  /**
+   * @return string[]
+   */
+  public function getValues()
+  {
+    return $this->values;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(PivotValueRegion::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_PivotValueRegion');
+class_alias(PivotValueRegion::class, 'Google_Service_AnalyticsReporting_PivotValueRegion');

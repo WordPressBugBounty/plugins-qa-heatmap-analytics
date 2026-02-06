@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SequenceSegment extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class SequenceSegment extends \Google\Collection
 {
-    protected $collection_key = 'segmentSequenceSteps';
-    /**
-     * @var bool
-     */
-    public $firstStepShouldMatchFirstHit;
-    protected $segmentSequenceStepsType = SegmentSequenceStep::class;
-    protected $segmentSequenceStepsDataType = 'array';
-    /**
-     * @param bool
-     */
-    public function setFirstStepShouldMatchFirstHit($firstStepShouldMatchFirstHit)
-    {
-        $this->firstStepShouldMatchFirstHit = $firstStepShouldMatchFirstHit;
-    }
-    /**
-     * @return bool
-     */
-    public function getFirstStepShouldMatchFirstHit()
-    {
-        return $this->firstStepShouldMatchFirstHit;
-    }
-    /**
-     * @param SegmentSequenceStep[]
-     */
-    public function setSegmentSequenceSteps($segmentSequenceSteps)
-    {
-        $this->segmentSequenceSteps = $segmentSequenceSteps;
-    }
-    /**
-     * @return SegmentSequenceStep[]
-     */
-    public function getSegmentSequenceSteps()
-    {
-        return $this->segmentSequenceSteps;
-    }
+  protected $collection_key = 'segmentSequenceSteps';
+  /**
+   * @var bool
+   */
+  public $firstStepShouldMatchFirstHit;
+  protected $segmentSequenceStepsType = SegmentSequenceStep::class;
+  protected $segmentSequenceStepsDataType = 'array';
+
+  /**
+   * @param bool
+   */
+  public function setFirstStepShouldMatchFirstHit($firstStepShouldMatchFirstHit)
+  {
+    $this->firstStepShouldMatchFirstHit = $firstStepShouldMatchFirstHit;
+  }
+  /**
+   * @return bool
+   */
+  public function getFirstStepShouldMatchFirstHit()
+  {
+    return $this->firstStepShouldMatchFirstHit;
+  }
+  /**
+   * @param SegmentSequenceStep[]
+   */
+  public function setSegmentSequenceSteps($segmentSequenceSteps)
+  {
+    $this->segmentSequenceSteps = $segmentSequenceSteps;
+  }
+  /**
+   * @return SegmentSequenceStep[]
+   */
+  public function getSegmentSequenceSteps()
+  {
+    return $this->segmentSequenceSteps;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SequenceSegment::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SequenceSegment');
+class_alias(SequenceSegment::class, 'Google_Service_AnalyticsReporting_SequenceSegment');

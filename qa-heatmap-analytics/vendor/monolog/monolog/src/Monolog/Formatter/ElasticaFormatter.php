@@ -8,9 +8,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Formatter;
 
-use QAAnalyticsVendor\Elastica\Document;
+namespace Monolog\Formatter;
+
+use Elastica\Document;
+
 /**
  * Format a log message into an Elastica Document
  *
@@ -22,10 +24,12 @@ class ElasticaFormatter extends NormalizerFormatter
      * @var string Elastic search index name
      */
     protected $index;
+
     /**
      * @var string Elastic search document type
      */
     protected $type;
+
     /**
      * @param string $index Elastic Search index name
      * @param string $type  Elastic Search document type
@@ -33,18 +37,22 @@ class ElasticaFormatter extends NormalizerFormatter
     public function __construct($index, $type)
     {
         // elasticsearch requires a ISO 8601 format date with optional millisecond precision.
-        parent::__construct('Y-m-d\\TH:i:s.uP');
+        parent::__construct('Y-m-d\TH:i:s.uP');
+
         $this->index = $index;
         $this->type = $type;
     }
+
     /**
      * {@inheritdoc}
      */
     public function format(array $record)
     {
         $record = parent::format($record);
+
         return $this->getDocument($record);
     }
+
     /**
      * Getter index
      * @return string
@@ -53,6 +61,7 @@ class ElasticaFormatter extends NormalizerFormatter
     {
         return $this->index;
     }
+
     /**
      * Getter type
      * @return string
@@ -61,6 +70,7 @@ class ElasticaFormatter extends NormalizerFormatter
     {
         return $this->type;
     }
+
     /**
      * Convert a log message into an Elastica Document
      *
@@ -73,6 +83,7 @@ class ElasticaFormatter extends NormalizerFormatter
         $document->setData($record);
         $document->setType($this->type);
         $document->setIndex($this->index);
+
         return $document;
     }
 }

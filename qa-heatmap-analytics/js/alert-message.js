@@ -92,24 +92,6 @@
 		});
 	};
 
-	/** 
-	* メッセージウインドウ（使う側で細かく設定可）
-	* @param o Array Swal.fireのオプション
-	* @param _callback function OKボタンが押されたときのコールバック
-	* @constructor 
-	*/
-	AlertMessage.prototype.custom = function ( o, _callback ) {
-		Swal.fire(o).then(function (result) {
-			var retBool = false;
-			if (typeof result.value !== 'undefined' && result.value === true) {
-				retBool = true;
-			}
-			if ( retBool && typeof _callback === 'function' ) {
-				_callback.call(this, retBool);
-			}
-		});
-	};
-
 	ns.AlertMessage = new AlertMessage();
 
 })(window);

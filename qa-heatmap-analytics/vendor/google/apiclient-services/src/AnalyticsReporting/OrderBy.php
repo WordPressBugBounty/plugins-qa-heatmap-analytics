@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,64 +14,67 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class OrderBy extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class OrderBy extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $fieldName;
-    /**
-     * @var string
-     */
-    public $orderType;
-    /**
-     * @var string
-     */
-    public $sortOrder;
-    /**
-     * @param string
-     */
-    public function setFieldName($fieldName)
-    {
-        $this->fieldName = $fieldName;
-    }
-    /**
-     * @return string
-     */
-    public function getFieldName()
-    {
-        return $this->fieldName;
-    }
-    /**
-     * @param string
-     */
-    public function setOrderType($orderType)
-    {
-        $this->orderType = $orderType;
-    }
-    /**
-     * @return string
-     */
-    public function getOrderType()
-    {
-        return $this->orderType;
-    }
-    /**
-     * @param string
-     */
-    public function setSortOrder($sortOrder)
-    {
-        $this->sortOrder = $sortOrder;
-    }
-    /**
-     * @return string
-     */
-    public function getSortOrder()
-    {
-        return $this->sortOrder;
-    }
+  /**
+   * @var string
+   */
+  public $fieldName;
+  /**
+   * @var string
+   */
+  public $orderType;
+  /**
+   * @var string
+   */
+  public $sortOrder;
+
+  /**
+   * @param string
+   */
+  public function setFieldName($fieldName)
+  {
+    $this->fieldName = $fieldName;
+  }
+  /**
+   * @return string
+   */
+  public function getFieldName()
+  {
+    return $this->fieldName;
+  }
+  /**
+   * @param string
+   */
+  public function setOrderType($orderType)
+  {
+    $this->orderType = $orderType;
+  }
+  /**
+   * @return string
+   */
+  public function getOrderType()
+  {
+    return $this->orderType;
+  }
+  /**
+   * @param string
+   */
+  public function setSortOrder($sortOrder)
+  {
+    $this->sortOrder = $sortOrder;
+  }
+  /**
+   * @return string
+   */
+  public function getSortOrder()
+  {
+    return $this->sortOrder;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(OrderBy::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_OrderBy');
+class_alias(OrderBy::class, 'Google_Service_AnalyticsReporting_OrderBy');

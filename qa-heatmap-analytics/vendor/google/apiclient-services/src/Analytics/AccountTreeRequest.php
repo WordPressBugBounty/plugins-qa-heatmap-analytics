@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,118 +14,121 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class AccountTreeRequest extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class AccountTreeRequest extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $accountName;
-    /**
-     * @var string
-     */
-    public $kind;
-    /**
-     * @var string
-     */
-    public $profileName;
-    /**
-     * @var string
-     */
-    public $timezone;
-    /**
-     * @var string
-     */
-    public $webpropertyName;
-    /**
-     * @var string
-     */
-    public $websiteUrl;
-    /**
-     * @param string
-     */
-    public function setAccountName($accountName)
-    {
-        $this->accountName = $accountName;
-    }
-    /**
-     * @return string
-     */
-    public function getAccountName()
-    {
-        return $this->accountName;
-    }
-    /**
-     * @param string
-     */
-    public function setKind($kind)
-    {
-        $this->kind = $kind;
-    }
-    /**
-     * @return string
-     */
-    public function getKind()
-    {
-        return $this->kind;
-    }
-    /**
-     * @param string
-     */
-    public function setProfileName($profileName)
-    {
-        $this->profileName = $profileName;
-    }
-    /**
-     * @return string
-     */
-    public function getProfileName()
-    {
-        return $this->profileName;
-    }
-    /**
-     * @param string
-     */
-    public function setTimezone($timezone)
-    {
-        $this->timezone = $timezone;
-    }
-    /**
-     * @return string
-     */
-    public function getTimezone()
-    {
-        return $this->timezone;
-    }
-    /**
-     * @param string
-     */
-    public function setWebpropertyName($webpropertyName)
-    {
-        $this->webpropertyName = $webpropertyName;
-    }
-    /**
-     * @return string
-     */
-    public function getWebpropertyName()
-    {
-        return $this->webpropertyName;
-    }
-    /**
-     * @param string
-     */
-    public function setWebsiteUrl($websiteUrl)
-    {
-        $this->websiteUrl = $websiteUrl;
-    }
-    /**
-     * @return string
-     */
-    public function getWebsiteUrl()
-    {
-        return $this->websiteUrl;
-    }
+  /**
+   * @var string
+   */
+  public $accountName;
+  /**
+   * @var string
+   */
+  public $kind;
+  /**
+   * @var string
+   */
+  public $profileName;
+  /**
+   * @var string
+   */
+  public $timezone;
+  /**
+   * @var string
+   */
+  public $webpropertyName;
+  /**
+   * @var string
+   */
+  public $websiteUrl;
+
+  /**
+   * @param string
+   */
+  public function setAccountName($accountName)
+  {
+    $this->accountName = $accountName;
+  }
+  /**
+   * @return string
+   */
+  public function getAccountName()
+  {
+    return $this->accountName;
+  }
+  /**
+   * @param string
+   */
+  public function setKind($kind)
+  {
+    $this->kind = $kind;
+  }
+  /**
+   * @return string
+   */
+  public function getKind()
+  {
+    return $this->kind;
+  }
+  /**
+   * @param string
+   */
+  public function setProfileName($profileName)
+  {
+    $this->profileName = $profileName;
+  }
+  /**
+   * @return string
+   */
+  public function getProfileName()
+  {
+    return $this->profileName;
+  }
+  /**
+   * @param string
+   */
+  public function setTimezone($timezone)
+  {
+    $this->timezone = $timezone;
+  }
+  /**
+   * @return string
+   */
+  public function getTimezone()
+  {
+    return $this->timezone;
+  }
+  /**
+   * @param string
+   */
+  public function setWebpropertyName($webpropertyName)
+  {
+    $this->webpropertyName = $webpropertyName;
+  }
+  /**
+   * @return string
+   */
+  public function getWebpropertyName()
+  {
+    return $this->webpropertyName;
+  }
+  /**
+   * @param string
+   */
+  public function setWebsiteUrl($websiteUrl)
+  {
+    $this->websiteUrl = $websiteUrl;
+  }
+  /**
+   * @return string
+   */
+  public function getWebsiteUrl()
+  {
+    return $this->websiteUrl;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(AccountTreeRequest::class, 'QAAnalyticsVendor\\Google_Service_Analytics_AccountTreeRequest');
+class_alias(AccountTreeRequest::class, 'Google_Service_Analytics_AccountTreeRequest');

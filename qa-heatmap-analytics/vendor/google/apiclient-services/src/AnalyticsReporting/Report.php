@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,60 +14,63 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class Report extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class Report extends \Google\Model
 {
-    protected $columnHeaderType = ColumnHeader::class;
-    protected $columnHeaderDataType = '';
-    protected $dataType = ReportData::class;
-    protected $dataDataType = '';
-    /**
-     * @var string
-     */
-    public $nextPageToken;
-    /**
-     * @param ColumnHeader
-     */
-    public function setColumnHeader(ColumnHeader $columnHeader)
-    {
-        $this->columnHeader = $columnHeader;
-    }
-    /**
-     * @return ColumnHeader
-     */
-    public function getColumnHeader()
-    {
-        return $this->columnHeader;
-    }
-    /**
-     * @param ReportData
-     */
-    public function setData(ReportData $data)
-    {
-        $this->data = $data;
-    }
-    /**
-     * @return ReportData
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-    /**
-     * @param string
-     */
-    public function setNextPageToken($nextPageToken)
-    {
-        $this->nextPageToken = $nextPageToken;
-    }
-    /**
-     * @return string
-     */
-    public function getNextPageToken()
-    {
-        return $this->nextPageToken;
-    }
+  protected $columnHeaderType = ColumnHeader::class;
+  protected $columnHeaderDataType = '';
+  protected $dataType = ReportData::class;
+  protected $dataDataType = '';
+  /**
+   * @var string
+   */
+  public $nextPageToken;
+
+  /**
+   * @param ColumnHeader
+   */
+  public function setColumnHeader(ColumnHeader $columnHeader)
+  {
+    $this->columnHeader = $columnHeader;
+  }
+  /**
+   * @return ColumnHeader
+   */
+  public function getColumnHeader()
+  {
+    return $this->columnHeader;
+  }
+  /**
+   * @param ReportData
+   */
+  public function setData(ReportData $data)
+  {
+    $this->data = $data;
+  }
+  /**
+   * @return ReportData
+   */
+  public function getData()
+  {
+    return $this->data;
+  }
+  /**
+   * @param string
+   */
+  public function setNextPageToken($nextPageToken)
+  {
+    $this->nextPageToken = $nextPageToken;
+  }
+  /**
+   * @return string
+   */
+  public function getNextPageToken()
+  {
+    return $this->nextPageToken;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Report::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_Report');
+class_alias(Report::class, 'Google_Service_AnalyticsReporting_Report');

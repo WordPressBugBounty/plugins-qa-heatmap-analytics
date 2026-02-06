@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class GoalEventDetails extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\Analytics;
+
+class GoalEventDetails extends \Google\Collection
 {
-    protected $collection_key = 'eventConditions';
-    protected $eventConditionsType = GoalEventDetailsEventConditions::class;
-    protected $eventConditionsDataType = 'array';
-    /**
-     * @var bool
-     */
-    public $useEventValue;
-    /**
-     * @param GoalEventDetailsEventConditions[]
-     */
-    public function setEventConditions($eventConditions)
-    {
-        $this->eventConditions = $eventConditions;
-    }
-    /**
-     * @return GoalEventDetailsEventConditions[]
-     */
-    public function getEventConditions()
-    {
-        return $this->eventConditions;
-    }
-    /**
-     * @param bool
-     */
-    public function setUseEventValue($useEventValue)
-    {
-        $this->useEventValue = $useEventValue;
-    }
-    /**
-     * @return bool
-     */
-    public function getUseEventValue()
-    {
-        return $this->useEventValue;
-    }
+  protected $collection_key = 'eventConditions';
+  protected $eventConditionsType = GoalEventDetailsEventConditions::class;
+  protected $eventConditionsDataType = 'array';
+  /**
+   * @var bool
+   */
+  public $useEventValue;
+
+  /**
+   * @param GoalEventDetailsEventConditions[]
+   */
+  public function setEventConditions($eventConditions)
+  {
+    $this->eventConditions = $eventConditions;
+  }
+  /**
+   * @return GoalEventDetailsEventConditions[]
+   */
+  public function getEventConditions()
+  {
+    return $this->eventConditions;
+  }
+  /**
+   * @param bool
+   */
+  public function setUseEventValue($useEventValue)
+  {
+    $this->useEventValue = $useEventValue;
+  }
+  /**
+   * @return bool
+   */
+  public function getUseEventValue()
+  {
+    return $this->useEventValue;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GoalEventDetails::class, 'QAAnalyticsVendor\\Google_Service_Analytics_GoalEventDetails');
+class_alias(GoalEventDetails::class, 'Google_Service_Analytics_GoalEventDetails');

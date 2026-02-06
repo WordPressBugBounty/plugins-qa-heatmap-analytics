@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class DimensionFilterClause extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class DimensionFilterClause extends \Google\Collection
 {
-    protected $collection_key = 'filters';
-    protected $filtersType = DimensionFilter::class;
-    protected $filtersDataType = 'array';
-    /**
-     * @var string
-     */
-    public $operator;
-    /**
-     * @param DimensionFilter[]
-     */
-    public function setFilters($filters)
-    {
-        $this->filters = $filters;
-    }
-    /**
-     * @return DimensionFilter[]
-     */
-    public function getFilters()
-    {
-        return $this->filters;
-    }
-    /**
-     * @param string
-     */
-    public function setOperator($operator)
-    {
-        $this->operator = $operator;
-    }
-    /**
-     * @return string
-     */
-    public function getOperator()
-    {
-        return $this->operator;
-    }
+  protected $collection_key = 'filters';
+  protected $filtersType = DimensionFilter::class;
+  protected $filtersDataType = 'array';
+  /**
+   * @var string
+   */
+  public $operator;
+
+  /**
+   * @param DimensionFilter[]
+   */
+  public function setFilters($filters)
+  {
+    $this->filters = $filters;
+  }
+  /**
+   * @return DimensionFilter[]
+   */
+  public function getFilters()
+  {
+    return $this->filters;
+  }
+  /**
+   * @param string
+   */
+  public function setOperator($operator)
+  {
+    $this->operator = $operator;
+  }
+  /**
+   * @return string
+   */
+  public function getOperator()
+  {
+    return $this->operator;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(DimensionFilterClause::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_DimensionFilterClause');
+class_alias(DimensionFilterClause::class, 'Google_Service_AnalyticsReporting_DimensionFilterClause');

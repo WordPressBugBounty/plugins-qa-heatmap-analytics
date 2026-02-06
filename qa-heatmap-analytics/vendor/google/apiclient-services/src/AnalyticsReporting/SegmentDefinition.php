@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,27 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SegmentDefinition extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class SegmentDefinition extends \Google\Collection
 {
-    protected $collection_key = 'segmentFilters';
-    protected $segmentFiltersType = SegmentFilter::class;
-    protected $segmentFiltersDataType = 'array';
-    /**
-     * @param SegmentFilter[]
-     */
-    public function setSegmentFilters($segmentFilters)
-    {
-        $this->segmentFilters = $segmentFilters;
-    }
-    /**
-     * @return SegmentFilter[]
-     */
-    public function getSegmentFilters()
-    {
-        return $this->segmentFilters;
-    }
+  protected $collection_key = 'segmentFilters';
+  protected $segmentFiltersType = SegmentFilter::class;
+  protected $segmentFiltersDataType = 'array';
+
+  /**
+   * @param SegmentFilter[]
+   */
+  public function setSegmentFilters($segmentFilters)
+  {
+    $this->segmentFilters = $segmentFilters;
+  }
+  /**
+   * @return SegmentFilter[]
+   */
+  public function getSegmentFilters()
+  {
+    return $this->segmentFilters;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SegmentDefinition::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SegmentDefinition');
+class_alias(SegmentDefinition::class, 'Google_Service_AnalyticsReporting_SegmentDefinition');

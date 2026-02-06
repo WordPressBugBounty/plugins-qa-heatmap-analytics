@@ -1,0 +1,586 @@
+/* AIレポート専用スタイル */
+
+.ai-report-query-buttons {
+    margin: 20px 0;
+}
+
+.query-button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    max-width: 800px;
+}
+
+.query-button {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: #ffffff;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    min-height: 60px;
+}
+
+.query-button:hover {
+    border-color: #007cba;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.15);
+}
+
+.query-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 124, 186, 0.2);
+}
+
+.query-button-wide {
+    grid-column: 1 / -1;
+    max-width: 400px;
+}
+
+.query-icon {
+    font-size: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.query-text {
+    color: #333;
+    line-height: 1.4;
+}
+
+/* 自由抽出フォーム */
+.free-extraction-form {
+    padding: 20px 0;
+}
+
+.data-source-options {
+    margin-bottom: 25px;
+}
+
+.data-source-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.data-source-option input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    margin-right: 8px;
+    font-size: 16px;
+    color: #007cba;
+    font-weight: bold;
+}
+
+.data-source-option input[type="checkbox"]:not(:checked) + .checkmark {
+    color: #ccc;
+}
+
+.date-range-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.date-range-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 15px;
+}
+
+.date-icon {
+    margin-right: 5px;
+    font-size: 16px;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.date-separator {
+    font-size: 14px;
+    color: #666;
+    margin: 0 5px;
+}
+
+.filter-conditions {
+    margin-bottom: 25px;
+}
+
+.filter-conditions h4 {
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.filter-row label {
+    min-width: 150px;
+    font-size: 14px;
+    color: #555;
+}
+
+.filter-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 200px;
+    flex: 1;
+    max-width: 300px;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 1px rgba(0, 124, 186, 0.25);
+}
+
+.report-output-section {
+    text-align: left;
+}
+
+.report-output-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background: #007cba;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.report-output-button:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+}
+
+.report-output-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 124, 186, 0.4);
+}
+
+.output-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .query-button-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .query-button-wide {
+        grid-column: 1;
+    }
+    
+    .date-range-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .date-inputs {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .date-separator {
+        display: none;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .filter-row label {
+        min-width: auto;
+    }
+    
+    .filter-input {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .query-button {
+        padding: 12px 15px;
+        min-height: 50px;
+        font-size: 13px;
+    }
+    
+    .query-icon {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+    
+    .date-input {
+        min-width: 120px;
+    }
+}
+
+/* キュー状況表示セクション */
+.qahm-ai-report-queue-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+/* セクションタイトル */
+.queue-section-title {
+    display: flex;
+    align-items: center;
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.queue-icon {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* 進行中セクション */
+.queue-processing-section {
+    margin-bottom: 30px;
+}
+
+.queue-processing-list {
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+}
+
+.queue-processing-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    background: #fff8e1;
+}
+
+.queue-processing-item:last-child {
+    border-bottom: none;
+}
+
+.queue-item-header {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.queue-item-title {
+    font-weight: 500;
+    color: #333;
+}
+
+.cancel-queue-btn {
+    padding: 6px 12px;
+    background: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancel-queue-btn:hover {
+    background: #e64a19;
+}
+
+.queue-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+}
+
+.queue-progress-bar {
+    width: 200px;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.queue-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    transition: width 0.3s ease;
+}
+
+.queue-progress-text {
+    font-size: 14px;
+    color: #666;
+    min-width: 30px;
+}
+
+.queue-item-details {
+    margin-top: 4px;
+}
+
+.queue-date-range {
+    color: #666;
+    font-size: 14px;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* 完了済みセクション */
+.queue-completed-section {
+    margin-bottom: 20px;
+}
+
+.queue-completed-container {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.queue-completed-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    font-weight: 600;
+    color: #333;
+}
+
+.select-all-checkbox {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.created-date-header {
+    width: 100px;
+    text-align: center;
+}
+
+.queue-completed-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.queue-completed-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.queue-completed-item:hover {
+    background: #f9f9f9;
+}
+
+.queue-completed-item:last-child {
+    border-bottom: none;
+}
+
+.queue-item-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 12px;
+    flex: 1;
+}
+
+.queue-item-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.queue-item-checkbox .checkmark {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    position: relative;
+    transition: all 0.2s;
+    margin-right: 8px;
+}
+
+.queue-item-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: #2196f3;
+    border-color: #2196f3;
+}
+
+.queue-item-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    left: 2px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.queue-download-links {
+    margin-left: auto;
+}
+
+.download-link {
+    color: #2196f3;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.download-link:hover {
+    text-decoration: underline;
+}
+
+.queue-created-date {
+    width: 100px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.queue-actions {
+    padding: 12px 16px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.spreadsheet-open-btn {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.spreadsheet-open-btn:hover {
+    background: #005a87;
+}
+
+.spreadsheet-open-btn:active {
+    transform: scale(0.98);
+}
+
+.delete-selected-btn {
+    padding: 8px 16px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.delete-selected-btn:hover {
+    background: #d32f2f;
+}
+
+.delete-selected-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.no-processing-message {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* キューセクションのレスポンシブ対応 */
+@media (max-width: 768px) {
+    .queue-processing-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .queue-item-header {
+        width: 100%;
+    }
+    
+    .queue-progress-container {
+        width: 100%;
+    }
+    
+    .queue-progress-bar {
+        flex: 1;
+    }
+    
+    .queue-completed-header,
+    .queue-completed-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .created-date-header,
+    .queue-created-date {
+        width: auto;
+        text-align: left;
+    }
+
+    .queue-item-checkbox {
+        width: 100%;
+    }
+
+    .queue-download-links {
+        margin-left: 0;
+        width: 100%;
+    }
+}

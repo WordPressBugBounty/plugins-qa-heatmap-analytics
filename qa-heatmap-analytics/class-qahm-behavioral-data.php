@@ -19,199 +19,388 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 		add_action( 'init', array( $this, 'init_wp_filesystem' ) );
 	}
 
+	/**
+	 * セッション内容からクローラーかどうか判定するとともに、ファイルに記憶する
+	 */
 
+	public function crawler_checker( $qa_id, $ip_address, $ua, $session_body, $tracking_id ){
+
+		$crawler_check_result = array( "crawler" => false, "point" => 0 );
+		$pv_num             = $this->wrap_count( $session_body );
+
+		// 20PV以下の場合、即座に false を返す
+		if ( $pv_num <= 20 ) {
+			$crawler_check_result["crawler"] = false;
+			return $crawler_check_result;
+		}
+
+		$crawler_dir = $this->get_data_dir_path( 'crawler/' );
+		$crawler_record_dir = $this->get_data_dir_path( 'crawler/'.$tracking_id );
+
+		global $wp_filesystem;
+		if ( ! $wp_filesystem->exists( $crawler_record_dir ) ) {
+			$wp_filesystem->mkdir( $crawler_record_dir );
+		}
+		$crawler_qaid_path = $crawler_record_dir . $qa_id . '.php';
+	
+		// $qa_idのファイルが存在するか確認
+		if ( file_exists($crawler_qaid_path) ) {
+			$crawler_check_result["crawler"] = true;
+			return $crawler_check_result;
+		}
+
+		// ページビュー数に基づいてポイントを付加
+		if ( $pv_num >= 120 ) {
+			$crawler_check_result['point'] += 3 ;
+		} elseif ( $pv_num >= 50 )  {
+			$crawler_check_result['point'] += 2 ;
+		} elseif ( $pv_num >= 30 ) {
+			$crawler_check_result['point'] += 1 ;
+		}
+
+		// アクセス秒数平均が3秒以下ならポイントを追加
+		$first_body = $session_body[0];
+		$last_body  = end( $session_body );
+
+		if( ($last_body['access_time'] - $first_body['access_time']) / ($pv_num - 1) < 3 ){
+			$crawler_check_result['point'] += 2;
+		}
+
+		// ユーザーエージェントのOSが入っていないならポイント追加
+		// このルーチンはスピードを重視したため主要OSのみ判定している
+		// それ以外はクローラーとしてのポイントになってしまうが、それ以外はやむなしとする
+
+		$isOSDetected = false;
+		if (strpos($ua, 'Windows') !== false) {
+			$isOSDetected = true;
+		} elseif (strpos($ua, 'iPhone') !== false || strpos($ua, 'iPad') !== false) {
+			$isOSDetected = true;
+		} elseif (strpos($ua, 'Android') !== false) {
+			$isOSDetected = true;
+		} elseif (strpos($ua, 'Mac OS X') !== false) {
+			$isOSDetected = true;
+		}
+
+		if( !$isOSDetected ){
+			$crawler_check_result['point'] += 1;
+		}
+
+		if ( $crawler_check_result['point'] >= 4 ){
+			//ファイルに記録
+			$data = $ip_address . "\t" . $ua;
+
+			$crawler_check_result["crawler"] = true;
+			// ファイル書き込み
+			$this->wrap_put_contents( $crawler_qaid_path, $data );
+		}
+
+		return $crawler_check_result; //クローラー判定
+
+	}
 
 	/**
-	 * セッションデータの初期化
+	 * 初期化
 	 */
-	public function init_session_data( $qa_id, $wp_qa_type, $wp_qa_id, $title, $url, $ref, $country, $ua, $is_new_user, $is_cookie_reject ) {
 
-		global $qahm_time;
-		
-		$dev_name         = $this->user_agent_to_device_name( $ua );
-		$utm_source       = '';
-		$utm_medium       = '';
-		$utm_campaign     = '';
-		$utm_term         = '';
-		$user_original_id = '';
+	public function init_session_data( $qa_id, $title, $url, $c_url, $url_hash, $ref, $country, $ua, $tracking_id, $is_new_user, $is_cookie_reject, $ip_address ) { //QA ZERO add
+	//public function init_session_data( $qa_id, $wp_qa_type, $wp_qa_id, $title, $url, $ref, $country, $ua ) { QA ZERO del
 
-		// utm_***の設定＆urlの一部パラメーターを削除して保存できるよう対応
-		$parse_url = wp_parse_url( $url, PHP_URL_QUERY );
-		if ( $parse_url ) {
-			parse_str( $parse_url, $query_ary );
+			global $qahm_time;
 			
-			if ( array_key_exists( 'utm_source', $query_ary ) ) {
-				$utm_source = $query_ary[ 'utm_source' ];
-			}
-			if ( array_key_exists( 'utm_medium', $query_ary ) ) {
-				$utm_medium = $query_ary[ 'utm_medium' ];
-			}
-			if ( array_key_exists( 'utm_campaign', $query_ary ) ) {
-				$utm_campaign = $query_ary[ 'utm_campaign' ];
-			}
-			if ( array_key_exists( 'utm_term', $query_ary ) ) {
-				$utm_term = $query_ary[ 'utm_term' ];
-			}
-
-			//QA ZERO add start
-			if ( array_key_exists( 'gad', $query_ary ) ) {
-				if ( ! $utm_source ) {
-					$utm_source = 'google';
-				}
-				if ( ! $utm_medium ) {
-					$utm_medium = 'cpc';
-				}
-			}
-			//QA ZERO add end
-							
-			if ( array_key_exists( 'gclid', $query_ary ) ) {
-				if ( ! $utm_source ) {
-					$utm_source = 'google';
-				}
-				if ( ! $utm_medium ) {
-					$utm_medium = 'cpc';
-				}
-			}
-
-			if ( array_key_exists( 'fbclid', $query_ary ) ) {
-				if ( ! $utm_medium ) {
-					$utm_medium = 'social';
-				}
-				if ( ! $utm_source ) {
-					$utm_source = 'facebook';
-				}
+			$geo_data = null;
+			if ($ip_address && $ip_address !== '127.0.0.1' && $ip_address !== '::1') {
+				$geo_data = QAHM_IP_Geolocation::get_country_from_ip($ip_address);
 			}
 			
-			if ( array_key_exists( 'twclid', $query_ary ) ) {
-				if ( ! $utm_medium ) {
-					$utm_medium = 'social';
+			$dev_name         = $this->user_agent_to_device_name( $ua );
+			$utm_source       = '';
+			$utm_medium       = '';
+			$utm_campaign     = '';
+			$utm_content      = '';
+			$utm_term         = '';
+			$user_original_id = '';
+
+			// utm_***の設定＆urlの一部パラメーターを削除して保存できるよう対応
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- wp_parse_url() is unavailable before WordPress is fully loaded; safe fallback to parse_url().
+			$parse_url = parse_url( $url, PHP_URL_QUERY );
+			if ( $parse_url ) {
+				parse_str( $parse_url, $query_ary );
+				
+				if ( $this->wrap_array_key_exists( 'utm_source', $query_ary ) ) {
+					$utm_source = $this->encode_utm_parameter( $query_ary[ 'utm_source' ] );
 				}
-				if ( ! $utm_source ) {
-					$utm_source = 'twitter';
+				if ( $this->wrap_array_key_exists( 'utm_medium', $query_ary ) ) {
+					$utm_medium = $this->encode_utm_parameter( $query_ary[ 'utm_medium' ] );
+				}
+				if ( $this->wrap_array_key_exists( 'utm_campaign', $query_ary ) ) {
+					$utm_campaign = $this->encode_utm_parameter( $query_ary[ 'utm_campaign' ] );
+				}
+				if ( $this->wrap_array_key_exists( 'utm_term', $query_ary ) ) {
+					$utm_term = $this->encode_utm_parameter( $query_ary[ 'utm_term' ] );
+				}
+				if ( $this->wrap_array_key_exists( 'utm_content', $query_ary ) ) {
+					$utm_content = $this->encode_utm_parameter( $query_ary[ 'utm_content' ] );
+				}
+
+				//QA ZERO add start
+				if ( $this->wrap_array_key_exists( 'gad', $query_ary ) ) {
+					if ( ! $utm_source ) {
+						$utm_source = 'google';
+					}
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+				}
+				//QA ZERO add end
+								
+				if ( $this->wrap_array_key_exists( 'gclid', $query_ary ) ) {
+					if ( ! $utm_source ) {
+						$utm_source = 'google';
+					}
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+				}
+
+				if ( $this->wrap_array_key_exists( 'fbclid', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'social';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'facebook';
+					}
+				}
+				
+				if ( $this->wrap_array_key_exists( 'twclid', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'social';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'twitter';
+					}
+				}
+				
+				if ( $this->wrap_array_key_exists( 'yclid', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'yahoo';
+					}
+				}
+				
+				if ( $this->wrap_array_key_exists( 'ldtag_cl', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'line';
+					}
+				}
+				
+				if ( $this->wrap_array_key_exists( 'msclkid', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'microsoft';
+					}
+				}
+
+                if ( $this->wrap_array_key_exists( 'gad_source', $query_ary ) ) {
+                    if ( ! $utm_source ) {
+                        $utm_source = 'google';
+                    }
+                    if ( ! $utm_medium ) {
+                        $utm_medium = 'cpc';
+                    }
+                }
+
+				if ( $this->wrap_array_key_exists( 'sa_p', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'yahoo';
+					}
+				}
+
+				if ( $this->wrap_array_key_exists( 'sa_cc', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'yahoo';
+					}
+				}
+
+				if ( $this->wrap_array_key_exists( 'sa_t', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'yahoo';
+					}
+				}
+
+				if ( $this->wrap_array_key_exists( 'sa_ra', $query_ary ) ) {
+					if ( ! $utm_medium ) {
+						$utm_medium = 'cpc';
+					}
+					if ( ! $utm_source ) {
+						$utm_source = 'yahoo';
+					}
 				}
 			}
-			
-			//QA ZERO ADD START 20230810
-			if ( array_key_exists( 'yclid', $query_ary ) ) {
-				if ( ! $utm_medium ) {
-					$utm_medium = 'cpc';
-				}
-				if ( ! $utm_source ) {
-					$utm_source = 'yahoo';
-				}
-			}
-			
-			if ( array_key_exists( 'ldtag_cl', $query_ary ) ) {
-				if ( ! $utm_medium ) {
-					$utm_medium = 'cpc';
-				}
-				if ( ! $utm_source ) {
-					$utm_source = 'line';
-				}
-			}
-			
-			if ( array_key_exists( 'msclkid', $query_ary ) ) {
-				if ( ! $utm_medium ) {
-					$utm_medium = 'cpc';
-				}
-				if ( ! $utm_source ) {
-					$utm_source = 'microsoft';
-				}
-			}
-			//QA ZERO ADD END 20230810
-		}
 
-		$url                = $this->opt_url_param( $url );
-		$readers_temp_dir   = $this->get_data_dir_path( 'readers/temp/' );
-		$readers_finish_dir = $this->get_data_dir_path( 'readers/finish/' );
+			//$url                = $this->opt_url_param( $url ); QA ZERO del
+			$readers_temp_dir   = $this->get_data_dir_path( 'readers/temp/' );
+			$readers_finish_dir = $this->get_data_dir_path( 'readers/finish/' );
 
-		// sessionデータ作成
-		$today_str          = $qahm_time->today_str();
-		$session_temp_ary   = null;
+			// sessionデータ作成
+			$today_str          = $qahm_time->today_str();
+			$session_temp_ary   = null;
+			//$is_new_user        = 0; QA ZERO del
 
-		// 保存対象のセッションファイルを調べる。まずはtempディレクトリ
-		$file_info = $this->get_latest_readers_file_info( $readers_temp_dir, $qa_id );
+			if ( $qa_id ) {
 
-		if ( $file_info ) {
-			$before_30min = $qahm_time->now_unixtime() - ( 60 * 30 );
-			if ( $file_info['lastmodunix'] < $before_30min ) {
-				// 作られてから30分以上経過している場合はcronが止まっている可能性があるので、session_no+1で新規ファイル作成
-				if ( $file_info['day_str'] === $today_str ) {
-					$session_num  = $file_info['session_num'] + 1;
-				} else {
-					$session_num = 1;
-				}
+
+				//QA ZERO ADD START
+				$session_num = 1;
 				$readers_name = $qa_id . '_' . $today_str . '_' . $session_num;
+				//QA ZERO ADD END
 
-			} else {
-				// 作られてから30分経過していない場合は前のファイルに追記書き込み
-				$session_num  = $file_info['session_num'];
-				$readers_name = $qa_id . '_' . $file_info['day_str'] . '_' . $session_num;
-				$session_temp_ary = $this->wrap_unserialize( $this->wrap_get_contents( $readers_temp_dir . $readers_name . '.php' ) );
-			}
+				// 保存対象のセッションファイルを調べる。まずはtempディレクトリ
+				$file_info = $this->get_latest_readers_file_info( $readers_temp_dir, $qa_id );
 
-		} else {
-			// tempディレクトリにファイルがない場合はfinishディレクトリを確認
-			$file_info = $this->get_latest_readers_file_info( $readers_finish_dir, $qa_id );
+				if ( $file_info ) {
+					$before_30min = $qahm_time->now_unixtime() - ( 60 * 30 );
+					if ( $file_info['lastmodunix'] < $before_30min ) {
+						// 作られてから30分以上経過している場合はcronが止まっている可能性があるので、session_no+1で新規ファイル作成
+						if ( $file_info['day_str'] === $today_str ) {
+							$session_num  = $file_info['session_num'] + 1;
+						} else {
+							$session_num = 1;
+						}
+						$readers_name = $qa_id . '_' . $today_str . '_' . $session_num;
 
-			if ( $file_info ) {
-				if ( $file_info['day_str'] === $today_str ) {
-					$session_num  = $file_info['session_num'] + 1;
-				} else {
-					$session_num = 1;
+					} else {
+						// 作られてから30分経過していない場合は前のファイルに追記書き込み
+						$session_num  = $file_info['session_num'];
+						$readers_name = $qa_id . '_' . $file_info['day_str'] . '_' . $session_num;
+						$session_temp_ary = $this->wrap_unserialize( $this->wrap_get_contents( $readers_temp_dir . $readers_name . '.php' ) );
+					}
+
 				}
 
+				/*-- QA ZERO DEL START
+				} else {
+					// tempディレクトリにファイルがない場合はfinishディレクトリを確認
+					$file_info = $this->get_latest_readers_file_info( $readers_finish_dir, $qa_id );
+
+					if ( $file_info ) {
+						if ( $file_info['day_str'] === $today_str ) {
+							$session_num  = $file_info['session_num'] + 1;
+						} else {
+							$session_num = 1;
+						}
+
+					} else {
+						$session_num  = 1;
+					}
+
+					$readers_name = $qa_id . '_' . $today_str . '_' . $session_num;
+				}
+				QA ZERO DEL END --*/
+
 			} else {
+
+				/*--
+				$qa_id        = $qahm_time->now_str( 'ymdHis' ) . hash( 'fnv164', mt_rand() );
 				$session_num  = 1;
+				$readers_name = $qa_id . '_' . $today_str . '_' . $session_num;
+				setcookie( 'qa_id', $qa_id, time() + 60 * 60 * 24 * 365 * 2, '/' ); QA ZERO del
+				--*/ 
+
+				// qa_idも_gaもcookieに存在していなければ新規ユーザー
+				if ( ! $this->wrap_filter_input( INPUT_COOKIE, '_ga' ) ) {
+					$is_new_user = 1;
+				}
 			}
 
-			$readers_name = $qa_id . '_' . $today_str . '_' . $session_num;
-		}
+			// session temp data
+			if ( ! $session_temp_ary ) {
+				$session_temp_ary = array();
+				$session_temp_ary['head']['version']        = 1;
+				// $session_temp_ary['head']['tracking_id']    = $this->get_tracking_id(); QA ZERO del
+				$session_temp_ary['head']['tracking_id']    = $tracking_id; //QA ZERO add
+				$session_temp_ary['head']['device_name']    = $dev_name;
+				$session_temp_ary['head']['is_new_user']    = $is_new_user;
+				$session_temp_ary['head']['user_agent']     = $ua;
+				$session_temp_ary['head']['first_referrer'] = $ref;
+				$session_temp_ary['head']['utm_source']     = $utm_source;
+				$session_temp_ary['head']['utm_medium']     = $utm_medium;
+				$session_temp_ary['head']['utm_campaign']   = $utm_campaign;
+				$session_temp_ary['head']['utm_term']       = $utm_term;
+				$session_temp_ary['head']['utm_content']    = $utm_content; //QA ZERO add
+				$session_temp_ary['head']['original_id']    = $user_original_id;
+				$session_temp_ary['head']['country']        = $country;
+				$session_temp_ary['head']['country_code']   = $geo_data ? $geo_data['country_code'] : null;
+				$session_temp_ary['head']['is_reject']      = $is_cookie_reject;
+			}
 
-		if ( $this->wrap_filter_input( INPUT_COOKIE, '_ga' ) ) {
-			$is_new_user = 0;
-		}
+			$access_time = $qahm_time->now_unixtime();//QA ZERO add
 
-		// session temp data
-		if ( ! $session_temp_ary ) {
-			$session_temp_ary = array();
-			$session_temp_ary['head']['version']        = 1;
-			$session_temp_ary['head']['tracking_id']    = $this->get_tracking_id();
-			$session_temp_ary['head']['device_name']    = $dev_name;
-			$session_temp_ary['head']['is_new_user']    = $is_new_user;
-			$session_temp_ary['head']['user_agent']     = $ua;
-			$session_temp_ary['head']['first_referrer'] = $ref;
-			$session_temp_ary['head']['utm_source']     = $utm_source;
-			$session_temp_ary['head']['utm_medium']     = $utm_medium;
-			$session_temp_ary['head']['utm_campaign']   = $utm_campaign;
-			$session_temp_ary['head']['utm_term']       = $utm_term;
-			$session_temp_ary['head']['original_id']    = $user_original_id;
-			$session_temp_ary['head']['country']        = $country;
-			$session_temp_ary['head']['is_reject']      = $is_cookie_reject;
-		}
+			$body = array(
+				//'page_url'    => $url, QA ZERO del
+				'page_url'    => $c_url, //QA ZERO add
+				'page_title'  => $title,
+				//'page_type'   => $wp_qa_type, QA ZERO del
+				//'page_id'     => $wp_qa_id, QA ZERO del
+				'page_type'   => '', //QA ZERO add
+				'page_id'     => 0,
+				//access_time' => $qahm_time->now_unixtime(), QA ZERO del
+				'access_time' => $access_time, //QA ZERO add
+				'page_speed'  => 0,
+			);
 
-		$body = array(
-			'page_url'    => $url,
-			'page_title'  => $title,
-			'page_type'   => $wp_qa_type,
-			'page_id'     => $wp_qa_id,
-			'access_time' => $qahm_time->now_unixtime(),
-			'page_speed'  => 0,
-		);
+			if ( ! isset( $session_temp_ary['body'] ) ) {
+				$session_temp_ary['body'] = array();
+			}
 
-		if ( ! isset( $session_temp_ary['body'] ) ) {
-			$session_temp_ary['body'] = array();
-		}
+			$data['readers_name']       = $readers_name;
+			$data['readers_body_index'] = array_push( $session_temp_ary['body'], $body ) - 1;
 
-		$data['readers_name']       = $readers_name;
-		$data['readers_body_index'] = array_push( $session_temp_ary['body'], $body ) - 1;
-		$this->wrap_put_contents( $readers_temp_dir . $readers_name . '.php', $this->wrap_serialize( $session_temp_ary ) );
+			//クローラー判定
+			$crawler_chk_result = self::crawler_checker( $qa_id, $ip_address, $ua, $session_temp_ary['body'], $tracking_id );
 
-		// qahm測定対象外のページの場合は生データを作らない
-		if ( $this->is_qahm_page( $wp_qa_type ) ) {
+			if( $crawler_chk_result['crawler'] ){
+				return false;
+			}
 
+			$this->wrap_put_contents( $readers_temp_dir . $readers_name . '.php', $this->wrap_serialize( $session_temp_ary ) );
+
+			// qahm測定対象外のページの場合は生データを作らない
+			/*
+			if ( $this->is_qahm_page( $wp_qa_type ) ) {
+
+				// 読者のPV数を取得。検索上限PV数は10000（仮）
+				$raw_dir = $this->get_raw_dir_path( $wp_qa_type, $wp_qa_id, $dev_name );
+				$limit  = 10000;
+				$pv_num = 1;
+				for( $i = 1; $i < $limit; $i++ ) {
+					if ( ! $this->wrap_exists( $raw_dir . $readers_name . '_' . $i . '-p.php' ) ) {
+						$pv_num  = $i;
+						break;
+					}
+				}
+
+				$data['raw_name'] = $readers_name . '_' . $pv_num;
+			} QA ZERO del */
+
+			/*
 			// 読者のPV数を取得。検索上限PV数は10000（仮）
-			$raw_dir = $this->get_raw_dir_path( $wp_qa_type, $wp_qa_id, $dev_name );
+			$raw_dir = $this->get_raw_dir_path( $tracking_id, $url_hash );
 			$limit  = 10000;
 			$pv_num = 1;
 			for( $i = 1; $i < $limit; $i++ ) {
@@ -220,66 +409,24 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 					break;
 				}
 			}
+			QA ZERO del */
 
-			$data['raw_name'] = $readers_name . '_' . $pv_num;
-		}
+			//$data['raw_name'] = $readers_name . '_' . $pv_num; QA ZERO del
+			$data['raw_name'] = $qa_id . '_' . $access_time;
 
-		$data['qa_id']    = $qa_id;
+			$data['qa_id']    = $qa_id;
 
-		return $data;
+			return $data;
 	}
 
-
-	/**
-	 * msecを更新
-	 */
 	public function update_msec( $readers_name, $readers_body_index, $speed_msec ) {
-		$readers_temp_dir = $this->get_data_dir_path( 'readers/temp/' );
-		$readers_data_ary = $this->wrap_unserialize( $this->wrap_get_contents( $readers_temp_dir . $readers_name . '.php' ) );
-
-		if ( isset( $readers_data_ary['body'][$readers_body_index]['page_speed'] ) ) {
-			$readers_data_ary['body'][$readers_body_index]['page_speed'] = $speed_msec;
-			$this->wrap_put_contents( $readers_temp_dir . $readers_name . '.php', $this->wrap_serialize( $readers_data_ary ) );
-		}
-	}
-
-
-	/**
-	 * URLパラメーターをsession tempに格納するurl用に最適化
-	 * http_build_queryは強制的にエンコードされるので使わない
-	 */
-	private function opt_url_param( $url, $del_param_ary=Array() ){
-		$url_exp = explode( '?', $url );
-
-		if( ! isset( $url_exp[1] ) ){
-			return $url;
-		}
-		parse_str( $url_exp[1], $query_ary );
-
-		$query_str = '';
-		foreach( $query_ary as $key => $value ){
-			if(
-				$key !== 'gclid' && 
-				$key !== '_ga' && 
-				$key !== 'uid' &&
-				strpos( $key, 'utm_' ) !== 0 &&
-				$key !== 'fbclid' &&
-				$key !== 'twclid' &&
-				$key !== 'gad' &&
-				$key !== 'yclid' &&
-				$key !== 'ldtag_cl' &&
-				$key !== 'msclkid'
-			){
-				if ( $query_str ) {
-					$query_str .= '&';
-				}
-				$query_str .= $key . '=' . $value;
+			$readers_temp_dir = $this->get_data_dir_path( 'readers/temp/' );
+			$readers_data_ary = $this->wrap_unserialize( $this->wrap_get_contents( $readers_temp_dir . $readers_name . '.php' ) );
+			if ( isset( $readers_data_ary['body'][$readers_body_index]['page_speed'] ) ) {
+				$readers_data_ary['body'][$readers_body_index]['page_speed'] = $speed_msec;
+				$this->wrap_put_contents( $readers_temp_dir . $readers_name . '.php', $this->wrap_serialize( $readers_data_ary ) );
 			}
-		}
-
-		return $query_str ? $url_exp[0] . '?' . $query_str : $url_exp[0];
 	}
-
 
 	// 指定したQA IDを持つひとにとって、最新のreadersファイルを取得
 	private function get_latest_readers_file_info( $tar_dir, $qa_id ) {
@@ -288,7 +435,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 		// 一番新しいreadersファイルの情報を格納する配列
 		$file_info = array();
 
-		if( QAHM_USE_LSCMD_LISTFILE ){
+		if( QAHM_CONFIG_USE_LSCMD_LISTFILE ){
 			$file_list = $this->listfiles_ls( $tar_dir, $qa_id."_*.php" );
 		}else{
 			$file_list = $this->wrap_dirlist( $tar_dir );
@@ -328,20 +475,19 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 		return empty( $file_info ) ? null : $file_info;
 	}
 
+	public function record_behavioral_data($is_pos, $is_click, $is_event, $is_dLevent, $raw_name, $readers_name, $ua, $tracking_id, $url_hash, $is_cookie_reject ) {
 
-	/**
-	 * 行動データ作成
-	 */
-	public function record_behavioral_data($is_pos, $is_click, $is_event, $raw_name, $readers_name, $type, $id, $ua, $is_cookie_reject) {
 		try {
 			global $qahm_time;
 
 			$dev_name       = $this->user_agent_to_device_name( $ua );
-			$raw_dir        = $this->get_raw_dir_path( $type, $id, $dev_name );
+			$raw_dir        = $this->get_raw_dir_path( $tracking_id, $url_hash ); //QA ZERO add
+
 			$readers_temp_path = $this->get_data_dir_path( 'readers/temp/' ) . $readers_name . '.php';
 
 			if ( $this->wrap_exists( $readers_temp_path ) ) {
-				$lastmodunix = filemtime( $readers_temp_path );
+				
+			 	$lastmodunix = filemtime( $readers_temp_path );
 				$readers_data = $this->wrap_get_contents( $readers_temp_path );
 
 				$readers_data_ary = $this->wrap_unserialize( $readers_data );
@@ -356,12 +502,6 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 			// validate
 			if ( ! $raw_dir ) {
 				throw new Exception( 'Failed to specify the directory for raw data.' );
-			}
-			if ( ! $this->validate_qa_type( $type ) ) {
-				throw new Exception( 'The value of $type is invalid.' );
-			}
-			if ( ! $this->validate_number( $id ) ) {
-				throw new Exception( 'The value of $id is invalid.' );
 			}
 
 			$output = 'output data /';
@@ -457,7 +597,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 				// validate & optimize
 				$validated_click_ary = [];
 
-				for ( $i = 0, $click_ary_cnt = count( $click_ary ); $i < $click_ary_cnt; $i++ ) {
+				for ( $i = 0, $click_ary_cnt = $this->wrap_count( $click_ary ); $i < $click_ary_cnt; $i++ ) {
 					if ( ! $this->validate_number( $click_ary[$i][self::DATA_CLICK_1['SELECTOR_X']] ) ) {
 						continue;
 						//throw new Exception( 'The value of $click_ary is invalid.' );
@@ -468,8 +608,53 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 						//throw new Exception( 'The value of $click_ary is invalid.' );
 					}
 
-					if( array_key_exists( self::DATA_CLICK_1['TRANSITION'], $click_ary[$i] ) ) {
+					if( $this->wrap_array_key_exists( self::DATA_CLICK_1['TRANSITION'], $click_ary[$i] ) ) {
 						$click_ary[$i][self::DATA_CLICK_1['TRANSITION']] = mb_strtolower( $click_ary[$i][self::DATA_CLICK_1['TRANSITION']] );
+					}
+
+					if ( $click_ver >= 2 && $this->wrap_count( $click_ary[$i] ) > $this->wrap_count(self::DATA_CLICK_1) ) {
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['EVENT_SEC'], $click_ary[$i] ) ) {
+							if ( ! $this->validate_number( $click_ary[$i][self::DATA_CLICK_2['EVENT_SEC']] ) ) {
+								$click_ary[$i][self::DATA_CLICK_2['EVENT_SEC']] = 0;
+							}
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['ACTION_ID'], $click_ary[$i] ) ) {
+							$action_id = (int) $click_ary[$i][self::DATA_CLICK_2['ACTION_ID']];
+							if ( $action_id < 1 || $action_id > 4 ) {
+								$click_ary[$i][self::DATA_CLICK_2['ACTION_ID']] = 1; // デフォルトはclick
+							}
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['PAGE_X_PCT'], $click_ary[$i] ) ) {
+							$page_x_pct = (int) $click_ary[$i][self::DATA_CLICK_2['PAGE_X_PCT']];
+							if ( $page_x_pct < 0 || $page_x_pct > 100 ) {
+								$click_ary[$i][self::DATA_CLICK_2['PAGE_X_PCT']] = 0;
+							}
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['PAGE_Y_PCT'], $click_ary[$i] ) ) {
+							$page_y_pct = (int) $click_ary[$i][self::DATA_CLICK_2['PAGE_Y_PCT']];
+							if ( $page_y_pct < 0 || $page_y_pct > 100 ) {
+								$click_ary[$i][self::DATA_CLICK_2['PAGE_Y_PCT']] = 0;
+							}
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['ELEMENT_TEXT'], $click_ary[$i] ) ) {
+							$click_ary[$i][self::DATA_CLICK_2['ELEMENT_TEXT']] = sanitize_text_field( $click_ary[$i][self::DATA_CLICK_2['ELEMENT_TEXT']] );
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['ELEMENT_ID'], $click_ary[$i] ) ) {
+							$click_ary[$i][self::DATA_CLICK_2['ELEMENT_ID']] = sanitize_text_field( $click_ary[$i][self::DATA_CLICK_2['ELEMENT_ID']] );
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['ELEMENT_CLASS'], $click_ary[$i] ) ) {
+							$click_ary[$i][self::DATA_CLICK_2['ELEMENT_CLASS']] = sanitize_text_field( $click_ary[$i][self::DATA_CLICK_2['ELEMENT_CLASS']] );
+						}
+
+						if ( $this->wrap_array_key_exists( self::DATA_CLICK_2['ELEMENT_DATA_ATTR'], $click_ary[$i] ) ) {
+							$click_ary[$i][self::DATA_CLICK_2['ELEMENT_DATA_ATTR']] = sanitize_text_field( $click_ary[$i][self::DATA_CLICK_2['ELEMENT_DATA_ATTR']] );
+						}
 					}
 
 					array_push( $validated_click_ary, $click_ary[$i] );
@@ -508,9 +693,9 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 					throw new Exception( 'The value of $init_window_h is invalid.' );
 				}
 
-				for ( $i = 0, $event_ary_cnt = count( $event_ary ); $i < $event_ary_cnt; $i++ ) {
+				for ( $i = 0, $event_ary_cnt = $this->wrap_count( $event_ary ); $i < $event_ary_cnt; $i++ ) {
 					$event_type = $event_ary[$i][self::DATA_EVENT_1['TYPE']];
-					if ( strlen( $event_type ) !== 1 ) {
+					if ( $this->wrap_strlen( $event_type ) !== 1 ) {
 						throw new Exception( 'The value of $event_ary is invalid.' );
 					}
 
@@ -580,27 +765,35 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 				$output .= ' e /';
 			}
 
+			//dataLayer連携
+			if( $is_dLevent ){ 
+
+				$dLevent_path = $raw_dir . $raw_name . '-g' . '.php';
+				$dLevent_ary     = json_decode( $this->wrap_filter_input( INPUT_POST, 'dlevent_ary' ), true );
+				$dLevent_ver     = $this->wrap_filter_input( INPUT_POST, 'dlevent_ver' );
+				$dLevent_head = array(
+					array(
+						self::DATA_HEADER_VERSION            => $dLevent_ver,
+					)
+				);
+
+				$dLevent_ary = array_merge( $dLevent_head, $dLevent_ary );
+				$dLevent_tsv = $this->convert_array_to_tsv( $dLevent_ary );
+				$this->wrap_put_contents( $dLevent_path, $dLevent_tsv );
+
+				$output .= ' g /';
+
+			}
+
 			// ファイルの整合性を合わせるためにファイルの保存はここで一気にする
 			return $output;
 
 		} catch ( Exception $e ) {
 			http_response_code( 500 );
-			echo esc_html($e->getMessage());
-		}
-	}
+			echo esc_html( $e->getMessage() );
 
-	// 数値のチェック
-	private function validate_qa_type( $qa_type ) {
-		switch( $qa_type ) {
-			case 'home':
-			case 'page_id':
-			case 'p':
-			case 'cat':
-			case 'tag':
-			case 'tax':
-				return true;
-			default:
-				return false;
+		} finally {
+			die();
 		}
 	}
 
@@ -619,57 +812,19 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 	}
 
 	/**
-	 * セキュリティを強化するためのトラッキングハッシュ配列を取得する。なければ作成 mkdummy
+	 * UTMパラメータの文字列をUTF-8に変換
+	 *
+	 * @param string $utm_string UTMパラメータの文字列
+	 * @return string エンコード済みのUTMパラメータ
 	 */
-	public function get_tracking_hash_array( $url = null ) {
-		//mkdummy
-        $tracking_id = $this->get_tracking_id( $url );
-        $data_dir    = $this->get_data_dir_path();
-        $thash_file  = $data_dir . $tracking_id . '_tracking_hash.php';
+	private function encode_utm_parameter($utm_string) {
+		// UTF-8にエンコードされていない場合はUTF-8に変換
+		if (mb_detect_encoding($utm_string, 'UTF-8', true) === false) {
+			$utm_string = mb_convert_encoding($utm_string, 'UTF-8', 'auto');
+		}
 
-        $new_thash_ary = [];
-        //get now hash
-        global $wp_filesystem;
-        global $qahm_time;
-        $now_utime = $qahm_time->now_unixtime();
-		$newhash   = hash( 'fnv164', (string)wp_rand() );
-        if ( $wp_filesystem->exists( $thash_file ) ) {
-            $th_serial = $this->wrap_get_contents( $thash_file );
-            $thash_ary = $this->wrap_unserialize( $th_serial );
-
-            $recent_utime = $thash_ary[0]['create_utime'];
-            $th_interval  = $now_utime - $recent_utime;
-            if ( 3600 * 24 < $th_interval  ) {
-                $new_thash_ary[0] = ['create_utime' => $now_utime, 'tracking_hash' => $newhash];
-                $new_thash_ary[1] = $thash_ary[0];
-                $new_th_serial    = $this->wrap_serialize( $new_thash_ary );
-                $this->wrap_put_contents( $thash_file, $new_th_serial );
-            } else {
-                $new_thash_ary = $thash_ary;
-            }
-        } else {
-                $new_thash_ary[0] = ['create_utime' => $now_utime, 'tracking_hash' => $newhash];
-                $new_th_serial   = $this->wrap_serialize( $new_thash_ary );
-                $this->wrap_put_contents( $thash_file, $new_th_serial );
-        }
-        return $new_thash_ary;
+		return $utm_string;
 	}
-
-	/**
-	 * hash値があればtrue。なければfalse mkdummy
-	 */
-	public function check_tracking_hash( $checkhash, $url = null ) {
-		//mkdummy
-        $hash_ary = $this->get_tracking_hash_array( $url );
-        $is_in    = false;
-        foreach ( $hash_ary as $hash ) {
-            if ( $checkhash === $hash['tracking_hash'] ) {
-                $is_in = true;
-            }
-        }
-        return $is_in;
-	}
-
 
 } // end of class
 

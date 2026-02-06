@@ -79,16 +79,16 @@ class QAHM_Data_Encryption extends QAHM_Base {
 
 		$method = 'aes-256-ctr';
 		$ivlen  = openssl_cipher_iv_length( $method );
-		$iv     = substr( $raw_value, 0, $ivlen );
+		$iv     = $this->wrap_substr( $raw_value, 0, $ivlen );
 
-		$raw_value = substr( $raw_value, $ivlen );
+		$raw_value = $this->wrap_substr( $raw_value, $ivlen );
 
 		$value = openssl_decrypt( $raw_value, $method, $this->key, 0, $iv );
-		if ( ! $value || substr( $value, - strlen( $this->salt ) ) !== $this->salt ) {
+		if ( ! $value || $this->wrap_substr( $value, - $this->wrap_strlen( $this->salt ) ) !== $this->salt ) {
 			return false;
 		}
 
-		return substr( $value, 0, - strlen( $this->salt ) );
+		return $this->wrap_substr( $value, 0, - $this->wrap_strlen( $this->salt ) );
 	}
 
 	/**
@@ -99,10 +99,6 @@ class QAHM_Data_Encryption extends QAHM_Base {
 	 * @return string Default (not user-based) encryption key.
 	 */
 	private function get_default_key() {
-		if ( defined( 'QAANALYTICS_ENCRYPTION_KEY' ) && '' !== QAANALYTICS_ENCRYPTION_KEY ) {
-			return QAANALYTICS_ENCRYPTION_KEY;
-		}
-
 		if ( defined( 'LOGGED_IN_KEY' ) && '' !== LOGGED_IN_KEY ) {
 			return LOGGED_IN_KEY;
 		}
@@ -119,10 +115,6 @@ class QAHM_Data_Encryption extends QAHM_Base {
 	 * @return string Encryption salt.
 	 */
 	private function get_default_salt() {
-		if ( defined( 'QAANALYTICS_ENCRYPTION_SALT' ) && '' !== QAANALYTICS_ENCRYPTION_SALT ) {
-			return QAANALYTICS_ENCRYPTION_SALT;
-		}
-
 		if ( defined( 'LOGGED_IN_SALT' ) && '' !== LOGGED_IN_SALT ) {
 			return LOGGED_IN_SALT;
 		}

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,120 +14,125 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class RealtimeDataQuery extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\Analytics;
+
+class RealtimeDataQuery extends \Google\Collection
 {
-    protected $collection_key = 'sort';
-    protected $internal_gapi_mappings = ["maxResults" => "max-results"];
-    /**
-     * @var string
-     */
-    public $dimensions;
-    /**
-     * @var string
-     */
-    public $filters;
-    /**
-     * @var string
-     */
-    public $ids;
-    /**
-     * @var int
-     */
-    public $maxResults;
-    /**
-     * @var string[]
-     */
-    public $metrics;
-    /**
-     * @var string[]
-     */
-    public $sort;
-    /**
-     * @param string
-     */
-    public function setDimensions($dimensions)
-    {
-        $this->dimensions = $dimensions;
-    }
-    /**
-     * @return string
-     */
-    public function getDimensions()
-    {
-        return $this->dimensions;
-    }
-    /**
-     * @param string
-     */
-    public function setFilters($filters)
-    {
-        $this->filters = $filters;
-    }
-    /**
-     * @return string
-     */
-    public function getFilters()
-    {
-        return $this->filters;
-    }
-    /**
-     * @param string
-     */
-    public function setIds($ids)
-    {
-        $this->ids = $ids;
-    }
-    /**
-     * @return string
-     */
-    public function getIds()
-    {
-        return $this->ids;
-    }
-    /**
-     * @param int
-     */
-    public function setMaxResults($maxResults)
-    {
-        $this->maxResults = $maxResults;
-    }
-    /**
-     * @return int
-     */
-    public function getMaxResults()
-    {
-        return $this->maxResults;
-    }
-    /**
-     * @param string[]
-     */
-    public function setMetrics($metrics)
-    {
-        $this->metrics = $metrics;
-    }
-    /**
-     * @return string[]
-     */
-    public function getMetrics()
-    {
-        return $this->metrics;
-    }
-    /**
-     * @param string[]
-     */
-    public function setSort($sort)
-    {
-        $this->sort = $sort;
-    }
-    /**
-     * @return string[]
-     */
-    public function getSort()
-    {
-        return $this->sort;
-    }
+  protected $collection_key = 'sort';
+  protected $internal_gapi_mappings = [
+        "maxResults" => "max-results",
+  ];
+  /**
+   * @var string
+   */
+  public $dimensions;
+  /**
+   * @var string
+   */
+  public $filters;
+  /**
+   * @var string
+   */
+  public $ids;
+  /**
+   * @var int
+   */
+  public $maxResults;
+  /**
+   * @var string[]
+   */
+  public $metrics;
+  /**
+   * @var string[]
+   */
+  public $sort;
+
+  /**
+   * @param string
+   */
+  public function setDimensions($dimensions)
+  {
+    $this->dimensions = $dimensions;
+  }
+  /**
+   * @return string
+   */
+  public function getDimensions()
+  {
+    return $this->dimensions;
+  }
+  /**
+   * @param string
+   */
+  public function setFilters($filters)
+  {
+    $this->filters = $filters;
+  }
+  /**
+   * @return string
+   */
+  public function getFilters()
+  {
+    return $this->filters;
+  }
+  /**
+   * @param string
+   */
+  public function setIds($ids)
+  {
+    $this->ids = $ids;
+  }
+  /**
+   * @return string
+   */
+  public function getIds()
+  {
+    return $this->ids;
+  }
+  /**
+   * @param int
+   */
+  public function setMaxResults($maxResults)
+  {
+    $this->maxResults = $maxResults;
+  }
+  /**
+   * @return int
+   */
+  public function getMaxResults()
+  {
+    return $this->maxResults;
+  }
+  /**
+   * @param string[]
+   */
+  public function setMetrics($metrics)
+  {
+    $this->metrics = $metrics;
+  }
+  /**
+   * @return string[]
+   */
+  public function getMetrics()
+  {
+    return $this->metrics;
+  }
+  /**
+   * @param string[]
+   */
+  public function setSort($sort)
+  {
+    $this->sort = $sort;
+  }
+  /**
+   * @return string[]
+   */
+  public function getSort()
+  {
+    return $this->sort;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(RealtimeDataQuery::class, 'QAAnalyticsVendor\\Google_Service_Analytics_RealtimeDataQuery');
+class_alias(RealtimeDataQuery::class, 'Google_Service_Analytics_RealtimeDataQuery');

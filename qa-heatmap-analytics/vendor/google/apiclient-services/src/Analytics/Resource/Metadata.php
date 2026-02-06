@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,7 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
+
+namespace Google\Service\Analytics\Resource;
 
 /**
  * The "metadata" collection of methods.
@@ -25,8 +25,9 @@ namespace QAAnalyticsVendor\Google\Service\Analytics\Resource;
  *   $metadata = $analyticsService->metadata;
  *  </code>
  */
-class Metadata extends \QAAnalyticsVendor\Google\Service\Resource
+class Metadata extends \Google\Service\Resource
 {
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Metadata::class, 'QAAnalyticsVendor\\Google_Service_Analytics_Resource_Metadata');
+class_alias(Metadata::class, 'Google_Service_Analytics_Resource_Metadata');

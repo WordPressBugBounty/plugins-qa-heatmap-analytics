@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,45 +14,48 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class PivotHeader extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class PivotHeader extends \Google\Collection
 {
-    protected $collection_key = 'pivotHeaderEntries';
-    protected $pivotHeaderEntriesType = PivotHeaderEntry::class;
-    protected $pivotHeaderEntriesDataType = 'array';
-    /**
-     * @var int
-     */
-    public $totalPivotGroupsCount;
-    /**
-     * @param PivotHeaderEntry[]
-     */
-    public function setPivotHeaderEntries($pivotHeaderEntries)
-    {
-        $this->pivotHeaderEntries = $pivotHeaderEntries;
-    }
-    /**
-     * @return PivotHeaderEntry[]
-     */
-    public function getPivotHeaderEntries()
-    {
-        return $this->pivotHeaderEntries;
-    }
-    /**
-     * @param int
-     */
-    public function setTotalPivotGroupsCount($totalPivotGroupsCount)
-    {
-        $this->totalPivotGroupsCount = $totalPivotGroupsCount;
-    }
-    /**
-     * @return int
-     */
-    public function getTotalPivotGroupsCount()
-    {
-        return $this->totalPivotGroupsCount;
-    }
+  protected $collection_key = 'pivotHeaderEntries';
+  protected $pivotHeaderEntriesType = PivotHeaderEntry::class;
+  protected $pivotHeaderEntriesDataType = 'array';
+  /**
+   * @var int
+   */
+  public $totalPivotGroupsCount;
+
+  /**
+   * @param PivotHeaderEntry[]
+   */
+  public function setPivotHeaderEntries($pivotHeaderEntries)
+  {
+    $this->pivotHeaderEntries = $pivotHeaderEntries;
+  }
+  /**
+   * @return PivotHeaderEntry[]
+   */
+  public function getPivotHeaderEntries()
+  {
+    return $this->pivotHeaderEntries;
+  }
+  /**
+   * @param int
+   */
+  public function setTotalPivotGroupsCount($totalPivotGroupsCount)
+  {
+    $this->totalPivotGroupsCount = $totalPivotGroupsCount;
+  }
+  /**
+   * @return int
+   */
+  public function getTotalPivotGroupsCount()
+  {
+    return $this->totalPivotGroupsCount;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(PivotHeader::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_PivotHeader');
+class_alias(PivotHeader::class, 'Google_Service_AnalyticsReporting_PivotHeader');

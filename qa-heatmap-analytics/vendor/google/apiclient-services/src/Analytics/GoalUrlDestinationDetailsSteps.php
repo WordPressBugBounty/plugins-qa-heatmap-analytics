@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,64 +14,67 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class GoalUrlDestinationDetailsSteps extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class GoalUrlDestinationDetailsSteps extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $name;
-    /**
-     * @var int
-     */
-    public $number;
-    /**
-     * @var string
-     */
-    public $url;
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    /**
-     * @param int
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-    }
-    /**
-     * @return int
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-    /**
-     * @param string
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-    }
-    /**
-     * @return string
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
+  /**
+   * @var string
+   */
+  public $name;
+  /**
+   * @var int
+   */
+  public $number;
+  /**
+   * @var string
+   */
+  public $url;
+
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
+  /**
+   * @param int
+   */
+  public function setNumber($number)
+  {
+    $this->number = $number;
+  }
+  /**
+   * @return int
+   */
+  public function getNumber()
+  {
+    return $this->number;
+  }
+  /**
+   * @param string
+   */
+  public function setUrl($url)
+  {
+    $this->url = $url;
+  }
+  /**
+   * @return string
+   */
+  public function getUrl()
+  {
+    return $this->url;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GoalUrlDestinationDetailsSteps::class, 'QAAnalyticsVendor\\Google_Service_Analytics_GoalUrlDestinationDetailsSteps');
+class_alias(GoalUrlDestinationDetailsSteps::class, 'Google_Service_Analytics_GoalUrlDestinationDetailsSteps');

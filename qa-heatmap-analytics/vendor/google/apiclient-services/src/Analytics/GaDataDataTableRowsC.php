@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,28 +14,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class GaDataDataTableRowsC extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class GaDataDataTableRowsC extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $v;
-    /**
-     * @param string
-     */
-    public function setV($v)
-    {
-        $this->v = $v;
-    }
-    /**
-     * @return string
-     */
-    public function getV()
-    {
-        return $this->v;
-    }
+  /**
+   * @var string
+   */
+  public $v;
+
+  /**
+   * @param string
+   */
+  public function setV($v)
+  {
+    $this->v = $v;
+  }
+  /**
+   * @return string
+   */
+  public function getV()
+  {
+    return $this->v;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GaDataDataTableRowsC::class, 'QAAnalyticsVendor\\Google_Service_Analytics_GaDataDataTableRowsC');
+class_alias(GaDataDataTableRowsC::class, 'Google_Service_Analytics_GaDataDataTableRowsC');

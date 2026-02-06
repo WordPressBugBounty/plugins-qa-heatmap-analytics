@@ -114,6 +114,8 @@ qahm.loadScreen.promise()
 */
 					qahm.initPlayList();
 
+					qahm.loadOgpImages();
+
 					if ( qahm.event_ary ) {
 						// 暫定再生
 						qahm.eventPrevDate = new Date();
@@ -787,3 +789,29 @@ qahm.actionSwitchSpeed = function( isNext ) {
 	jQuery( '#control-speed' ).data( 'speed', qahm.speedRate );
 	jQuery( '#control-speed' ).text( qahm.speedRate + 'x' );
 }
+
+qahm.loadOgpImages = function() {
+	jQuery('#playlist .playlist-item').each(function() {
+		const $item = jQuery(this);
+		const $img = $item.find('.playlist-item-thumb img');
+		
+		const pageUrl = $item.data('page-url');
+		
+		if ( pageUrl ) {
+			jQuery.ajax({
+				type: 'POST',
+				url: qahm.ajax_url,
+				dataType: 'json',
+				data: {
+					'action': 'qahm_ajax_get_ogp_image',
+					'url': pageUrl
+				}
+			}).done(function(response) {
+				if ( response.success && response.image_url ) {
+					$img.attr('src', response.image_url);
+				}
+			}).fail(function() {
+			});
+		}
+	});
+};

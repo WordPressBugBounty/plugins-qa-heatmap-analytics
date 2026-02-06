@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class GoalVisitTimeOnSiteDetails extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class GoalVisitTimeOnSiteDetails extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $comparisonType;
-    /**
-     * @var string
-     */
-    public $comparisonValue;
-    /**
-     * @param string
-     */
-    public function setComparisonType($comparisonType)
-    {
-        $this->comparisonType = $comparisonType;
-    }
-    /**
-     * @return string
-     */
-    public function getComparisonType()
-    {
-        return $this->comparisonType;
-    }
-    /**
-     * @param string
-     */
-    public function setComparisonValue($comparisonValue)
-    {
-        $this->comparisonValue = $comparisonValue;
-    }
-    /**
-     * @return string
-     */
-    public function getComparisonValue()
-    {
-        return $this->comparisonValue;
-    }
+  /**
+   * @var string
+   */
+  public $comparisonType;
+  /**
+   * @var string
+   */
+  public $comparisonValue;
+
+  /**
+   * @param string
+   */
+  public function setComparisonType($comparisonType)
+  {
+    $this->comparisonType = $comparisonType;
+  }
+  /**
+   * @return string
+   */
+  public function getComparisonType()
+  {
+    return $this->comparisonType;
+  }
+  /**
+   * @param string
+   */
+  public function setComparisonValue($comparisonValue)
+  {
+    $this->comparisonValue = $comparisonValue;
+  }
+  /**
+   * @return string
+   */
+  public function getComparisonValue()
+  {
+    return $this->comparisonValue;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(GoalVisitTimeOnSiteDetails::class, 'QAAnalyticsVendor\\Google_Service_Analytics_GoalVisitTimeOnSiteDetails');
+class_alias(GoalVisitTimeOnSiteDetails::class, 'Google_Service_Analytics_GoalVisitTimeOnSiteDetails');

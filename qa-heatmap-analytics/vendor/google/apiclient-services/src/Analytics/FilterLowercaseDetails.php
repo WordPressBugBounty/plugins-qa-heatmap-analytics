@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,46 +14,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class FilterLowercaseDetails extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class FilterLowercaseDetails extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $field;
-    /**
-     * @var int
-     */
-    public $fieldIndex;
-    /**
-     * @param string
-     */
-    public function setField($field)
-    {
-        $this->field = $field;
-    }
-    /**
-     * @return string
-     */
-    public function getField()
-    {
-        return $this->field;
-    }
-    /**
-     * @param int
-     */
-    public function setFieldIndex($fieldIndex)
-    {
-        $this->fieldIndex = $fieldIndex;
-    }
-    /**
-     * @return int
-     */
-    public function getFieldIndex()
-    {
-        return $this->fieldIndex;
-    }
+  /**
+   * @var string
+   */
+  public $field;
+  /**
+   * @var int
+   */
+  public $fieldIndex;
+
+  /**
+   * @param string
+   */
+  public function setField($field)
+  {
+    $this->field = $field;
+  }
+  /**
+   * @return string
+   */
+  public function getField()
+  {
+    return $this->field;
+  }
+  /**
+   * @param int
+   */
+  public function setFieldIndex($fieldIndex)
+  {
+    $this->fieldIndex = $fieldIndex;
+  }
+  /**
+   * @return int
+   */
+  public function getFieldIndex()
+  {
+    return $this->fieldIndex;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(FilterLowercaseDetails::class, 'QAAnalyticsVendor\\Google_Service_Analytics_FilterLowercaseDetails');
+class_alias(FilterLowercaseDetails::class, 'Google_Service_Analytics_FilterLowercaseDetails');

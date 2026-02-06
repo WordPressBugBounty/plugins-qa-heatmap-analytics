@@ -8,7 +8,8 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace QAAnalyticsVendor\Monolog\Processor;
+
+namespace Monolog\Processor;
 
 /**
  * Adds value of getmypid into records
@@ -23,7 +24,8 @@ class ProcessIdProcessor implements ProcessorInterface
      */
     public function __invoke(array $record)
     {
-        $record['extra']['process_id'] = \getmypid();
+        $record['extra']['process_id'] = getmypid();
+
         return $record;
     }
 }

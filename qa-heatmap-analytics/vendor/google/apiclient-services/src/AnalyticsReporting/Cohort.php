@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,62 +14,65 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class Cohort extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\AnalyticsReporting;
+
+class Cohort extends \Google\Model
 {
-    protected $dateRangeType = DateRange::class;
-    protected $dateRangeDataType = '';
-    /**
-     * @var string
-     */
-    public $name;
-    /**
-     * @var string
-     */
-    public $type;
-    /**
-     * @param DateRange
-     */
-    public function setDateRange(DateRange $dateRange)
-    {
-        $this->dateRange = $dateRange;
-    }
-    /**
-     * @return DateRange
-     */
-    public function getDateRange()
-    {
-        return $this->dateRange;
-    }
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    /**
-     * @param string
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
+  protected $dateRangeType = DateRange::class;
+  protected $dateRangeDataType = '';
+  /**
+   * @var string
+   */
+  public $name;
+  /**
+   * @var string
+   */
+  public $type;
+
+  /**
+   * @param DateRange
+   */
+  public function setDateRange(DateRange $dateRange)
+  {
+    $this->dateRange = $dateRange;
+  }
+  /**
+   * @return DateRange
+   */
+  public function getDateRange()
+  {
+    return $this->dateRange;
+  }
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
+  /**
+   * @param string
+   */
+  public function setType($type)
+  {
+    $this->type = $type;
+  }
+  /**
+   * @return string
+   */
+  public function getType()
+  {
+    return $this->type;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(Cohort::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_Cohort');
+class_alias(Cohort::class, 'Google_Service_AnalyticsReporting_Cohort');

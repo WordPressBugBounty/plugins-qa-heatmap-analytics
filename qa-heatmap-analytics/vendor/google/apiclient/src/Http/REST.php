@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2010 Google Inc.
  *
@@ -15,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google\Http;
 
-use QAAnalyticsVendor\Google\Auth\HttpHandler\HttpHandlerFactory;
-use QAAnalyticsVendor\Google\Client;
-use QAAnalyticsVendor\Google\Task\Runner;
-use QAAnalyticsVendor\Google\Service\Exception as GoogleServiceException;
-use QAAnalyticsVendor\GuzzleHttp\ClientInterface;
-use QAAnalyticsVendor\GuzzleHttp\Exception\RequestException;
-use QAAnalyticsVendor\GuzzleHttp\Psr7\Response;
-use QAAnalyticsVendor\Psr\Http\Message\RequestInterface;
-use QAAnalyticsVendor\Psr\Http\Message\ResponseInterface;
+namespace Google\Http;
+
+use Google\Auth\HttpHandler\HttpHandlerFactory;
+use Google\Service\Exception as GoogleServiceException;
+use Google\Task\Runner;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * This class implements the RESTful transport of apiServiceRequest()'s
  */
@@ -35,30 +35,45 @@ class REST
      * Executes a Psr\Http\Message\RequestInterface and (if applicable) automatically retries
      * when errors occur.
      *
-     * @param Client $client
-     * @param RequestInterface $req
-     * @param string $expectedClass
+     * @template T
+     * @param ClientInterface $client
+     * @param RequestInterface $request
+     * @param class-string<T>|false|null $expectedClass
      * @param array $config
      * @param array $retryMap
-     * @return mixed decoded result
+     * @return mixed|T|null
      * @throws \Google\Service\Exception on server side error (ie: not authenticated,
      *  invalid or malformed post body, invalid url)
      */
-    public static function execute(ClientInterface $client, RequestInterface $request, $expectedClass = null, $config = array(), $retryMap = null)
-    {
-        $runner = new Runner($config, \sprintf('%s %s', $request->getMethod(), (string) $request->getUri()), array(\get_class(), 'doExecute'), array($client, $request, $expectedClass));
+    public static function execute(
+        ClientInterface $client,
+        RequestInterface $request,
+        $expectedClass = null,
+        $config = [],
+        $retryMap = null
+    ) {
+        $runner = new Runner(
+            $config,
+            sprintf('%s %s', $request->getMethod(), (string) $request->getUri()),
+            [get_class(), 'doExecute'],
+            [$client, $request, $expectedClass]
+        );
+
         if (null !== $retryMap) {
             $runner->setRetryMap($retryMap);
         }
+
         return $runner->run();
     }
+
     /**
      * Executes a Psr\Http\Message\RequestInterface
      *
-     * @param Client $client
+     * @template T
+     * @param ClientInterface $client
      * @param RequestInterface $request
-     * @param string $expectedClass
-     * @return array decoded result
+     * @param class-string<T>|false|null $expectedClass
+     * @return mixed|T|null
      * @throws \Google\Service\Exception on server side error (ie: not authenticated,
      *  invalid or malformed post body, invalid url)
      */
@@ -72,79 +87,112 @@ class REST
             if (!$e->hasResponse()) {
                 throw $e;
             }
+
             $response = $e->getResponse();
             // specific checking for Guzzle 5: convert to PSR7 response
-            if ($response instanceof \QAAnalyticsVendor\GuzzleHttp\Message\ResponseInterface) {
-                $response = new Response($response->getStatusCode(), $response->getHeaders() ?: [], $response->getBody(), $response->getProtocolVersion(), $response->getReasonPhrase());
+            if (
+                interface_exists('\GuzzleHttp\Message\ResponseInterface')
+                && $response instanceof \GuzzleHttp\Message\ResponseInterface
+            ) {
+                $response = new Response(
+                    $response->getStatusCode(),
+                    $response->getHeaders() ?: [],
+                    $response->getBody(),
+                    $response->getProtocolVersion(),
+                    $response->getReasonPhrase()
+                );
             }
         }
+
         return self::decodeHttpResponse($response, $request, $expectedClass);
     }
+
     /**
      * Decode an HTTP Response.
      * @static
-     * @throws \Google\Service\Exception
+     *
+     * @template T
      * @param RequestInterface $response The http response to be decoded.
      * @param ResponseInterface $response
-     * @param string $expectedClass
-     * @return mixed|null
+     * @param class-string<T>|false|null $expectedClass
+     * @return mixed|T|null
+     * @throws \Google\Service\Exception
      */
-    public static function decodeHttpResponse(ResponseInterface $response, RequestInterface $request = null, $expectedClass = null)
-    {
+    public static function decodeHttpResponse(
+        ResponseInterface $response,
+        RequestInterface $request = null,
+        $expectedClass = null
+    ) {
         $code = $response->getStatusCode();
+
         // retry strategy
-        if (\intVal($code) >= 400) {
+        if (intVal($code) >= 400) {
             // if we errored out, it should be safe to grab the response body
             $body = (string) $response->getBody();
+
             // Check if we received errors, and add those to the Exception for convenience
             throw new GoogleServiceException($body, $code, null, self::getResponseErrors($body));
         }
+
         // Ensure we only pull the entire body into memory if the request is not
         // of media type
         $body = self::decodeBody($response, $request);
+
         if ($expectedClass = self::determineExpectedClass($expectedClass, $request)) {
-            $json = \json_decode($body, \true);
+            $json = json_decode($body, true);
+
             return new $expectedClass($json);
         }
+
         return $response;
     }
+
     private static function decodeBody(ResponseInterface $response, RequestInterface $request = null)
     {
         if (self::isAltMedia($request)) {
             // don't decode the body, it's probably a really long string
             return '';
         }
+
         return (string) $response->getBody();
     }
+
     private static function determineExpectedClass($expectedClass, RequestInterface $request = null)
     {
         // "false" is used to explicitly prevent an expected class from being returned
-        if (\false === $expectedClass) {
+        if (false === $expectedClass) {
             return null;
         }
+
         // if we don't have a request, we just use what's passed in
         if (null === $request) {
             return $expectedClass;
         }
+
         // return what we have in the request header if one was not supplied
         return $expectedClass ?: $request->getHeaderLine('X-Php-Expected-Class');
     }
+
     private static function getResponseErrors($body)
     {
-        $json = \json_decode($body, \true);
+        $json = json_decode($body, true);
+
         if (isset($json['error']['errors'])) {
             return $json['error']['errors'];
         }
+
         return null;
     }
+
     private static function isAltMedia(RequestInterface $request = null)
     {
-        if ($request && ($qs = $request->getUri()->getQuery())) {
-            \parse_str($qs, $query);
+        if ($request && $qs = $request->getUri()->getQuery()) {
+            parse_str($qs, $query);
             if (isset($query['alt']) && $query['alt'] == 'media') {
-                return \true;
+                return true;
             }
         }
-        return \false;
+
+        return false;
     }
 }

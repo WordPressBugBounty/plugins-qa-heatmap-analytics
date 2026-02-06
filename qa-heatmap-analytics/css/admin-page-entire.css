@@ -1,0 +1,231 @@
+/** 枠組み、hタグ　------------------------------------------ */
+.tab_container {
+    margin: 0;
+    padding: 0 25px;
+}
+.tab_content_item {
+    margin: 10px;
+    padding: 20px 0;
+}
+.tab_content_item_thinbottom {
+    margin: 10px;
+    padding: 20px 0 0 0;
+}
+tab_content hr {
+    border: none;
+    background: linear-gradient(to right, white, #5A6E83, #a1cce4, white);
+    height: 2px;
+}
+.tab_content_description {
+    margin: 0;
+}
+.tab_content_description summary {
+    font-size: 20px;
+    background-color: #CDD4DA;
+    padding: 10px 5px 10px 5px;
+    cursor: pointer;
+}
+.tab_content_description summary:hover, details[open] summary {
+    background-color: #94A1AF;
+    color: #FFFFFF;
+}
+.tab_content_description summary span.el_edit {
+    font-size: 12px;
+    color: #000000;
+}
+.tab_content_description summary:hover span.el_edit {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+.tab_content_description details[open] span.el_edit {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+.tab_content_description details {
+    margin-bottom: 20px;
+}
+
+
+/** タブ表示切替 ------------------------------------------ */
+/*タブのスタイル*/
+.tab_item {
+    min-width: 165px;
+    height: 50px;
+    margin-right: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: #5A6E83;
+    line-height: 50px;
+    font-size: max(1em, min(16px, 2vw));
+    text-align: center;
+    color: #fff;
+    display: block;
+    float: left;
+    text-align: center;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.tab_item:hover {
+    opacity: 0.75;
+}
+
+/*ラジオボタンを全て消す*/
+input[name="tab_item"] {
+    display: none;
+}
+
+/*タブ切り替えの中身のスタイル*/
+.tabs {
+    position: relative;
+}
+/*タブ切り替えの中身のスタイル*/
+.tab_content {
+    visibility: hidden;
+    position: absolute;
+    top:50px;
+    width: 100%;
+    clear: both;
+    overflow-x: auto; /* 水平スクロールを可能にする */
+    z-index: -1;
+    background-color: #fdfdfd;
+    padding: 20px;
+}
+
+/* イベント設定：iframeを利用したセレクタ設定 */
+#event-iframe-containar {
+	overflow-x: scroll;
+	width: 100%;
+}
+
+
+/*選択されているタブのコンテンツのみを表示*/
+#tab_sitemanage:checked ~ #tab_sitemanage_content {
+    visibility: visible;
+    position: absolute;
+    z-index: 1;
+}
+
+/*選択されているタブのスタイルを変える*/
+.tabs input:checked + .tab_item {
+    background-color: #fff;
+    color: #5A6E83;
+}
+.visible_animation {
+    visibility: visible;
+    animation-duration: 0.5s;
+    animation-name: fade-in;
+}
+  @keyframes fade-in {
+      0% {
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      50% {
+        visibility: visible;
+        opacity: 0.5;
+      }
+
+      100% {
+        visibility: visible;
+        opacity: 1;
+      }
+  }
+
+
+
+/* QA ZERO start */
+.flex-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 2em;
+}
+
+.flex-form > button {
+    width: auto;
+    height: 100%;
+  }
+  
+.flex-form > input[type="text"] {
+    flex-grow: 1;
+    width: 10em;
+    height: 100%;
+}
+
+.domainurl-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.domainurl-form > input[type="url"] {
+    width: 100ch;
+    letter-spacing: 0.5px;
+    height: 2em;
+}
+
+.domainurl-form > label {
+    padding-right: 2em;
+}
+
+.domainurl-form > button {
+    width: auto;
+    height: 100%;
+}
+
+.sm_tablenav{
+    margin-bottom: 10px;
+}
+
+.wp-like-table {
+    border-collapse: collapse;
+    table-layout: auto;
+    overflow-x: auto;
+}
+  
+.wp-like-table th,
+.wp-like-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+    max-width: 300px;
+    
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+}
+
+.text-center{
+    text-align: center !important;
+}
+
+.text-center > input[type='checkbox']{
+    margin: 0 !important;
+}
+
+.wp-like-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.red-signal::before {
+    content: "■";
+    color: red;
+  }
+
+.yellow-signal::before {
+    content: "■";
+    color: yellow;
+  }
+
+.green-signal::before {
+    content: "■";
+    color: green;
+}
+
+/* QA ZERO end */
+

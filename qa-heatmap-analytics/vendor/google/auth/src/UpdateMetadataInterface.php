@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2020 Google LLC
  *
@@ -15,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace QAAnalyticsVendor\Google\Auth;
+
+namespace Google\Auth;
 
 /**
  * Describes a Credentials object which supports updating request metadata
@@ -24,6 +24,7 @@ namespace QAAnalyticsVendor\Google\Auth;
 interface UpdateMetadataInterface
 {
     const AUTH_METADATA_KEY = 'authorization';
+
     /**
      * Updates metadata with the authorization token.
      *
@@ -32,5 +33,9 @@ interface UpdateMetadataInterface
      * @param callable $httpHandler callback which delivers psr7 request
      * @return array updated metadata hashmap
      */
-    public function updateMetadata($metadata, $authUri = null, callable $httpHandler = null);
+    public function updateMetadata(
+        $metadata,
+        $authUri = null,
+        callable $httpHandler = null
+    );
 }

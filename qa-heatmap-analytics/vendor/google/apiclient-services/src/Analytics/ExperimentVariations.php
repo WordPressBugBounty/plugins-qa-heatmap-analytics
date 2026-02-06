@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,91 +14,94 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\Analytics;
 
-class ExperimentVariations extends \QAAnalyticsVendor\Google\Model
+namespace Google\Service\Analytics;
+
+class ExperimentVariations extends \Google\Model
 {
-    /**
-     * @var string
-     */
-    public $name;
-    /**
-     * @var string
-     */
-    public $status;
-    /**
-     * @var string
-     */
-    public $url;
-    public $weight;
-    /**
-     * @var bool
-     */
-    public $won;
-    /**
-     * @param string
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    /**
-     * @param string
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-    }
-    /**
-     * @return string
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-    /**
-     * @param string
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-    }
-    /**
-     * @return string
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
-    public function setWeight($weight)
-    {
-        $this->weight = $weight;
-    }
-    public function getWeight()
-    {
-        return $this->weight;
-    }
-    /**
-     * @param bool
-     */
-    public function setWon($won)
-    {
-        $this->won = $won;
-    }
-    /**
-     * @return bool
-     */
-    public function getWon()
-    {
-        return $this->won;
-    }
+  /**
+   * @var string
+   */
+  public $name;
+  /**
+   * @var string
+   */
+  public $status;
+  /**
+   * @var string
+   */
+  public $url;
+  public $weight;
+  /**
+   * @var bool
+   */
+  public $won;
+
+  /**
+   * @param string
+   */
+  public function setName($name)
+  {
+    $this->name = $name;
+  }
+  /**
+   * @return string
+   */
+  public function getName()
+  {
+    return $this->name;
+  }
+  /**
+   * @param string
+   */
+  public function setStatus($status)
+  {
+    $this->status = $status;
+  }
+  /**
+   * @return string
+   */
+  public function getStatus()
+  {
+    return $this->status;
+  }
+  /**
+   * @param string
+   */
+  public function setUrl($url)
+  {
+    $this->url = $url;
+  }
+  /**
+   * @return string
+   */
+  public function getUrl()
+  {
+    return $this->url;
+  }
+  public function setWeight($weight)
+  {
+    $this->weight = $weight;
+  }
+  public function getWeight()
+  {
+    return $this->weight;
+  }
+  /**
+   * @param bool
+   */
+  public function setWon($won)
+  {
+    $this->won = $won;
+  }
+  /**
+   * @return bool
+   */
+  public function getWon()
+  {
+    return $this->won;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(ExperimentVariations::class, 'QAAnalyticsVendor\\Google_Service_Analytics_ExperimentVariations');
+class_alias(ExperimentVariations::class, 'Google_Service_Analytics_ExperimentVariations');

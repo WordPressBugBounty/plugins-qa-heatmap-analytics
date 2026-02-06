@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2014 Google Inc.
  *
@@ -15,27 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-namespace QAAnalyticsVendor\Google\Service\AnalyticsReporting;
 
-class SimpleSegment extends \QAAnalyticsVendor\Google\Collection
+namespace Google\Service\AnalyticsReporting;
+
+class SimpleSegment extends \Google\Collection
 {
-    protected $collection_key = 'orFiltersForSegment';
-    protected $orFiltersForSegmentType = OrFiltersForSegment::class;
-    protected $orFiltersForSegmentDataType = 'array';
-    /**
-     * @param OrFiltersForSegment[]
-     */
-    public function setOrFiltersForSegment($orFiltersForSegment)
-    {
-        $this->orFiltersForSegment = $orFiltersForSegment;
-    }
-    /**
-     * @return OrFiltersForSegment[]
-     */
-    public function getOrFiltersForSegment()
-    {
-        return $this->orFiltersForSegment;
-    }
+  protected $collection_key = 'orFiltersForSegment';
+  protected $orFiltersForSegmentType = OrFiltersForSegment::class;
+  protected $orFiltersForSegmentDataType = 'array';
+
+  /**
+   * @param OrFiltersForSegment[]
+   */
+  public function setOrFiltersForSegment($orFiltersForSegment)
+  {
+    $this->orFiltersForSegment = $orFiltersForSegment;
+  }
+  /**
+   * @return OrFiltersForSegment[]
+   */
+  public function getOrFiltersForSegment()
+  {
+    return $this->orFiltersForSegment;
+  }
 }
+
 // Adding a class alias for backwards compatibility with the previous class name.
-\class_alias(SimpleSegment::class, 'QAAnalyticsVendor\\Google_Service_AnalyticsReporting_SimpleSegment');
+class_alias(SimpleSegment::class, 'Google_Service_AnalyticsReporting_SimpleSegment');

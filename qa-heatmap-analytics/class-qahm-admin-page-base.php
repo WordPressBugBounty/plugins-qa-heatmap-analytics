@@ -9,10 +9,6 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	public $hook_suffix;
 
 	function __construct() {
-		//$this->regist_ajax_func( 'ajax_view_oneyear_popup' );
-
-		// RSSフィードのキャッシュを3時間に変更
-		add_filter( 'wp_feed_cache_transient_lifetime', array( $this, 'set_feed_cache_time' ) );
 	}
 	
 	/**
@@ -22,9 +18,18 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		$css_dir_url = $this->get_css_dir_url();
 		wp_enqueue_style( QAHM_NAME . '-sweet-alert-2', $css_dir_url . '/lib/sweet-alert-2/sweetalert2.min.css', null, QAHM_PLUGIN_VERSION );
 		wp_enqueue_style( QAHM_NAME . '-reset', $css_dir_url . 'reset.css', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_style( QAHM_NAME . '-qa-table', $css_dir_url . '/lib/qa-table/qa-table.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
 		wp_enqueue_style( QAHM_NAME . '-common', $css_dir_url . 'common.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_style( QAHM_NAME . '-style', $css_dir_url . 'style.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_style( QAHM_NAME . '-admin-page-base', $css_dir_url . 'admin-page-base.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
+		// Differs between ZERO and QA - Start ----------
+		// 環境によるCSSの読み込み
+		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
+			wp_enqueue_style( QAHM_NAME . '-qa-table-custom', $css_dir_url . 'qa-table-custom-zero.css', array( QAHM_NAME . '-qa-table' ), QAHM_PLUGIN_VERSION );
+			wp_enqueue_style( QAHM_NAME . '-admin-page-common', $css_dir_url . 'admin-page-common-zero.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
+		} elseif ( QAHM_TYPE === QAHM_TYPE_WP ) {
+			wp_enqueue_style( QAHM_NAME . '-qa-table-custom', $css_dir_url . 'qa-table-custom-wp.css', array( QAHM_NAME . '-qa-table' ), QAHM_PLUGIN_VERSION );
+			wp_enqueue_style( QAHM_NAME . '-admin-page-common', $css_dir_url . 'admin-page-common-wp.css', array( QAHM_NAME . '-reset' ), QAHM_PLUGIN_VERSION );
+		}
+		// Differs between ZERO and QA - End ----------
 	}
 	
 	/**
@@ -33,58 +38,112 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	protected function common_enqueue_script() {
 		$js_dir_url = $this->get_js_dir_url();
 		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( QAHM_NAME . '-font-awesome',  $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2',  $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-alert-message',  $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery' ), QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-load-screen',  $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION, false );
-		wp_enqueue_script( QAHM_NAME . '-effect',  $js_dir_url . 'effect.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION, false );
-		if( ! $this->wrap_get_option( 'plugin_first_launch' ) && ! $this->is_maintenance() ) {
-			wp_enqueue_script( QAHM_NAME . '-admin-page-base',  $js_dir_url . 'admin-page-base.js', array( QAHM_NAME . '-effect' ), QAHM_PLUGIN_VERSION, false );
-		}
+		wp_enqueue_script( QAHM_NAME . '-qa-table',  $js_dir_url . 'lib/qa-table/qa-table.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-font-awesome',  $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2',  $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-alert-message',  $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery', QAHM_NAME . '-qa-table' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-load-screen',  $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-effect',  $js_dir_url . 'effect.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION );
 	}
 
 	/**
 	 * 共通部分のインラインスクリプト
 	 */
 	protected function get_common_inline_script() {
-		$dev001 = defined( 'QAHM_DEV001' ) ? true : false;
-		$dev002 = defined( 'QAHM_DEV002' ) ? true : false;
-		$dev003 = defined( 'QAHM_DEV003' ) ? true : false;
+		$dev001 = defined( 'QAZR_DEV001' ) ? true : false;
+		$dev002 = defined( 'QAZR_DEV002' ) ? true : false;
+		$dev003 = defined( 'QAZR_DEV003' ) ? true : false;
+		global $qahm_time;
+		$timezone = $qahm_time->timezone_obj->getName();
 
 		$scripts = array(
 			'nonce_api'            => wp_create_nonce( QAHM_Data_Api::NONCE_API ),
 			'ajax_url'             => admin_url( 'admin-ajax.php' ),
-			'const_debug_level'    => QAHM_DEBUG_LEVEL,
-			'const_debug'          => QAHM_DEBUG,
-			'license_plans'        => $this->wrap_get_option( 'license_plans' ),
+			'debug_level'          => QAHM_DEBUG_LEVEL,
+			'debug'                => QAHM_DEBUG,
+			'type'                 => QAHM_TYPE,
+			'type_zero'            => QAHM_TYPE_ZERO,
+			'type_wp'              => QAHM_TYPE_WP,
+			//'license_plan'         => $this->wrap_get_option( 'license_plan' ),
+			//'license_plans'        => $this->get_plan(),
 			'site_url'             => get_site_url(),
 			'plugin_dir_url'       => plugin_dir_url( __FILE__ ),
 			'plugin_version'       => QAHM_PLUGIN_VERSION,
 			'data_dir_url'         => $this->get_data_dir_url(),
 			'devices'              => QAHM_DEVICES,
-			'announce_friend_plan' => $this->wrap_get_option( 'announce_friend_plan' ),
-			'language'             => get_bloginfo( 'language' ),
 			'dev001'               => $dev001,
 			'dev002'               => $dev002,
 			'dev003'               => $dev003,
+			// common variables
+			'wp_gmt_offset' 	  	=> get_option( 'gmt_offset' ),
+			'wp_timezone'	  		=> $timezone,
+			'wp_lang'		  		=> get_option( 'WPLANG' ),
+			'wp_user_locale'	  	=> get_user_locale(),
 		);
 
-		if( $this->wrap_get_option( 'announce_friend_plan' ) && ! $this->wrap_get_option( 'plugin_first_launch' ) && ! $this->is_maintenance() ) {
-			$this->wrap_update_option( 'announce_friend_plan', false );
-		}
 		return $scripts;
 	}
 
 	/**
-	 * 共通部分の翻訳
+	 * JS用 localization(l10n) テキスト（admin-page共通）
 	 */
 	protected function get_common_localize_script() {
 		$localize = array(
-		//	'test' => $this->test( 'ここに共通ローカライズ単語を書いていく。このメッセージは翻訳不要', 'qa-heatmap-analytics' ),
+		//	'test' => esc_html__( 'ここに共通ローカライズ単語を書いていく。このメッセージは翻訳不要', 'qa-heatmap-analytics' ),
 		);
 
 		return $localize;
+	}
+
+	/**
+	 * 簡略な言語コード（例: ja, en）を完全なロケール（例: ja_JP, en_US）に変換する
+	 *
+	 * @param string $locale get_locale() や determine_locale() の返り値
+	 * @return string 完全ロケール（未定義ならそのまま返す）
+	 */
+	protected function normalize_locale( $locale ) {
+		$locale_map = array(
+			// 日本語
+			'ja' => 'ja_JP',
+
+			// 英語（アメリカ）
+			'en' => 'en_US',
+
+			// 英語（イギリス）など追加も可能
+			'en_GB' => 'en_GB',
+
+			// 中国語
+			'zh' => 'zh_CN',
+			'zh-hans' => 'zh_CN', // 簡体字
+			'zh-hant' => 'zh_TW', // 繁体字
+
+			// フランス語
+			'fr' => 'fr_FR',
+
+			// ドイツ語
+			'de' => 'de_DE',
+
+			// スペイン語
+			'es' => 'es_ES',
+
+			// 韓国語
+			'ko' => 'ko_KR',
+
+			// イタリア語
+			'it' => 'it_IT',
+
+			// ロシア語
+			'ru' => 'ru_RU',
+
+			// ポルトガル語
+			'pt' => 'pt_PT',
+			'pt-br' => 'pt_BR',
+
+			// その他必要に応じて追加
+		);
+
+		return $locale_map[ strtolower( $locale ) ] ?? $locale;
 	}
 
 	/**
@@ -102,235 +161,83 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	 * jQueryが存在しない時のメッセージを表示
 	 */
 	protected function view_not_enqueue_jquery_html() {
-		$msg = '<div id="qahm-error" class="error notice is-dismissible"><p>';
-		/* translators: placeholders are for the plugin name */
-		$msg .= sprintf( esc_html__( 'Since jquery is not loaded, the function of %s cannot be enabled.', 'qa-heatmap-analytics' ), QAHM_PLUGIN_NAME );
+		$msg = '<div id="qahm-error" class="error notice is-dismissible"><p>';		
+		$msg .= sprintf(
+			/* translators: %s is the plugin name */
+			esc_html__( 'jQuery is not loaded, so %s cannot function properly.', 'qa-heatmap-analytics' ),
+			QAHM_PLUGIN_NAME
+		);
 		$msg .= '<br>';
-		$msg .= esc_html__( 'Use "wp_enqueue_script" to load jquery.', 'qa-heatmap-analytics' );
+		$msg .= esc_html__( 'Please use "wp_enqueue_script" to load jQuery.', 'qa-heatmap-analytics' );
 		$msg .= '</p></div>';
 		echo wp_kses_post( $msg );
+	}
+
+	/**
+	 * jQueryが存在しない時のメッセージを出力
+	 */
+	protected function print_not_enqueue_jquery_html() {
+		$this->view_not_enqueue_jquery_html();
 	}
 
 	/**
 	 * メンテナンス表示
 	 */
 	protected function view_maintenance_html() {
-		$style = <<< EOD
-		<style>
-		.mainteqa {
-			width: 800px;
-			background-color: #fcfcfc;
-			padding: 24px;
-		}
-		.mainteqa h1 {
-			border-bottom: solid 2px #f9cdc5;
-			margin-bottom: 32px;
-			font-size: 1.2rem;
-			line-height: 2;
-		}
-		</style>
-EOD;
+		$style = '<style>' .
+				 '.mainteqa {' .
+				 'width: 800px;' .
+				 'background-color: #fcfcfc;' .
+				 'padding: 24px;' .
+				 '}' .
+				 '.mainteqa h1 {' .
+				 'border-bottom: solid 2px #f9cdc5;' .
+				 'margin-bottom: 32px;' .
+				 'font-size: 1.2rem;' .
+				 'line-height: 2;' .
+				 '}' .
+				 '.mainteqa p {' .
+				 'line-height: 1.8;' .
+				 'margin-bottom: 1em;' .
+				 '}' .
+				 '</style>';
 
 		$mes  = '<div class="mainteqa">';
 		$mes .= '<h1>' . esc_html__( 'Maintenance Notice', 'qa-heatmap-analytics' ) . '</h1>';
-		$mes .= '<p>' . esc_html__( 'Your data is currently undergoing maintenance. Please note that this process may take some time.', 'qa-heatmap-analytics' ) . '</p>';
-		$mes .= '<p>' . esc_html__( 'Usually, after updating the plugin, it may take a few to several minutes for the changes to take effect. You may need to reload the page afterward.', 'qa-heatmap-analytics' ) . '</p>';		
-		$mes .= '<p>' . sprintf( 
-				/* translators: placeholders are for the link */
-				esc_html__( 'If you continue to see this notice for an extended period, please refer to our %1$stroubleshooting page%2$s.', 'qa-heatmap-analytics' ), 
-				'<a href="https://mem.quarka.org/en/manual/keep-getting-data-is-under-maintenance/" target="_blank" rel="noopener">', 
-				'</a>'
-			) . '</p>';
+		$mes .= '<p>' . esc_html__( 'Your data is currently undergoing maintenance. This process may take a few minutes to complete.', 'qa-heatmap-analytics' ) . '</p>';
+		$mes .= '<p>' . esc_html__( 'After updating the plugin, changes may take a few minutes to apply. Reloading the page afterward is recommended.', 'qa-heatmap-analytics' ) . '</p>';
+		$mes .= '<p>' . sprintf(
+			/* translators: %1$s and %2$s are anchor tags for the troubleshooting page */
+			esc_html__( 'If this notice continues to appear for an extended period, please refer to our %1$sTroubleshooting page%2$s.', 'qa-heatmap-analytics' ),
+			'<a href="https://mem.quarka.org/en/manual/keep-getting-data-is-under-maintenance/" target="_blank" rel="noopener">',
+			'</a>'
+		) . '</p>';
+		
+		$mes .= '<hr>';
+		$locale = get_locale();
+		if ( strpos( $locale, 'ja' ) === 0 ) {
+			$mes .= '<p><strong>QA Analytics から更新された方へ</strong><br>';
+			$mes .= 'これまでの計測データは、QA Assistants で利用できるよう引き継ぎ準備中です。<br>';
+			$mes .= 'しばらくすると通常の画面に戻りますが、夜間処理が完了するまでレポートは「データがありません」と表示されます。<br>';
+			$mes .= '計測は通常どおり継続しています。明日の反映を楽しみにお待ちください。</p>';
+		} else {
+			$mes .= '<p><strong>' . esc_html__( 'For users updating from QA Analytics', 'qa-heatmap-analytics' ) . '</strong><br>';
+			$mes .= esc_html__( 'Your past analytics data is being carried over and prepared for use in QA Assistants.', 'qa-heatmap-analytics' ) . '<br>';
+			$mes .= esc_html__( 'The normal screen will return shortly, but reports will show "No data available" until the nightly process is finished.', 'qa-heatmap-analytics' ) . '<br>';
+			$mes .= esc_html__( 'Tracking continues as usual, so please look forward to seeing your data reflected tomorrow.', 'qa-heatmap-analytics' ) . '</p>';	
+		}
 		$mes .= '</div>';
 
-		echo wp_kses( $style, array(
-			'style' => array(),
-		) );
+		echo wp_kses( $style, array( 'style' => array() ) );
 		echo wp_kses_post( $mes );
 	}
 
-	protected function view_first_launch_html( $is_config_page = false ) {
-	    $img_dir_url = $this->get_img_dir_url();
-		$img_dir_url = esc_attr( $img_dir_url );
-
-		/* translators: placeholders are for the plugin version */
-		$h_welcome   	= sprintf( esc_html__( 'Welcome to QA Analytics %s !', 'qa-heatmap-analytics' ), QAHM_PLUGIN_VERSION );
-		$desc_cansee 	= esc_html__( 'You can use Real-Time View today.', 'qa-heatmap-analytics' ) . '<br>';
-		$desc_cansee 	.= esc_html__( 'As for analytics reports and a heatmap, wait and look forward to tomorrow when the data will be collected and processed.', 'qa-heatmap-analytics' );
-		/* translators: placeholders are for the link */
-		$helplink_starter = sprintf( esc_html__( '%1$s Starter Guide %2$s', 'qa-heatmap-analytics' ), '<a href="https://mem.quarka.org/en/manual/starter-quick-guide/" target="_blank" rel="noopener">', '<span class="qahm_link-mark"><i class="fas fa-external-link-alt"></i></span></a>' );
-
-		$h_withoutcookie = esc_html__( 'To Enable Cookieless Measurement', 'qa-heatmap-analytics' );
-		$set_cookiebannermode = esc_html__( 'If your site is using a cookie banner tool, please enable "Cookie Banner Compatibility Mode" in the plugin settings.', 'qa-heatmap-analytics' );
-
-		$h_precheck	= esc_html__( 'Pre-check', 'qa-heatmap-analytics' );
-		$list_precheck1 = esc_html__( 'JavaScript is NOT minified.', 'qa-heatmap-analytics' );
-		$list_precheck3 = esc_html__( 'PHP memory limit (memory_limit) is recommended 1G bytes or higher.', 'qa-heatmap-analytics' );
-		$list_precheck4 = esc_html__( 'PHP time limit (max_execution_time) is recomemended 240 seconds or longer.', 'qa-heatmap-analytics' );
-		/* translators: placeholders are for the link */
-		$helplink_precheck = sprintf( esc_html__( '%1$s Supported Environments %2$s', 'qa-heatmap-analytics' ), '<a href="https://mem.quarka.org/en/manual/site-environment/" target="_blank" rel="noopener">', '<span class="qahm_link-mark"><i class="fas fa-external-link-alt"></i></span></a>' );
-		
-		$h_start    = esc_html__( 'Get started!', 'qa-heatmap-analytics' );
-		/* translators: placeholders are for the link */
-		$agreepolicy = sprintf( esc_html__( 'By checking this box, I agree to the QA Analytics %1$s terms %2$s and %3$s privacy policy %4$s', 'qa-heatmap-analytics' ), '<a href="https://quarka.org/en/terms/" target="_blank" rel="noopener">', '</a>', '<a href="https://quarka.org/en/privacy-policy/" target="_blank" rel="noopener">', '</a>' );
-		$continue    = esc_attr_x( 'Continue', 'on pre-check panel', 'qa-heatmap-analytics' );
-		$alert_update_failed = esc_html__( 'Failed updating. You can set and update it from Settings.', 'qa-heatmap-analytics' );
-
-		// 許可するタグと属性を設定
-		$allowed_html = array(
-			'div' => array( 'class' => array() ),
-			'style' => array(),
-			'h3' => array(),
-			'p' => array( 'style' => array() ),
-			'ul' => array( 'style' => array(), 'class' => array() ),
-			'li' => array(),
-			'span' => array( 'class' => array() ),
-			'a' => array( 'href' => array(), 'target' => array(), 'rel' => array() ),
-			'img' => array( 'src' => array(), 'alt' => array() ),
-			'form' => array( 'onsubmit' => array() ),
-			'input' => array( 'type' => array(), 'id' => array(), 'name' => array(), 'required' => array(), 'value' => array(), 'class' => array(), 'align' => array() ),
-			'script' => array( 'type' => array() ),
-		);
-
-	    $html = <<< EOL
-
-		<style>
-			.welcometoqa {
-				width: 800px;
-				background-color: white;
-				padding: 30px;
-			}
-			.welcometoqa h3 {
-				border-bottom: solid 2px #f9cdc5;
-				margin-top: 35px;
-				line-height: 2;
-			}
-			ul {
-				list-style: inside;
-			    margin-left: 6px;
-			}
-		</style>
-
-	    <div class="bl_whitediv">
-            <div class="welcometoqa">
-                <p style="text-align: center"><img src="{$img_dir_url}qa-a-head.png"></p>
-                <h3>{$h_welcome}</h3>
-				<p>{$desc_cansee}</p>
-                <p><span class="qahm_hatena-mark"><i class="far fa-question-circle"></i></span>{$helplink_starter}</p>
-				<h3>{$h_withoutcookie}</h3>
-				<p>{$set_cookiebannermode}</p>
-				<h3>{$h_precheck}</h3>
-				<ul>
-					<li>
-						{$list_precheck1}
-					</li>
-					<li>
-						{$list_precheck3}
-					</li>
-					<li>
-						{$list_precheck4}
-					</li>
-				</ul>
-				<p><span class="qahm_hatena-mark"><i class="far fa-question-circle"></i></span>{$helplink_precheck}</p>
-                <form onsubmit="formSubmit(this);return false">
-					<h3>{$h_start}</h3>
-					<p class="mailselect"><input type="checkbox" id="agreement" name="agreement" required>&nbsp;{$agreepolicy}</p>
-               		<p align="right"><input type="submit" name="submit" id="" value="{$continue}" class="button button-primary"></p>
-                </form>
-            </div>
-	    </div>
-
-		<script>
-		function formSubmit( formobj ) {
-			let submitb = formobj['submit'];
-			submitb.setAttribute( 'disabled', true );
-
-			jQuery.ajax(
-				{
-					type: 'POST',
-					url: qahm.ajax_url,
-					dataType : 'json',
-					data: {
-						'action': 'qahm_ajax_save_first_launch',
-						'nonce' : qahm.nonce_api,
-					},
-				}
-			).done(
-				function( data ){
-					submitb.removeAttribute( 'disabled' );
-					location.reload();
-				}
-			).fail(
-				function( jqXHR, textStatus, errorThrown ){
-					alert('{$alert_update_failed}');
-					qahm.log_ajax_error( jqXHR, textStatus, errorThrown );
-				}
-			);
-		}
-		</script>
-EOL;
-
-		echo wp_kses( $html, $allowed_html );
-	}
-
 	/**
-	 * QA 告知を表示
-	 *  2021-03-13 以降使っていないのでコメントアウト
+	 * メンテナンス表示を出力
 	 */
-	/*
-	protected function view_announce_html() {
-		global $qahm_time;
-		$diff_s = $qahm_time->xsec_num( '2021-03-13' );
-		if( $diff_s < 0 ) {
-			return;
-		}
-
-		$camp_btn = '';
-		
-		$date   = '2021-02-12 14:00:00';
-		$diff_s = $qahm_time->xsec_num( $date );
-		$diff_d = $qahm_time->xday_num( $date );
-		if ( 0 < $diff_d ) {
-			// カウントダウン
-			$camp_text = $this->qa_lang__( sprintf( 'QA 1周年ありがとうキャンペーンまであと<span class="qahm-announce-emphasize">%d</span>日', $diff_d ), 'qa-heatmap-analytics' );
-		} elseif ( 0 === $diff_d && $diff_s > 0 ) {
-			// 当日 発表まで
-			$camp_text = $this->qa_lang__( 'QA 1周年ありがとうキャンペーンは本日14時オープン。楽しみにお待ちください！', 'qa-heatmap-analytics' );
-		} else {
-			// キャンペーン中
-			$camp_text = $this->qa_lang__( 'QA 1周年記念ありがとうWキャンペーンは3/12 23:59まで。先着順で当たります。詳しくは<a href="https://quarka.org/wcampaign-licence?ap=db&pv=' . QAHM_PLUGIN_VERSION . '" target="_blank" rel="noopener">こちら</a>', 'qa-heatmap-analytics' );
-			$camp_btn  = '<div class="qahm-announce-button">' .
-				'<a href="https://quarka.org/wcampaign-licence?ap=db&pv=' . QAHM_PLUGIN_VERSION . '" target="_blank" rel="noopener">' .
-				$this->qa_lang__( '詳しくはこちら', 'qa-heatmap-analytics' ) .
-				'</a>'.
-				'</div>';
-		}
-		$svg_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 130 126"><defs><style>.cls-1{fill:#00709e;}.cls-2{fill:none;}</style></defs><path class="cls-1" d="M312.85,477.41h-1.46a2.28,2.28,0,1,1,0-4.55h.66c20.14.07,29.47-4.91,33.75-9.16a17.25,17.25,0,0,0,5.09-12.9,21.7,21.7,0,0,0-8-16.54,2.28,2.28,0,0,1-.94-1.79c-.44-20.23-9.06-33-9.15-33.14a2.3,2.3,0,0,1-.19-2.24c0-.08,3.52-7.67,4-12.64.55-6,.52-16.44-5.89-18.84l-.11-.05c-2.09-.92-8.47,5.79-11.9,9.4-5.25,5.52-8.63,8.9-11.75,8.9a2.23,2.23,0,0,1-1-.22,18.27,18.27,0,0,0-14,0,2.23,2.23,0,0,1-1,.22c-3.12,0-6.5-3.38-11.75-8.9-3.43-3.6-9.81-10.32-11.9-9.4l-.11.05c-6.41,2.4-6.44,12.83-5.89,18.84.47,5,3.95,12.56,4,12.64a2.29,2.29,0,0,1-.19,2.25c-.09.12-8.71,12.9-9.15,33.13a2.29,2.29,0,0,1-1,1.81,21,21,0,0,0-7.95,16.52,17.26,17.26,0,0,0,5.1,12.9c4.21,4.2,13.36,9.16,33,9.16h1.44a2.28,2.28,0,0,1,0,4.55H286c-17.4.07-29.87-3.41-37-10.47a21.9,21.9,0,0,1-6.44-16.13,25.62,25.62,0,0,1,9-19.5c.62-17.83,7-29.86,9.22-33.45-1.07-2.48-3.46-8.44-3.88-13-1.16-12.56,1.95-20.9,8.76-23.48,5-2.13,10.8,4,16.95,10.44,2.62,2.76,6.5,6.84,8.17,7.43a22.95,22.95,0,0,1,16.53,0c1.65-.59,5.53-4.67,8.16-7.43,6.15-6.46,12-12.57,17-10.44,6.8,2.58,9.91,10.92,8.75,23.48-.42,4.55-2.81,10.51-3.87,13,2.17,3.59,8.59,15.62,9.22,33.47a26.11,26.11,0,0,1,8.95,19.48A21.9,21.9,0,0,1,349,466.94c-7,6.95-19.16,10.47-36.15,10.47Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M270.59,398.56c-1.22-.44-3.72-7.75-4.85-12.43-1.28-5.61-1.88-12.75,2.52-14.88a3.23,3.23,0,0,1,1.4-.34c2,0,3.48,2.14,4.95,4.21.35.49.7,1,1.07,1.47a29.44,29.44,0,0,0,5.75,5.19c1.88,1.38,2.44,1.94,2,2.57-.14.21-.44.33-1.38.7a23.45,23.45,0,0,0-7.12,4c-2.86,2.45-3.51,6.37-3.83,8.25-.13.83-.18,1.06-.32,1.2a.48.48,0,0,1-.23.1Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M327.41,398.56a.4.4,0,0,1-.23-.1c-.14-.14-.19-.37-.32-1.2-.32-1.89-1-5.81-3.83-8.25a23.41,23.41,0,0,0-7.1-4c-1-.39-1.27-.5-1.4-.7-.4-.63.16-1.2,2-2.57a29.52,29.52,0,0,0,5.76-5.2c.36-.47.71-1,1.06-1.45,1.47-2.08,3-4.22,4.95-4.22a3.16,3.16,0,0,1,1.39.34c4.42,2.13,3.81,9.3,2.52,14.94-1.59,6.37-3.8,12-4.84,12.37Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M278.77,412.57s-1.53,4.08,0,5.92a7.45,7.45,0,0,0,5.24,2,8.57,8.57,0,1,1-5.25-7.93Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M325.93,412.57s-1.53,4.08,0,5.92a7.47,7.47,0,0,0,5.25,2,8.59,8.59,0,1,1-5.26-7.93Z" transform="translate(-233 -357.5)"/><path class="cls-1" d="M299,437.87c-5.84,0-10.58,3-10.58,6.63S293.15,455,299,455s10.58-6.85,10.58-10.51S304.83,437.87,299,437.87Z" transform="translate(-233 -357.5)"/><rect id="_スライス_" data-name="&lt;スライス&gt;" class="cls-2" width="130" height="126"/></svg>';
-		$allowed_html = array(
-			'svg' => array(
-				'xmlns' => array(),
-				'width' => array(),
-				'height' => array(),
-				'viewBox' => array(),
-				'fill' => array(),
-			),
-			'path' => array(
-				'd' => array(),
-				'fill' => array(),
-			),
-		);
-		$svg_icon = wp_kses( $svg_icon, $allowed_html );
-
-		echo <<< EOH
-			<div class="qahm-announce-container">
-				<div class="qahm-announce-icon">{$svg_icon}</div>
-				<div class="qahm-announce-text">{$camp_text}</div>
-				{$camp_btn}
-			</div>
-EOH;
-
+	protected function print_maintenance_html() {
+		$this->view_maintenance_html();
 	}
-	*/
 
 
 	/**
@@ -338,72 +245,125 @@ EOH;
 	 */
 	protected function view_rss_feed() {
 		$wp_lang_set = get_bloginfo( 'language' );
-		if ( $wp_lang_set === 'ja' ) {
-			include_once ABSPATH . WPINC . '/feed.php';
-			$rss = fetch_feed( 'https://mem.quarka.org/category/wpuserinfo/feed/' );
-			if ( is_wp_error( $rss ) ) {
-				//echo $rss->get_error_message();
-				return;
-			}
 
-			$maxitems = $rss->get_item_quantity( 5 );
-			if ( ! empty( $maxitems ) && $maxitems > 0 ) {
-				$rss_items = $rss->get_items( 0, $maxitems );
-				?>
-				<div id="qahm-rss" class="metabox-holder">
-					
-				<?php //キャンペーン告知窓読込み
-				//file removed
-				?>
+		// 日本語環境以外では表示しない
+		if ( strpos( $wp_lang_set, 'ja' ) !== 0 ) {
+			return;
+		}
 
-					<div class="postbox">
-						<h2><?php esc_html_e( 'QA Analytics News and Announcements', 'qa-heatmap-analytics' ); ?></h2>
-						<div class="rss-widget">
-							<h3><?php echo esc_html__( 'Installed Version', 'qa-heatmap-analytics' ) . ': ' . esc_html( QAHM_PLUGIN_VERSION ); ?></h3>
-							<ul>
-							<?php foreach ( $rss_items as $item ) { ?>
+		include_once ABSPATH . WPINC . '/feed.php';
+
+		// プラグイン種別に応じてRSS情報を設定		
+		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
+			$rss_url      = 'https://qazero.com/blog/feed/';
+			$heading_text = __( 'QA ZERO ブログ', 'qa-heatmap-analytics' );
+			$post_number  = 5;
+		} elseif ( QAHM_TYPE === QAHM_TYPE_WP ) {
+			$rss_url      = 'https://mem.quarka.org/category/wpuserinfo/feed/';
+			$heading_text = __( "What's New", 'qa-heatmap-analytics' );
+			$post_number  = 3;
+		} else {
+			return;
+		}
+
+		$rss = fetch_feed( $rss_url );
+		if ( is_wp_error( $rss ) ) {
+			return;
+		}
+
+		$maxitems = $rss->get_item_quantity( $post_number );
+		if ( empty( $maxitems ) || $maxitems <= 0 ) {
+			return;
+		}
+
+		$rss_items   = $rss->get_items( 0, $maxitems );
+		$date_format = 'Y年n月j日'; // 日本語前提で固定
+		?>
+
+		<div id="qa-zero-rss" class="qa-zero-data-container">
+			<div class="qa-zero-data">
+				<div class="qa-zero-data__title">
+					<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 25 24" fill="none">
+						<mask id="mask0_rss" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="3" y="3" width="19" height="18">
+							<path fill-rule="evenodd" clip-rule="evenodd" d="M18.1589 3C17.9101 3 17.6514 3.1 17.4623 3.29L15.6413 5.12L19.3729 8.87L21.1939 7.04C21.582 6.65 21.582 6.02 21.1939 5.63L18.8654 3.29C18.6664 3.09 18.4176 3 18.1589 3ZM14.5766 9.02L15.492 9.94L6.47648 19H5.56099V18.08L14.5766 9.02ZM3.5708 17.25L14.5766 6.19L18.3082 9.94L7.30241 21H3.5708V17.25Z" fill="white"/>
+						</mask>
+						<g mask="url(#mask0_rss)">
+							<rect x="0.586914" width="23.8823" height="24"/>
+						</g>
+					</svg>
+					<?php echo esc_html( $heading_text ); ?>
+				</div>
+
+				<div class="rss-widget">
+					<ul>
+						<?php foreach ( $rss_items as $item ) : ?>
 							<li>
-								<span>
-									<?php echo esc_html( $item->get_date( __( 'M j, Y', 'qa-heatmap-analytics' ) ) ); ?>
+								<span class="qa-zero-data__rss-date">
+									<?php echo esc_html( $item->get_date( $date_format ) ); ?>
 								</span>
 								<a href="<?php echo esc_url( $item->get_permalink() ); ?>" target="_blank" class="rsswidget" rel="noopener">
 									<?php echo esc_html( $item->get_title() ); ?>
 								</a>
 							</li>
-							<?php } ?>
-							</ul>
-						</div>
-					</div>
+						<?php endforeach; ?>
+					</ul>
 				</div>
-				<?php
-			}
-		}
-	}
+			</div>
+		</div>
 
+		<?php
+	}
 
 	/**
-	 * 1周年キャンペーンのメッセージの表示判定
-	 * ajaxはテキストを返すので true / false ではなく0か1かのテキストを返して判定
+	 * RSSを出力
 	 */
-	public function ajax_view_oneyear_popup() {
-		global $qahm_time;
-		$start = $qahm_time->xsec_num( '2021-02-12 14:00:00' );
-		$end   = $qahm_time->xsec_num( '2021-03-13 00:00:00' );
-		$popup = $this->wrap_get_option( 'campaign_oneyear_popup' );
-		if ( $start <= 0 && $end > 0 && ! $popup ) {
-			$this->wrap_update_option( 'campaign_oneyear_popup', true );
-			echo '1';
-		} else {
-			echo '0';
-		}
-		die();
+	protected function print_rss_feed() {
+		$this->view_rss_feed();
 	}
 
+    /**  
+     * フッターにXフォローボタンを表示（QA Assistantsのみ）  
+     */  
+    protected function create_footer_follow() {  
+        // Specific to QA - Start ---------------  
+        if ( QAHM_TYPE !== QAHM_TYPE_WP ) {  
+            return;  
+        }  
+        // Specific to QA - End ---------------  
+    
+        $locale = get_locale();  
+        $is_japanese = strpos( $locale, 'ja' ) === 0;  
+    
+        $message = __( 'Get the latest updates on QA Assistants on X (@QAAssistantsEN)', 'qa-heatmap-analytics' ) . ' - ';  
+        $link_text = __( 'Follow us for updates', 'qa-heatmap-analytics' );   
+    
+        if ( $is_japanese ) {  
+            $link = 'https://x.com/QAAssistants';  
+        } else {  
+            $link = 'https://x.com/QAAssistantsEN';  
+        }  
+    
+        $footer_html = '<div style="' .  
+            'margin-top:36px;' .  
+            'margin-bottom:48px;' .  
+            'padding:14px 18px;' .  
+            'border-top:1px solid #eaf5ff;' .  
+            'border-bottom:1px solid #eaf5ff;' .  
+            'background:#ffffff;' .  
+            'font-size:13px;' .  
+            'line-height:1.5;' .  
+            'color:#1d1d1d;' .  
+            '">' .  
+            esc_html( $message ) .  
+            '<a href="' . esc_url( $link ) . '"' .  // $link変数を適用  
+            ' target="_blank"' .  
+            ' rel="noopener noreferrer"' .  
+            ' style="font-weight:600; color:#1d9bf0; text-decoration:none; margin-left:2px;">' .  
+            esc_html( $link_text ) .  
+            '</a>' .  
+            '</div>';  
+    
+        echo wp_kses_post( $footer_html );  
+    }
 
-	/**
-	 * RSSフィードのキャッシュを3時間に変更
-	 */
-	public function set_feed_cache_time() {
-		return 60 * 60 * 3;
-	}
 } // end of class
