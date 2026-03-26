@@ -683,21 +683,23 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 							if ( $this_month !== $mail_month ) {
 								
 								$subject = sprintf(
-									/* translators: 1: plugin name */
-									__( 'Pageview Limit Reached on %s', 'qa-heatmap-analytics' ),
-										QAHM_PLUGIN_NAME_FOR_MAIL
-								);								
-								$message  = sprintf(
 									/* translators: 1: plugin name, 2: site name */
-									__( 'This is to inform you that the pageview capacity limit for %1$s on your site, %2$s, has been reached.', 'qa-heatmap-analytics' ),
+									__( '[%1$s] Monthly Pageview Limit Reached — %2$s', 'qa-heatmap-analytics' ),
 									QAHM_PLUGIN_NAME_FOR_MAIL,
 									get_bloginfo('name')
-								) . PHP_EOL . PHP_EOL;
-								$message .= __( 'As a result, data collection has been temporarily paused until the beginning of the next month.', 'qa-heatmap-analytics' ) . PHP_EOL . PHP_EOL;
-								$message .= __( 'You can confirm the current status on the Audience page:', 'qa-heatmap-analytics' ) . PHP_EOL;
-								$message .= admin_url( 'admin.php?page=qahm-user' ) . PHP_EOL . PHP_EOL;
-								$message .= __( 'If this limit feels too restrictive for your site, you can find more information in our documentation.', 'qa-heatmap-analytics' ) . PHP_EOL;
-								$message .= QAHM_DOCUMENTATION_URL . PHP_EOL . PHP_EOL;
+								);
+								$message  = sprintf(
+									/* translators: 1: plugin name, 2: site name, 3: current PV count, 4: PV limit */
+									__( 'The pageview count for %1$s on %2$s has reached the monthly limit (%3$s / %4$s PV).', 'qa-heatmap-analytics' ),
+									QAHM_PLUGIN_NAME_FOR_MAIL,
+									get_bloginfo('name'),
+									number_format_i18n( $count_pv ),
+									number_format_i18n( $limit_pv )
+								) . PHP_EOL;
+								$message .= __( 'Data recording is paused until the 1st of next month.', 'qa-heatmap-analytics' ) . PHP_EOL . PHP_EOL;
+								$message .= __( 'To change the monthly limit, see the documentation:', 'qa-heatmap-analytics' ) . PHP_EOL;
+								$message .= QAHM_DOCUMENTATION_URL . PHP_EOL;
+
 								
 								$this->qa_mail( $subject, $message );
 								$this->wrap_update_option( 'pv_warning_mail_month', $this_month );
@@ -769,21 +771,23 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									$lang_set = get_bloginfo('language');
 
 									$subject = sprintf(
-										/* translators: 1: plugin name */
-										__( 'Pageview Limit 80%% Reached on %s', 'qa-heatmap-analytics' ),
-										QAHM_PLUGIN_NAME_FOR_MAIL
-									);									
-									$message  = sprintf(
 										/* translators: 1: plugin name, 2: site name */
-										__( 'The pageview count for %1$s on your site, %2$s, has reached 80%% of the monthly limit.', 'qa-heatmap-analytics' ),
+										__( '[%1$s] Pageview Count at 80%% of Monthly Limit — %2$s', 'qa-heatmap-analytics' ),
 										QAHM_PLUGIN_NAME_FOR_MAIL,
 										get_bloginfo('name')
+									);
+									$message  = sprintf(
+										/* translators: 1: plugin name, 2: site name, 3: current PV count, 4: PV limit */
+										__( 'The pageview count for %1$s on %2$s has reached 80%% of the monthly limit (%3$s / %4$s PV).', 'qa-heatmap-analytics' ),
+										QAHM_PLUGIN_NAME_FOR_MAIL,
+										get_bloginfo('name'),
+										number_format_i18n( $count_pv ),
+										number_format_i18n( $limit_pv )
 									) . PHP_EOL;
-									$message .= __( 'Once the monthly limit is fully reached, data collection will be paused until the beginning of the next month.', 'qa-heatmap-analytics' ) . PHP_EOL . PHP_EOL;
-									$message .= __( 'You can check the current status on the Audience page:', 'qa-heatmap-analytics' ) . PHP_EOL;
-									$message .= admin_url( 'admin.php?page=qahm-user' ) . PHP_EOL . PHP_EOL;
-									$message .= __( 'For more information, please refer to the documentation below.', 'qa-heatmap-analytics' ) . PHP_EOL;
+									$message .= __( 'When the limit is reached, data recording will be paused until the 1st of next month.', 'qa-heatmap-analytics' ) . PHP_EOL . PHP_EOL;
+									$message .= __( 'To change the monthly limit, see the documentation:', 'qa-heatmap-analytics' ) . PHP_EOL;
 									$message .= QAHM_DOCUMENTATION_URL . PHP_EOL;
+
 									
 									$this->qa_mail( $subject, $message );
 									$this->wrap_update_option( 'pv_warning_mail_month', $this_month );

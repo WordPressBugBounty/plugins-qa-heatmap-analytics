@@ -152,12 +152,12 @@ input[name="tab_item"] {
 
 
 /*選択されているタブのコンテンツのみを表示*/
+#tab_sitemanage:checked ~ #tab_sitemanage_content, /* QA ZERO */
 #tab_plugin:checked ~ #tab_plugin_content,
 #tab_goal:checked ~ #tab_goal_content,
 #tab_mail:checked ~ #tab_mail_content,
 #tab_google:checked ~ #tab_google_content,
-#tab_attribute:checked ~ #tab_attribute_content,
-#tab_cookie:checked ~ #tab_cookie_content {
+#tab_site_attr:checked ~ #tab_site_attr_content {
     visibility: visible;
     position: absolute;
     z-index: 1;
@@ -191,17 +191,16 @@ input[name="tab_item"] {
   }
 
 
-#tab_goal_content table th, #tab_goal_content table td,
-#tab_attribute_content table th, #tab_attribute_content table td {
+#tab_goal_content table th, #tab_goal_content table td {
   padding: 1em 10px 1em 1em;
   border-right: 1px solid #bbb;
 }
-#tab_goal_content table label,
-#tab_attribute_content table label {
+#tab_goal_content table label {
     display: inline-block;
     margin-right: 10px;
 }
-#tab_google_content table th, #tab_google_content table td {
+#tab_google_content table th, #tab_google_content table td,
+#tab_site_attr_content table th, #tab_site_attr_content table td {
     padding: 1em 10px 1em 1em;
     text-align: left;
     border-right: 1px solid #bbb;
@@ -319,4 +318,122 @@ input[name="tab_item"] {
 }
 .mail_config_toph4 {
     margin-top: 0;
+}
+
+/* QA ZERO start */
+.flex-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 2em;
+}
+
+.flex-form > button {
+    width: auto;
+    height: 100%;
+  }
+  
+.flex-form > input[type="text"] {
+    flex-grow: 1;
+    width: 10em;
+    height: 100%;
+}
+
+.domainurl-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.domainurl-form > input[type="url"] {
+    width: 100ch;
+    letter-spacing: 0.5px;
+    height: 2em;
+}
+
+.domainurl-form > label {
+    padding-right: 2em;
+}
+
+.domainurl-form > button {
+    width: auto;
+    height: 100%;
+}
+
+.sm_tablenav{
+    margin-bottom: 10px;
+}
+
+.wp-like-table {
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+  
+.wp-like-table th,
+.wp-like-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.text-center{
+    text-align: center !important;
+}
+
+.text-center > input[type='checkbox']{
+    margin: 0 !important;
+}
+
+.wp-like-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.red-signal::before {
+    content: "■";
+    color: red;
+  }
+
+.yellow-signal::before {
+    content: "■";
+    color: yellow;
+  }
+
+.green-signal::before {
+    content: "■";
+    color: green;
+}
+
+/* QA ZERO end */
+
+h1 {
+    color: #1d2327;
+    font-size: 2em;
+    margin: .67em 0
+}
+
+h2,h3 {
+    color: #1d2327;
+    font-size: 1.3em;
+    margin: 1em 0
+}
+
+.update-core-php h2 {
+    margin-top: 4em
+}
+
+.update-messages h2,.update-php h2,h4 {
+    font-size: 1em;
+    margin: 1.33em 0
+}
+
+p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    unicode-bidi: isolate;
 }

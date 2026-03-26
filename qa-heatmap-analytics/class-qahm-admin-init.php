@@ -56,7 +56,6 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 			// QA Analytics から QA Assistants(v5) にアップデートした際のデータ更新中通知
 			add_action( 'admin_footer', array( $this, 'v5_data_unavailable_notice_footer_js' ) );
 			// QAHM_TYPE_WP ブロック内にフック追加（init_settings 内）
-			add_action( 'admin_notices', array( $this, 'show_advanced_mode_notice' ) );
 			add_action( 'admin_footer', array( $this, 'advanced_mode_notice_footer_js' ) );
 			add_action( 'wp_ajax_qahm_dismiss_advanced_notice', array( $this, 'ajax_dismiss_advanced_notice' ) );
 
@@ -116,7 +115,7 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 			echo wp_kses( $qa_announce_html, $qa_announce_allowed_tags );
 		} else if ( $pv_limit_rate >= 80 ) {
 			/* translators: placeholders are for the link */
-			$qa_announce_html = $this->create_qa_announce_html( esc_html__( 'Notice: Your site has used 80% of its monthly pageview limit.', 'qa-heatmap-analytics' ), 'warning' );
+			$qa_announce_html = $this->create_qa_announce_html( esc_html__( 'Your site has used 80% of its monthly pageview limit.', 'qa-heatmap-analytics' ), 'warning' );
 			echo wp_kses( $qa_announce_html, $qa_announce_allowed_tags );
 		}
 	}
@@ -139,7 +138,23 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 			return false;
 		}
 
-		global $qahm_admin_page_dashboard;
+		// Specific to QA Assistants - Start ---------------
+		// QA Assistantsの場合、intro_completedフラグがfalseなら「はじめに」画面のみ表示
+		if ( QAHM_TYPE === QAHM_TYPE_WP ) {
+			$intro_completed = $this->wrap_get_option( 'intro_completed' );
+			if ( ! $intro_completed ) {
+				$this->create_intro_menu_only();
+				return;
+			}
+		}
+		// Specific to QA Assistants - End ---------------
+
+		// Specific to ZERO - Start ---------------  
+		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {  
+			global $qahm_admin_page_dashboard;  
+		}  
+		// Specific to ZERO - End ---------------  
+
         global $qahm_admin_page_assistant;
 		global $qahm_admin_page_user;
 		global $qahm_admin_page_acquisition;
@@ -175,17 +190,24 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 		// ランディングページ系を表示するかどうか
 		$show_behavior_sub = ! $sub_menu_mode || ( $sub_menu_mode && $advanced_mode );
 
+		// ダッシュボードを最初に条件分岐で定義  
+		$pages = [];  
+		  
+		// Specific to ZERO - Start ---------------  
+		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {  
+		    $pages[QAHM_Admin_Page_Dashboard::SLUG] = [  
+		        'obj'   => $qahm_admin_page_dashboard,  
+		        'title' => __( 'Dashboard', 'qa-heatmap-analytics' ),  
+		        'icon'  => 'menu_dashboard.svg',  
+		        'when'  => QAHM_TYPE === QAHM_TYPE_ZERO,  
+		        'type'  => 'normal',  
+		        'slug'  => QAHM_Admin_Page_Dashboard::SLUG,  
+		    ];  
+		}  
+		// Specific to ZERO - End ---------------  
+
 		// 各ページ情報を slug キーでまとめる
-		$pages = [
-			QAHM_Admin_Page_Dashboard::SLUG => [
-				'obj'   => $qahm_admin_page_dashboard,
-				'title' => __( 'Dashboard', 'qa-heatmap-analytics' ),
-				'icon'  => 'menu_dashboard.svg',
-				// Differs between ZERO and QA
-				'when'  => $advanced_mode && QAHM_TYPE === QAHM_TYPE_ZERO,
-				'type'  => 'normal',
-				'slug'  => QAHM_Admin_Page_Dashboard::SLUG,
-			],
+		$pages += [
 			QAHM_Admin_Page_Assistant::SLUG => [
 				'obj'   => $qahm_admin_page_assistant,
 				'title' => _x( 'Explore', 'Admin screen label', 'qa-heatmap-analytics' ),
@@ -303,7 +325,9 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 
 		// 固定のメニュー順
 		$order = [
-			QAHM_Admin_Page_Dashboard::SLUG,
+			// Specific to ZERO - Start ---------------  
+			QAHM_TYPE === QAHM_TYPE_ZERO ? QAHM_Admin_Page_Dashboard::SLUG : null,  
+			// Specific to ZERO - End ---------------  
 			QAHM_Admin_Page_Assistant::SLUG,
 			QAHM_Admin_Page_Realtime::SLUG,
 			QAHM_Admin_Page_User::SLUG,
@@ -319,6 +343,9 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 			QAHM_Admin_Page_Entire::SLUG,
 			QAHM_Admin_Page_Help::SLUG,
 		];
+		
+		// $order配列定義後にnullを除去  
+		$order = array_filter($order);
 
 		if ( ! $sub_menu_mode ) {
 			// サブメニューOFF：order順でトップ/サブを分岐
@@ -434,6 +461,63 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 				$p['obj']->hook_suffix = $hook;
 			}
 		}
+	}
+
+	/**
+	 * 「はじめに」画面のみのメニューを作成（QA Assistants専用）
+	 */
+	private function create_intro_menu_only() {
+		global $qahm_admin_page_intro;
+
+		$cap = 'manage_options';
+
+		$parent_icon = 'data:image/svg+xml;base64,' . base64_encode('<?xml version="1.0" encoding="utf-8"?>
+			<!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+			<svg version="1.1" id="レイヤー_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+				y="0px" viewBox="0 0 256 256" style="enable-background:new 0 0 256 256;" xml:space="preserve">
+			<g>
+				<g>
+					<path class="st0" d="M232.7,237.5c4.6,0,9.1-2.1,12-6c4.9-6.6,3.6-16-3.1-20.9l-39.4-29.3l-15.2,26l36.7,27.3
+						C226.4,236.6,229.6,237.5,232.7,237.5z"/>
+					<path class="st1" d="M186.5,189.8c-1.3,0-2.7-0.4-3.8-1.3l-78.5-59c-2.1-1.6-3-4.3-2.3-6.8c0.7-2.5,2.9-4.4,5.5-4.7l44.9-4.6
+						c3.6-0.4,6.7,2.2,7,5.7c0.4,3.5-2.2,6.7-5.7,7l-28.6,2.9l65.4,49.1c2.8,2.1,3.4,6.1,1.3,9C190.4,188.9,188.4,189.8,186.5,189.8z"
+						/>
+					<path class="st2" d="M117.4,237c-19.1,0-38-5.1-54.9-14.9c-25.2-14.7-43.2-38.4-50.6-66.6C-3.3,97.2,31.6,37.4,89.9,22.1
+						C148.1,6.8,208,41.7,223.3,100l0,0c15.3,58.2-19.6,118.1-77.9,133.4C136.1,235.8,126.7,237,117.4,237z M117.6,44.1
+						c-7,0-14.1,0.9-21.2,2.8C51.8,58.6,25,104.4,36.8,149c5.7,21.6,19.4,39.7,38.7,51c19.3,11.3,41.8,14.3,63.4,8.7
+						c44.6-11.7,71.3-57.5,59.6-102.1C188.6,69,154.7,44.1,117.6,44.1z"/>
+					<path class="st1" d="M169.4,124.8c-0.1,0-0.2,0-0.3,0c-4-0.2-7.1-3.5-6.9-7.5c0,0,0,0,0,0c0.2-3.9,3.5-7,7.5-6.9
+						c4,0.2,7.1,3.5,6.9,7.5C176.4,121.8,173.2,124.8,169.4,124.8z"/>
+					<path class="st1" d="M186.5,123.2c-0.1,0-0.2,0-0.3,0c-4-0.2-7.1-3.5-6.9-7.5c0,0,0,0,0,0c0.2-3.9,3.5-7,7.5-6.9
+						c1.9,0.1,3.7,0.9,5,2.3c1.3,1.4,2,3.3,1.9,5.2C193.5,120.2,190.3,123.2,186.5,123.2z"/>
+				</g>
+			</g>
+			</svg>'
+		);
+
+		$hook = add_menu_page(
+			QAHM_PLUGIN_NAME,
+			QAHM_PLUGIN_NAME,
+			$cap,
+			QAHM_Admin_Page_Intro::SLUG,
+			array( $qahm_admin_page_intro, 'create_html' ),
+			$parent_icon
+		);
+		add_action( 'admin_enqueue_scripts', array( $qahm_admin_page_intro, 'enqueue_scripts' ) );
+		$qahm_admin_page_intro->hook_suffix = $hook;
+
+		// 設定画面も登録（サブメニューとして非表示）  
+		global $qahm_admin_page_config;  
+		$hook = add_submenu_page(  
+			null, // 親スラッグを null にすることでメニューには表示されない  
+			__( 'Settings', 'qa-heatmap-analytics' ),  
+			__( 'Settings', 'qa-heatmap-analytics' ),  
+			$cap,  
+			QAHM_Admin_Page_Config::SLUG,  
+			array( $qahm_admin_page_config, 'create_html' )  
+		);  
+		add_action( 'admin_enqueue_scripts', array( $qahm_admin_page_config, 'enqueue_scripts' ) );  
+		$qahm_admin_page_config->hook_suffix = $hook;
 	}
 
 	// ユーザーを新規追加した際、管理画面にZEROカラーを適用
@@ -791,11 +875,15 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 	/**
 	 * QA Assistants のみ
 	 * Advanced OFFかつ未dismissのとき、プラグイン配下ページで案内を出す
+	 * since March 2026「有効化しました」ページで案内する形になったので、この関数呼び出しはしない
 	 */
 	public function show_advanced_mode_notice() {
 		// 権限・ページ判定
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 		if ( ! method_exists( $this, 'is_qahm_admin_page' ) || ! $this->is_qahm_admin_page() ) { return; }
+
+		// 「はじめに」画面では表示しない
+		if ( isset( $_GET['page'] ) && $_GET['page'] === QAHM_NAME . '-intro' ) { return; }
 
 		// Advanced OFF を wp_options 'advanced_mode' で判定（true/false想定）
 		$advanced_mode = $this->wrap_get_option( 'advanced_mode', false );
@@ -830,6 +918,8 @@ class QAHM_Admin_Init extends QAHM_File_Base {
 		// 同じ条件で出す時だけJSを出力（無駄ロード防止）
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 		if ( ! method_exists( $this, 'is_qahm_admin_page' ) || ! $this->is_qahm_admin_page() ) { return; }
+		// 「はじめに」画面では表示しない
+		if ( isset( $_GET['page'] ) && $_GET['page'] === QAHM_NAME . '-intro' ) { return; }
 		if ( $this->wrap_get_option( 'advanced_mode', false ) ) { return; }
 		if ( (bool) get_user_meta( get_current_user_id(), 'qahm_advanced_notice_dismissed', true ) ) { return; }
 		?>

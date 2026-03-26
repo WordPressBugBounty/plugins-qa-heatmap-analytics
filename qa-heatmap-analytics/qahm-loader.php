@@ -147,6 +147,11 @@ require_once dirname( __FILE__ ) . '/class-qahm-admin-page-goals.php';
 if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
     require_once dirname( __FILE__ ) . '/class-qahm-admin-page-ai-report.php';
 }
+// Specific to QA Assistants - Start ---------------
+if ( QAHM_TYPE === QAHM_TYPE_WP ) {
+    require_once dirname( __FILE__ ) . '/class-qahm-admin-page-intro.php';
+}
+// Specific to QA Assistants - End ---------------
 require_once dirname( __FILE__ ) . '/class-qahm-admin-page-realtime.php';
 require_once dirname( __FILE__ ) . '/class-qahm-admin-page-config.php';
 

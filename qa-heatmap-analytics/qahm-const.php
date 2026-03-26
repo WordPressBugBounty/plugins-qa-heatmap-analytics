@@ -97,7 +97,7 @@ if ( ! defined( 'QAHM_DOCUMENTATION_URL' ) ) {
 
 		case QAHM_TYPE_WP:
 		default:
-			define( 'QAHM_DOCUMENTATION_URL', 'https://docs.quarka.org/' );
+			define( 'QAHM_DOCUMENTATION_URL', 'https://docs.quarka.org/docs/user-manual' );
 			break;
 	}
 }
@@ -157,7 +157,8 @@ const QAHM_OPTIONS = array(
 	'qaz_pid'                      => 0,
 	'google_credentials'           => '',
 	'google_is_redirect'           => false,
-	'v5_data_unavailable_state'	   => array( 'pending' => false, 'timestamp' => 0 )
+	'v5_data_unavailable_state'	   => array( 'pending' => false, 'timestamp' => 0 ),
+	'intro_completed'              => false,
 );
 
 // アンインストール時に削除する専用のオプションを羅列していく。
