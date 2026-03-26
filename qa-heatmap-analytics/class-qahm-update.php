@@ -35,6 +35,37 @@ class QAHM_Update extends QAHM_File_Data {
                 $this->wrap_update_option( 'plugin_version', '2.5.2.0' );
             }
 
+            if( version_compare( '3.0.0.0', $ver, '>' ) ) {
+                // GSC API取得件数上限定数を追記
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_KEYWORD', 5000 );
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_PAGE', 1000 );
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_QUERY', 5000 );
+                $this->wrap_update_option( 'plugin_version', '3.0.0.0' );
+            }
+
+            if ( version_compare( '3.0.1.0', $ver, '>' ) ) {
+                // 既存 sitemanage に subdomain_tracking フィールドを追加
+                $sitemanage = $this->wrap_get_option( 'sitemanage' );
+                if ( $sitemanage && is_array( $sitemanage ) ) {
+                    foreach ( $sitemanage as &$site ) {
+                        if ( ! isset( $site['subdomain_tracking'] ) ) {
+                            $site['subdomain_tracking'] = 0;
+                        }
+                        if ( ! isset( $site['user_type_method'] ) ) {
+                            $site['user_type_method'] = 1;
+                        }
+                    }
+                    unset( $site );
+                    $this->wrap_update_option( 'sitemanage', $sitemanage );
+                }
+                $this->wrap_update_option( 'plugin_version', '3.0.1.0' );
+            }
+
+            if ( version_compare( '3.0.2.0', $ver, '>' ) ) {
+                $this->fix_utm_media_auto_increment();
+                $this->wrap_update_option( 'plugin_version', '3.0.2.0' );
+            }
+
         } elseif ( QAHM_TYPE === QAHM_TYPE_WP ) {
             if( version_compare( '1.0.5.0', $ver, '>' ) ) {
                 $this->wrap_update_option( 'is_first_heatmap_setting', '' );
@@ -66,8 +97,8 @@ class QAHM_Update extends QAHM_File_Data {
             if( version_compare( '3.3.0.0', $ver, '>' ) ) {
                 $qahm_sql_table = new QAHM_Database_Creator();
                 $check_exists   = -123454321;
-                $ver = $this->wrap_get_option( 'qa_gsc_query_log_version', $check_exists );
-                if ( $ver === $check_exists ) {
+                $gsc_ver = $this->wrap_get_option( 'qa_gsc_query_log_version', $check_exists );
+                if ( $gsc_ver === $check_exists ) {
                     
                     $url = get_site_url();
                     $parse_url = wp_parse_url($url);
@@ -195,6 +226,20 @@ class QAHM_Update extends QAHM_File_Data {
                 // クリーンアップ完了ファイルを削除
                 $this->wrap_delete( $data_dir . 'cleanup_version_hist_completed.php' );
                 $this->wrap_update_option( 'plugin_version', '5.1.0.0' );
+            }
+
+            if( version_compare( '5.1.2.0', $ver, '>' ) ) {
+                // GSC API取得件数上限定数を追記
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_KEYWORD', 5000 );
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_PAGE', 1000 );
+                $this->add_constant_to_config( 'QAHM_CONFIG_GSC_ROW_LIMIT_PER_REQUEST_QUERY', 5000 );
+                $this->wrap_update_option( 'plugin_version', '5.1.2.0' );
+            }
+
+            if( version_compare( '5.1.4.0', $ver, '>' ) ) {
+                // 既存ユーザーは「はじめに」画面をスキップ
+                $this->wrap_update_option( 'intro_completed', true );
+                $this->wrap_update_option( 'plugin_version', '5.1.4.0' );
             }
 		}
 		// Differs between ZERO and QA - End ----------
@@ -473,5 +518,42 @@ class QAHM_Update extends QAHM_File_Data {
             "Progress: {$progress['processed_pages']}/{$progress['total_pages']}"
         );
         return false;
+    }
+
+    /**
+     * qa-config.phpに新しい定数を追記する汎用メソッド
+     *
+     * @param string $constant_name 定数名
+     * @param mixed  $value         定数の値
+     * @return bool 成功時true、失敗時false、既に存在する場合はnull
+     */
+    private function add_constant_to_config( $constant_name, $value ) {
+        global $wp_filesystem;
+
+        if ( empty( $wp_filesystem ) ) {
+            $this->init_wp_filesystem();
+        }
+
+        $config_file_path = WP_CONTENT_DIR . '/qa-zero-data/qa-config.php';
+
+        if ( ! $wp_filesystem->exists( $config_file_path ) ) {
+            return false;
+        }
+
+        $config_content = $wp_filesystem->get_contents( $config_file_path );
+
+        if ( $config_content === false ) {
+            return false;
+        }
+
+        // 厳密な存在チェック
+        $pattern = "/define\s*\(\s*['\"]" . preg_quote( $constant_name, '/' ) . "['\"]\s*,/";
+        if ( preg_match( $pattern, $config_content ) ) {
+            return null; // 既に存在
+        }
+
+        // 存在しない場合はファイル末尾に追加
+        $config_content .= "\ndefine('{$constant_name}', {$value});";
+        return $wp_filesystem->put_contents( $config_file_path, $config_content, 0644 );
     }
 }

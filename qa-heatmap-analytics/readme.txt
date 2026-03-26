@@ -3,7 +3,7 @@ Contributors: QuarkA
 Tags: analytics, assistants, heatmap, insights, privacy-friendly
 Tested up to: 6.9
 Requires at least: 5.9
-Stable tag: 5.1.4.0
+Stable tag: 5.1.4.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -129,6 +129,11 @@ Stay tuned for updates on the [official site](https://quarka.org/en-assistants/)
 
 
 == Changelog ==
+
+= 5.1.4.1 =
+*Release Date: March 26, 2026*
+
+- - Fixed an issue where the plugin screen may not display correctly right after updating
 
 = 5.1.4.0 =
 *Release Date: March 26, 2026*
