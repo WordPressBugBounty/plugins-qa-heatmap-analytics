@@ -147,7 +147,7 @@ qahm.loadScreen.promise()
 		*/
 
 		// 配列から対応したパーセント値を渡す
-		qahm.createCap = function( startDate, endDate, pageId, deviceName, isLandingPage, media, tracking_id ) {
+		qahm.createCap = function( startDate, endDate, pageId, deviceName, isLandingPage, media, tracking_id, goal ) {
 			qahm.showLoadIcon();
 
 			let start_time = new Date().getTime();
@@ -166,6 +166,7 @@ qahm.loadScreen.promise()
 						'device_name': deviceName,
 						'is_landing_page': isLandingPage,
 						'media': media,
+						'goal': goal,
 					},
 				}
 			).done(

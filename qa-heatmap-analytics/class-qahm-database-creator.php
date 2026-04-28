@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * QAデータベースのテーブル作成クラス
  * @package qa_heatmap
@@ -26,38 +27,38 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 	/**
 	 * テーブルが必要な場合のみ作成し、成功時にバージョンを設定
-	 * 
+	 *
 	 * @param string $table_name テーブル名（プレフィックスなし）
 	 */
 	private function create_table_if_needed( $table_name ) {
 		global $qahm_log, $qahm_db;
-		
+
 		$full_table_name = $qahm_db->prefix . $table_name;
-		
+
 		// 1. まずテーブルの存在をチェック
 		if ( $this->table_exists( $full_table_name ) ) {
 			$qahm_log->info( "QAHM: Table {$table_name} already exists, skipping creation" );
-			
+
 			// テーブルが存在するが、バージョン情報がない場合は設定
 			$this->ensure_table_version( $table_name );
 			return;
 		}
-		
+
 		// 2. テーブルが存在しない場合のみ、バージョンチェックして作成
 		$version_key = $table_name . '_version';
-		$ver = $this->wrap_get_option( $version_key, self::CHECK_NOT_EXISTS );
-		
+		$ver         = $this->wrap_get_option( $version_key, self::CHECK_NOT_EXISTS );
+
 		if ( $ver === self::CHECK_NOT_EXISTS ) {
 			// テーブル作成SQLを取得
 			$method_name = 'get_' . $table_name . '_create_table';
-			
+
 			if ( method_exists( $this, $method_name ) ) {
 				$query = $this->$method_name();
-				
+
 				// テーブル作成を実行
 				if ( $this->execute_sql_query( $query ) ) {
 					// 成功時のみバージョンを設定
-					$target_version = QAHM_DB_OPTIONS[$version_key];
+					$target_version = QAHM_DB_OPTIONS[ $version_key ];
 					$this->wrap_update_option( $version_key, $target_version );
 					$qahm_log->info( "QAHM: Successfully created table {$table_name} and set version to {$target_version}" );
 				} else {
@@ -71,38 +72,38 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 	/**
 	 * テーブルが存在するかチェック
-	 * 
+	 *
 	 * @param string $table_name フルテーブル名（プレフィックス付き）
 	 * @return bool テーブルが存在する場合true
 	 */
 	private function table_exists( $table_name ) {
 		global $qahm_db;
-		
+
 		$result = $qahm_db->get_var(
 			$qahm_db->prepare(
-				"SHOW TABLES LIKE %s",
+				'SHOW TABLES LIKE %s',
 				$table_name
 			)
 		);
-		
-		return !is_null( $result );
+
+		return ! is_null( $result );
 	}
 
 	/**
 	 * テーブルが存在するがバージョン情報がない場合、バージョンを設定
-	 * 
+	 *
 	 * @param string $table_name テーブル名（プレフィックスなし）
 	 */
 	private function ensure_table_version( $table_name ) {
 		$version_key = $table_name . '_version';
-		$ver = $this->wrap_get_option( $version_key, self::CHECK_NOT_EXISTS );
-		
+		$ver         = $this->wrap_get_option( $version_key, self::CHECK_NOT_EXISTS );
+
 		// バージョン情報がない場合は設定
 		if ( $ver === self::CHECK_NOT_EXISTS ) {
-			if ( isset( QAHM_DB_OPTIONS[$version_key] ) ) {
-				$target_version = QAHM_DB_OPTIONS[$version_key];
+			if ( isset( QAHM_DB_OPTIONS[ $version_key ] ) ) {
+				$target_version = QAHM_DB_OPTIONS[ $version_key ];
 				$this->wrap_update_option( $version_key, $target_version );
-				
+
 				global $qahm_log;
 				$qahm_log->info( "QAHM: Set version {$target_version} for existing table {$table_name}" );
 			}
@@ -111,30 +112,30 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 	/**
 	 * SQLクエリを実行する
-	 * 
+	 *
 	 * @param string $query 実行するSQLクエリ
 	 * @return bool 実行成功の場合true、失敗の場合false
 	 */
 	private function execute_sql_query( $query ) {
 		global $qahm_db;
 		global $qahm_log;
-		
+
 		if ( empty( $query ) ) {
 			return false;
 		}
-		
+
 		// クエリの前処理（コメント削除、整形）
 		$cleaned_query = $this->clean_sql_query( $query );
-		
+
 		// セミコロンで分割してクエリを実行
-		$query_array = explode( ';', $cleaned_query );
-		$success = true;
-		
+		$query_array = $this->wrap_explode( ';', $cleaned_query );
+		$success     = true;
+
 		foreach ( $query_array as $single_query ) {
-			$single_query = trim( $single_query );
-			if ( !empty( $single_query ) ) {
+			$single_query = $this->wrap_trim( $single_query );
+			if ( ! empty( $single_query ) ) {
 				$result = $qahm_db->query( $single_query );
-				
+
 				// エラーハンドリング
 				if ( $result === false ) {
 					$success = false;
@@ -145,37 +146,37 @@ class QAHM_Database_Creator extends QAHM_Base {
 				}
 			}
 		}
-		
+
 		return $success;
 	}
 
 	/**
 	 * SQLクエリをクリーンアップする
-	 * 
+	 *
 	 * @param string $query クリーンアップするクエリ
 	 * @return string クリーンアップされたクエリ
 	 */
 	private function clean_sql_query( $query ) {
 		// 行ごとに分割
-		$query_lines = explode( PHP_EOL, $query );
+		$query_lines   = $this->wrap_explode( PHP_EOL, $query );
 		$cleaned_lines = array();
-		
+
 		foreach ( $query_lines as $line ) {
 			// タブを削除
-			$line = trim( $line, "\t" );
-			
+			$line = $this->wrap_trim( $line, "\t" );
+
 			// コメント行を除外
-			if ( $this->wrap_substr( trim( $line ), 0, 2 ) !== '--' && !empty( trim( $line ) ) ) {
+			if ( $this->wrap_substr( $this->wrap_trim( $line ), 0, 2 ) !== '--' && ! empty( $this->wrap_trim( $line ) ) ) {
 				$cleaned_lines[] = $line;
 			}
 		}
-		
-		return implode( ' ', $cleaned_lines );
+
+		return $this->wrap_implode( ' ', $cleaned_lines );
 	}
 
 	/**
 	 * 特定のテーブルのバージョンを更新
-	 * 
+	 *
 	 * @param string $table_name テーブル名
 	 * @param int $new_version 新しいバージョン
 	 */
@@ -186,31 +187,31 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 	/**
 	 * GSCクエリログテーブル作成（tracking_id対応版）
-	 * 
+	 *
 	 * @param string $tracking_id トラッキングID
 	 * @return bool 作成成功の場合true
 	 */
 	public function create_gsc_query_log_table( $tracking_id ) {
 		global $qahm_log, $qahm_db;
-		
+
 		if ( empty( $tracking_id ) ) {
-			$qahm_log->error( "QAHM: tracking_id is required for GSC query log table" );
+			$qahm_log->warning( 'QAHM: tracking_id is required for GSC query log table' );
 			return false;
 		}
 
 		// テーブル名にtracking_idを含める
 		$table_name = $qahm_db->prefix . 'qa_gsc_' . $tracking_id . '_query_log';
-		
+
 		// テーブルの存在チェック
 		if ( $this->table_exists( $table_name ) ) {
 			$qahm_log->info( "QAHM: GSC query log table for tracking_id {$tracking_id} already exists" );
 			$this->ensure_table_version( 'qa_gsc_query_log' );
 			return true;
 		}
-		
+
 		// テーブル作成SQL取得・実行
 		$query = $this->get_qa_gsc_query_log_create_table( $tracking_id );
-		
+
 		if ( $this->execute_sql_query( $query ) ) {
 			$this->ensure_table_version( 'qa_gsc_query_log' );
 			$qahm_log->info( "QAHM: Successfully created GSC query log table for tracking_id: {$tracking_id}" );
@@ -225,7 +226,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 	public function get_qa_readers_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -236,7 +237,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- パーティションはunixtimeで問題のあるとされる2038/1/19まで=2037年12月まで作成する。reader,pv_log,version_histの3つで使用する。',
 			'		-- qa_readers',
 			"		drop table if exists {$wpdb->prefix}qa_readers;",
@@ -487,9 +488,8 @@ class QAHM_Database_Creator extends QAHM_Base {
 			'		;',
 			'		',
 
-
-		];
-		return implode("\n", $lines);
+		);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
@@ -497,7 +497,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 	public function get_qa_pages_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -508,7 +508,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_pages',
 			"		drop table if exists {$wpdb->prefix}qa_pages;",
 			"		create table {$wpdb->prefix}qa_pages",
@@ -523,6 +523,28 @@ class QAHM_Database_Creator extends QAHM_Base {
 			'			path_url_hash char(16) null,',
 			'			title varchar(128) null,',
 			'			update_date date not null,',
+			'			page_type bigint unsigned default null,',
+			'			page_fetch_status tinyint default null,',
+			'			is_article tinyint generated always as (page_type & 1) stored,',
+			'			is_product tinyint generated always as ((page_type >> 1) & 1) stored,',
+			'			is_list tinyint generated always as ((page_type >> 2) & 1) stored,',
+			'			is_form tinyint generated always as ((page_type >> 3) & 1) stored,',
+			'			is_trust_info tinyint generated always as ((page_type >> 4) & 1) stored,',
+			'			is_faq tinyint generated always as ((page_type >> 5) & 1) stored,',
+			'			is_landing tinyint generated always as ((page_type >> 6) & 1) stored,',
+			'			is_search tinyint generated always as ((page_type >> 7) & 1) stored,',
+			'			is_account tinyint generated always as ((page_type >> 8) & 1) stored,',
+			'			is_cart tinyint generated always as ((page_type >> 9) & 1) stored,',
+			'			is_checkout tinyint generated always as ((page_type >> 10) & 1) stored,',
+			'			is_confirm tinyint generated always as ((page_type >> 11) & 1) stored,',
+			'			is_thanks tinyint generated always as ((page_type >> 12) & 1) stored,',
+			'			is_top_page tinyint generated always as ((page_type >> 13) & 1) stored,',
+			'			is_event tinyint generated always as ((page_type >> 14) & 1) stored,',
+			'			is_recipe tinyint generated always as ((page_type >> 15) & 1) stored,',
+			'			is_job tinyint generated always as ((page_type >> 16) & 1) stored,',
+			'			is_video tinyint generated always as ((page_type >> 17) & 1) stored,',
+			'			is_howto tinyint generated always as ((page_type >> 18) & 1) stored,',
+			'			is_qa_forum tinyint generated always as ((page_type >> 19) & 1) stored,',
 			'			constraint qa_pages_url_hash_uindex',
 			'				unique (url_hash)',
 			"		) {$charset_collate}",
@@ -538,18 +560,17 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"			on {$wpdb->prefix}qa_pages (path_url_hash)",
 			'		;',
 
-
-		];
-		return implode("\n", $lines);
+		);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
-	
+
 	// qa_utm_mediaテーブルの作成SQLを返す
 	public function get_qa_utm_media_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -560,7 +581,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_utm_media',
 			"		drop table if exists {$wpdb->prefix}qa_utm_media;",
 			"		create table {$wpdb->prefix}qa_utm_media",
@@ -601,9 +622,8 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"		('email','Email')",
 			'		;',
 
-
-		];
-		return implode("\n", $lines);
+		);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 	// qa_utm_contentテーブルの作成SQLを返す
@@ -611,7 +631,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -622,7 +642,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_utm_content',
 			"		drop table if exists {$wpdb->prefix}qa_utm_content;",
 			"		create table {$wpdb->prefix}qa_utm_content",
@@ -637,17 +657,15 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"		) {$charset_collate}",
 			'		;',
 
-
-		];
-		return implode("\n", $lines);
-
+		);
+		return $this->wrap_implode( "\n", $lines );
 	}
-	
+
 	// qa_readersテーブルの作成SQLを返す
 	public function get_qa_utm_sources_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -658,7 +676,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_utm_sources',
 			"		drop table if exists {$wpdb->prefix}qa_utm_sources;",
 			"		create table {$wpdb->prefix}qa_utm_sources",
@@ -874,20 +892,18 @@ class QAHM_Database_Creator extends QAHM_Base {
 			'		(\'google\',\'www.google.co.zw\',\'https://www.google.co.zw\',1)',
 			'		;',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
-	
+
 	// qa_readersテーブルの作成SQLを返す
 	public function get_qa_utm_campaigns_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -898,7 +914,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_utm_campaigns',
 			"		drop table if exists {$wpdb->prefix}qa_utm_campaigns;",
 			"		create table {$wpdb->prefix}qa_utm_campaigns",
@@ -913,20 +929,18 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"		) {$charset_collate}",
 			'		;',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
-	
+
 	// qa_readersテーブルの作成SQLを返す
 	public function get_qa_pv_log_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -937,7 +951,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_pv_log',
 			"		drop table if exists {$wpdb->prefix}qa_pv_log;",
 			"		create table {$wpdb->prefix}qa_pv_log",
@@ -1202,11 +1216,9 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"			on {$wpdb->prefix}qa_pv_log (version_id)",
 			'		;',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
@@ -1214,7 +1226,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 	public function get_qa_search_log_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -1225,7 +1237,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_search_log',
 			"		drop table if exists {$wpdb->prefix}qa_search_log;",
 			"		create table {$wpdb->prefix}qa_search_log",
@@ -1235,20 +1247,18 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"		) {$charset_collate}",
 			'		;',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 
-	
+
 	// qa_readersテーブルの作成SQLを返す
 	public function get_qa_page_version_hist_create_table() {
 		global $wpdb;
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -1259,7 +1269,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 			$charset_collate .= ' COLLATE ' . $wpdb->collate;
 		}
 
-		$lines = [
+		$lines = array(
 			'		-- qa_page_version_hist',
 			"		drop table if exists {$wpdb->prefix}qa_page_version_hist;",
 			"		create table {$wpdb->prefix}qa_page_version_hist",
@@ -1497,24 +1507,22 @@ class QAHM_Database_Creator extends QAHM_Base {
 			"			on {$wpdb->prefix}qa_page_version_hist (page_id)",
 			'		;',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 
 	// qa_gscテーブルの作成SQLを返す
 	public function get_qa_gsc_query_log_create_table( $tracking_id ) {
 		global $wpdb;
-		
+
 		// tracking_idのバリデーション
 		if ( empty( $tracking_id ) ) {
 			return '';
 		}
 
 		$charset_collate = '';
-		
+
 		// charsetを指定する
 		if ( $wpdb->charset ) {
 			$charset_collate = 'DEFAULT CHARACTER SET ' . $wpdb->charset;
@@ -1527,7 +1535,7 @@ class QAHM_Database_Creator extends QAHM_Base {
 
 		$table_name = $wpdb->prefix . 'qa_gsc_' . $tracking_id . '_query_log';
 
-		$lines = [
+		$lines = array(
 			"		-- qa_gsc_query_log for tracking_id: {$tracking_id}",
 			"		DROP TABLE IF EXISTS {$table_name};",
 			"		CREATE TABLE {$table_name}",
@@ -1758,10 +1766,8 @@ class QAHM_Database_Creator extends QAHM_Base {
 			'			PARTITION pmax VALUES LESS THAN (MAXVALUE)',
 			'		);',
 
+		);
 
-		];
-
-
-		return implode("\n", $lines);
+		return $this->wrap_implode( "\n", $lines );
 	}
 }

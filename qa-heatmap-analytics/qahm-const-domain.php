@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 
 // organic search
 const SEARCH_ENGINES = array(
@@ -1500,7 +1501,7 @@ const SEARCH_ENGINES = array(
 		'NOT_PROVIDED' => '1',
 		'SOURCE_ID'    => '189',
 	),
-	'BING_COM'         => array(
+	'BING_COM'          => array(
 		'NAME'         => 'bing',
 		'DOMAIN'       => 'bing.com',
 		'QUERY_PERM'   => 'q',

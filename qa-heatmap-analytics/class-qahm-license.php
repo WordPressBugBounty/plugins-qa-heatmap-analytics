@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  *
  *
@@ -9,7 +10,7 @@
 // ライセンスに関するクラス
 //
 
-$qahm_license = new QAHM_License();
+$GLOBALS['qahm_license'] = new QAHM_License();
 
 // ライセンスを管理するクラス
 class QAHM_License extends QAHM_File_Base {
@@ -32,21 +33,21 @@ class QAHM_License extends QAHM_File_Base {
 
 	// メッセージのレベル
 	const MESSAGE_LEVEL = array(
-		'success'       => 0,
-		'info'          => 1,
-		'warning'       => 2,
-		'error'         => 3
+		'success' => 0,
+		'info'    => 1,
+		'warning' => 2,
+		'error'   => 3,
 	);
 
 	// メッセージの通知領域
 	const MESSAGE_VIEW = array(
-		'admin'         => 0,				// 管理画面全体。こちらを選択した場合はqahmのプラグイン名も先頭に自動付与
-		'license'       => 1,				// 管理画面のライセンス認証画面のみ
-		'hidden'        => 2				// 非表示
+		'admin'   => 0,               // 管理画面全体。こちらを選択した場合はqahmのプラグイン名も先頭に自動付与
+		'license' => 1,               // 管理画面のライセンス認証画面のみ
+		'hidden'  => 2,                // 非表示
 	);
 
 	// valuables
-	static public $dom = '';
+	public static $dom = '';
 
 	public function __construct() {
 		add_action( 'admin_notices', array( $this, 'view_message' ) );
@@ -59,11 +60,11 @@ class QAHM_License extends QAHM_File_Base {
 	private function get_domain() {
 		$wp_domain = $this->wrap_get_option( 'license_wp_domain' );
 		if ( ! $wp_domain ) {
-			$wp_url    = get_option('home');
-			$parsed_url = wp_parse_url($wp_url, PHP_URL_HOST) . wp_parse_url($wp_url, PHP_URL_PATH);
-			$wp_domain = rtrim($parsed_url, '/');
+			$wp_url     = get_option( 'home' );
+			$parsed_url = wp_parse_url( $wp_url, PHP_URL_HOST ) . wp_parse_url( $wp_url, PHP_URL_PATH );
+			$wp_domain  = $this->wrap_rtrim( $parsed_url, '/' );
 			$this->wrap_update_option( 'license_wp_domain', $wp_domain );
-		}		
+		}
 		return $wp_domain;
 	}
 
@@ -71,7 +72,7 @@ class QAHM_License extends QAHM_File_Base {
 	 * ライセンスシステムのメッセージを管理画面に表示
 	 */
 	public function view_message() {
-		$msg_ary  = $this->wrap_get_option( 'license_message' );
+		$msg_ary = $this->wrap_get_option( 'license_message' );
 		if ( ! $msg_ary ) {
 			return;
 		}
@@ -84,14 +85,14 @@ class QAHM_License extends QAHM_File_Base {
 					break;
 
 				case self::MESSAGE_VIEW['license']:
-					require_once dirname( __FILE__ ) . '/class-qahm-admin-page-license.php';
+					require_once __DIR__ . '/class-qahm-admin-page-license.php';
 					$page = $this->wrap_filter_input( INPUT_GET, 'page' );
 					if ( QAHM_Admin_Page_License::SLUG !== $page ) {
 						$is_view = false;
 					}
 					$plugin_name = '';
 					break;
-	
+
 				case self::MESSAGE_VIEW['hidden']:
 				default:
 					$is_view = false;
@@ -119,8 +120,6 @@ class QAHM_License extends QAHM_File_Base {
 					$class_level = 'notice-error ';
 					break;
 			}
-			
-
 		}
 	}
 
@@ -130,15 +129,15 @@ class QAHM_License extends QAHM_File_Base {
 	 * 引数によってjsonのメッセージと同じ形式のデータを作りlicese_messageに格納する
 	 * この関数により作られたメッセージのメッセージナンバーは空とする。
 	 */
-	private function set_plugin_message ( $level, $msg, $view, $log = '' ) {
+	private function set_plugin_message( $level, $msg, $view, $log = '' ) {
 		$msg_ary = array(
 			'no'      => '',
 			'level'   => $level,
 			'message' => $msg,
-			'view'    => $view
+			'view'    => $view,
 		);
 		$this->wrap_update_option( 'license_message', array( $msg_ary ) );
-		
+
 		if ( $log ) {
 			global $qahm_log;
 			$qahm_log->error( $log );
@@ -148,26 +147,32 @@ class QAHM_License extends QAHM_File_Base {
 	/**
 	 * jsonで返されたメッセージ配列をプラグイン用に最適化してreturn
 	 */
-	private function opt_json_message ( $json_msg_ary, $view ) {
+	private function opt_json_message( $json_msg_ary, $view ) {
 		foreach ( $json_msg_ary as &$json_msg ) {
 			$json_msg['level'] = self::MESSAGE_LEVEL[ $json_msg['level'] ];
 			$json_msg['view']  = $view;
 		}
 		return $json_msg_ary;
 	}
-	
+
 	/**
 	 * ライセンス認証の通信処理。戻り値はjsonデータ。通信に失敗した場合はfalse
 	 */
-	private function remote_post ( $url, $args, $view ) {
+	private function remote_post( $url, $args, $view ) {
 		$level = self::MESSAGE_LEVEL['error'];
 		$msg   = esc_html__( 'An error occurred during authentication. Please try activating the license again, and if you still encounter the same message, kindly contact our support team.', 'qa-heatmap-analytics' );
 
 		//since WP6.4, 'timeout' extended.
-		$allmix    = wp_remote_post( $url, array( 'body' => $args, 'timeout' => 30 ) );
+		$allmix = wp_remote_post(
+			$url,
+			array(
+				'body'    => $args,
+				'timeout' => 30,
+			)
+		);
 
 		if ( is_wp_error( $allmix ) ) {
-			$wp_error_code = $allmix->get_error_code();
+			$wp_error_code    = $allmix->get_error_code();
 			$wp_error_message = $allmix->get_error_message();
 			if ( ! $wp_error_code ) {
 				$wp_error_code = '';
@@ -196,7 +201,7 @@ class QAHM_License extends QAHM_File_Base {
 			return false;
 		}
 
-		$json_array  = json_decode( $ret_body, true );
+		$json_array = json_decode( $ret_body, true );
 		if ( $json_array === null ) {
 			$this->set_plugin_message( $level, $msg, $view, esc_html__( 'License authentication error', 'qa-heatmap-analytics' ) . ' : wp_remote_post > json_decode' );
 			return false;
@@ -214,16 +219,16 @@ class QAHM_License extends QAHM_File_Base {
 		$this->wrap_update_option( 'license_activate_time', $qahm_time->now_unixtime() );
 
 		global $qahm_data_api;
-		$sitemanage = $qahm_data_api->get_sitemanage();
-		$tagged_sites = array_column($sitemanage, 'domain');
+		$sitemanage   = $qahm_data_api->get_sitemanage();
+		$tagged_sites = array_column( $sitemanage, 'domain' );
 
-		$parm        = array();
-		$parm['sec'] = 'license'; // Specific to QA
-		$parm['cmd'] = 'check';
-		$parm['ver'] = QAHM_PLUGIN_VERSION;
-		$parm['dom'] = $this->get_domain();
-		$parm['uid'] = $uid;
-		$parm['key'] = $key;
+		$parm                = array();
+		$parm['sec']         = 'license'; // Specific to QA
+		$parm['cmd']         = 'check';
+		$parm['ver']         = QAHM_PLUGIN_VERSION;
+		$parm['dom']         = $this->get_domain();
+		$parm['uid']         = $uid;
+		$parm['key']         = $key;
 		$parm['taggedsites'] = $tagged_sites;
 
 		$json_array = $this->remote_post( $url, $parm, $view );
@@ -234,7 +239,7 @@ class QAHM_License extends QAHM_File_Base {
 			//print_r( $json_array );
 		}
 
-		$is_success =  false;
+		$is_success = false;
 		if ( $json_array['is_success'] ) {
 			$is_success = true;
 			$this->change_zero_authorized( $json_array['val'], $json_array['bin'] );
@@ -242,7 +247,7 @@ class QAHM_License extends QAHM_File_Base {
 			$json_array['msg'][0]['level']   = 'success';
 			$json_array['msg'][0]['no']      = 0;
 
-			if( $view === self::MESSAGE_VIEW['admin'] ) {
+			if ( $view === self::MESSAGE_VIEW['admin'] ) {
 				$view = self::MESSAGE_VIEW['hidden'];
 			} elseif ( $view === self::MESSAGE_VIEW['license'] ) {
 				// ライセンス認証画面の紙吹雪エフェクト用
@@ -251,7 +256,7 @@ class QAHM_License extends QAHM_File_Base {
 		} else {
 			$this->change_zero_unauthorized();
 		}
-		
+
 		if ( $json_array['msg'] ) {
 			$msg = $this->opt_json_message( $json_array['msg'], $view );
 			$this->wrap_update_option( 'license_message', $msg );
@@ -278,7 +283,7 @@ class QAHM_License extends QAHM_File_Base {
 			//print_r( $json_array );
 		}
 
-		$is_success =  false;
+		$is_success = false;
 		if ( $json_array['is_success'] ) {
 			$is_success = true;
 			$this->change_zero_unauthorized();
@@ -286,11 +291,11 @@ class QAHM_License extends QAHM_File_Base {
 			$json_array['msg'][0]['level']   = 'success';
 			$json_array['msg'][0]['no']      = 0;
 
-			if( $view === self::MESSAGE_VIEW['admin'] ) {
+			if ( $view === self::MESSAGE_VIEW['admin'] ) {
 				$view = self::MESSAGE_VIEW['hidden'];
 			}
 		}
-		
+
 		if ( $json_array['msg'] ) {
 			$msg = $this->opt_json_message( $json_array['msg'], $view );
 			$this->wrap_update_option( 'license_message', $msg );
@@ -304,55 +309,55 @@ class QAHM_License extends QAHM_File_Base {
 	public function change_zero_authorized( $val, $bin ) {
 		global $wp_filesystem;
 		global $qahm_log;
-	
+
 		// ライセンス認証情報を保存
 		$this->wrap_update_option( 'license_authorized', true );
-	
+
 		// ライセンスオプションがあれば保存
 		if ( $this->wrap_array_key_exists( 'options', $val ) && $val['options'] !== null ) {
 			$this->wrap_update_option( 'license_options', $val['options'] );
 		}
-	
+
 		if ( ! $bin ) {
 			return;
 		}
-	
+
 		// Brainsファイルの作成・更新
 		if ( QAHM_DEBUG < QAHM_DEBUG_LEVEL['debug'] ) {
 			$zero_brains_dir = $this->get_data_dir_path() . 'brains/';
-	
+
 			// ディレクトリごとに保存対象ファイルリストを管理
-			$updated_files_per_directory = [];
-	
+			$updated_files_per_directory = array();
+
 			foreach ( $bin as $file ) {
 				// 保存先ディレクトリ
 				$save_directory = $zero_brains_dir . $file['directory'];
-	
+
 				// ディレクトリを作成
 				if ( ! $this->create_directory_recursive( $save_directory ) ) {
-					$qahm_log->error( 'Failed to create directory: ' . $save_directory );
+					$qahm_log->warning( 'Failed to create directory: ' . $save_directory );
 					continue;
 				}
-	
+
 				// ファイル保存処理
 				$file_path = $save_directory . '/' . $file['name'];
-				$body = base64_decode( $file['body'] );
+				$body      = base64_decode( $file['body'] );
 				if ( $body === false ) {
-					$qahm_log->error( 'Failed to decode file body for: ' . $file['name'] );
+					$qahm_log->warning( 'Failed to decode file body for: ' . $file['name'] );
 					continue;
 				}
 				if ( ! $wp_filesystem->put_contents( $file_path, $body ) ) {
-					$qahm_log->error( 'Failed to write file: ' . $file_path );
+					$qahm_log->warning( 'Failed to write file: ' . $file_path );
 					continue;
 				}
-	
+
 				// 保存対象ファイルリストに追加
 				if ( ! isset( $updated_files_per_directory[ $save_directory ] ) ) {
-					$updated_files_per_directory[ $save_directory ] = [];
+					$updated_files_per_directory[ $save_directory ] = array();
 				}
 				$updated_files_per_directory[ $save_directory ][] = $file['name'];
 			}
-	
+
 			// 不要なディレクトリ、ファイルを削除
 			foreach ( $updated_files_per_directory as $save_directory => $updated_files ) {
 				$directory_files = $wp_filesystem->dirlist( $save_directory );
@@ -386,7 +391,6 @@ class QAHM_License extends QAHM_File_Base {
 		$this->wrap_update_option( 'license_authorized', false );
 		$this->wrap_update_option( 'license_options', null );
 		$this->wrap_update_option( 'license_wp_domain', '' );
-		
 	}
 
 
@@ -396,13 +400,13 @@ class QAHM_License extends QAHM_File_Base {
 	 */
 	public function create_directory_recursive( $dir ) {
 		global $wp_filesystem;
-	
+
 		// すでにディレクトリが存在する場合は何もしない
 		if ( $wp_filesystem->exists( $dir ) ) {
 			return true;
 		}
-	
-		$parent_dir = dirname( $dir );	
+
+		$parent_dir = dirname( $dir );
 		if ( $parent_dir !== $dir ) {
 			// 親ディレクトリを再帰的に作成
 			$parent_created = $this->create_directory_recursive( $parent_dir );
@@ -410,13 +414,13 @@ class QAHM_License extends QAHM_File_Base {
 				return false;
 			}
 		}
-	
+
 		// 現在のディレクトリを作成
 		$created = $wp_filesystem->mkdir( $dir );
 		if ( ! $created ) {
 			return false;
 		}
-	
+
 		return true;
 	}
 
@@ -430,10 +434,10 @@ class QAHM_License extends QAHM_File_Base {
 		global $wp_filesystem;
 
 		// ディレクトリが存在しない場合は終了
-		if ( !$wp_filesystem->is_dir( $dir ) ) {
+		if ( ! $wp_filesystem->is_dir( $dir ) ) {
 			return false;
 		}
-	
+
 		// ディレクトリ内のアイテムを取得
 		$items = $wp_filesystem->dirlist( $dir );
 		foreach ( $items as $item ) {
@@ -450,6 +454,4 @@ class QAHM_License extends QAHM_File_Base {
 		}
 		return true;
 	}
-
-
 } // end of class

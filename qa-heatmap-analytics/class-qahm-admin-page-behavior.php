@@ -1,11 +1,12 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  *
  *
  * @package analytics_backup_by_qa
  */
 
-$qahm_admin_page_behavior = new QAHM_Admin_Page_Behavior();
+$GLOBALS['qahm_admin_page_behavior'] = new QAHM_Admin_Page_Behavior();
 
 class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 
@@ -27,14 +28,14 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 	 * 初期化
 	 */
 	public function enqueue_scripts( $hook_suffix ) {
-		if( $this->hook_suffix !== $hook_suffix ||
+		if ( $this->hook_suffix !== $hook_suffix ||
 			! $this->is_enqueue_jquery()
 		) {
 			return;
 		}
 
-		$css_dir_url  = $this->get_css_dir_url();
-		$js_dir_url   = $this->get_js_dir_url();
+		$css_dir_url = $this->get_css_dir_url();
+		$js_dir_url  = $this->get_js_dir_url();
 
 		// enqueue style
 		$this->common_enqueue_style();
@@ -63,23 +64,23 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 	 * ページの表示
 	 */
 	public function create_html() {
-		if( ! $this->is_enqueue_jquery() ) {
+		if ( ! $this->is_enqueue_jquery() ) {
 			$this->print_not_enqueue_jquery_html();
 			return;
 		}
 
-		if( $this->is_maintenance() ) {
+		if ( $this->is_maintenance() ) {
 			$this->print_maintenance_html();
 			return;
 		}
 
 		global $qahm_data_api;
-		$lang_set    = get_bloginfo('language');
+		$lang_set = get_bloginfo( 'language' );
 		// tracking_id is used only for display switching (no state changes). wp_unslash() and sanitize_text_field() are applied inside sanitize_tracking_id().
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 		$tracking_id_raw = isset( $_GET['tracking_id'] ) ? $this->sanitize_tracking_id( wp_unslash( $_GET['tracking_id'] ) ) : 'all';
 		$tracking_id     = $this->get_safe_tracking_id( $tracking_id_raw );
-		$goals_ary   = $qahm_data_api->get_goals_preferences($tracking_id);
+		$goals_ary       = $qahm_data_api->get_goals_preferences( $tracking_id );
 		?>
 
 		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>">
@@ -108,10 +109,10 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 						</div>
 						<div class="qa-zero-radio-button">
 						<?php
-							echo '<label for="js_lpGoals_0"><input type="radio" id="js_lpGoals_0" class="qa-zero-radio-button--item" name="js_lpGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
-							foreach ( $goals_ary as $gid => $goal ) {
-								echo '<label for="js_lpGoals_'. esc_attr( $gid ) . '"><input type="radio" id="js_lpGoals_'. esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_lpGoals">'. esc_html( urldecode( $goal["gtitle"]) ) . '</label>';
-							}
+							echo '<label for="js_lpGoals_0"><input type="radio" id="js_lpGoals_0" class="qa-zero-radio-button--item" name="js_lpGoals" checked>' . esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
+						foreach ( $goals_ary as $gid => $goal ) {
+							echo '<label for="js_lpGoals_' . esc_attr( $gid ) . '"><input type="radio" id="js_lpGoals_' . esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_lpGoals">' . esc_html( urldecode( $goal['gtitle'] ) ) . '</label>';
+						}
 						?>
 						</div>
 						<div id="tb_landingpage"></div>
@@ -136,10 +137,10 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 						</div>
 						<div class="qa-zero-radio-button">
 						<?php
-							echo '<label for="js_gwGoals_0"><input type="radio" id="js_gwGoals_0" class="qa-zero-radio-button--item" name="js_gwGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
-							foreach ( $goals_ary as $gid => $goal ) {
-								echo '<label for="js_gwGoals_'. esc_attr( $gid ) . '"><input type="radio" id="js_gwGoals_'. esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_gwGoals">'. esc_html( urldecode( $goal["gtitle"]) ) . '</label>';
-							}
+							echo '<label for="js_gwGoals_0"><input type="radio" id="js_gwGoals_0" class="qa-zero-radio-button--item" name="js_gwGoals" checked>' . esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
+						foreach ( $goals_ary as $gid => $goal ) {
+							echo '<label for="js_gwGoals_' . esc_attr( $gid ) . '"><input type="radio" id="js_gwGoals_' . esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_gwGoals">' . esc_html( urldecode( $goal['gtitle'] ) ) . '</label>';
+						}
 						?>
 						</div>
 						<div id="tb_growthpage"></div>
@@ -164,10 +165,10 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 						</div>
 						<div class="qa-zero-radio-button">
 						<?php
-							echo '<label for="js_apGoals_0"><input type="radio" id="js_apGoals_0" class="qa-zero-radio-button--item" name="js_apGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
-							foreach ( $goals_ary as $gid => $goal ) {
-								echo '<label for="js_apGoals_'. esc_attr( $gid ) . '"><input type="radio" id="js_apGoals_'. esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_apGoals">'. esc_html( urldecode( $goal["gtitle"]) ) . '</label>';
-							}
+							echo '<label for="js_apGoals_0"><input type="radio" id="js_apGoals_0" class="qa-zero-radio-button--item" name="js_apGoals" checked>' . esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
+						foreach ( $goals_ary as $gid => $goal ) {
+							echo '<label for="js_apGoals_' . esc_attr( $gid ) . '"><input type="radio" id="js_apGoals_' . esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_apGoals">' . esc_html( urldecode( $goal['gtitle'] ) ) . '</label>';
+						}
 						?>
 						</div>
 						<div id="tb_allpage"></div>
@@ -177,6 +178,6 @@ class QAHM_Admin_Page_Behavior extends QAHM_Admin_Page_Dataviewer {
 				<?php $this->create_footer_follow(); ?>
 			</div>
 		</div>
-<?php
+		<?php
 	}
 } // end of class

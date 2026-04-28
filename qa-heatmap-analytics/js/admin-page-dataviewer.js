@@ -684,6 +684,7 @@ jQuery(
 						url: qahm.ajax_url,
 						data: {
 							'action' : 'qahm_ajax_clear_license_message',
+							'nonce' : qahm.nonce_api,
 							'no': no
 						}
 					}

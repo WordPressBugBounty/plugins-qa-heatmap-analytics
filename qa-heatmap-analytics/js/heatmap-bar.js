@@ -158,10 +158,14 @@ qahm.changeVersionSelectBox = function( selectboxId ) {
 // };
 
 
-//QA ZERO
-
+// Differs between ZERO and QA - Start ----------
 // 絞り込み（フィルター）機能のhtml作成、イベント設定
+// QA ZEROでのみフィルター機能を有効にする
 qahm.createFilterBlock = function() {
+	// QA Assistantsではフィルター機能を無効化
+	if (qahm.type !== qahm.type_zero) {
+		return;
+	}
 	// コンテンツの構築
 	createSelectBox( qahml10n['source'], 'source', qahml10n['select_source'], qahm.filterSourceAry, qahm.urlSourceAry );
 	createSelectBox( qahml10n['medium'], 'media', qahml10n['select_medium'], qahm.filterMediaAry, qahm.urlMediaAry );
@@ -379,6 +383,7 @@ qahm.createFilterBlock = function() {
 		window.location.href = currentUrl.toString();
 	}
 }
+// Differs between ZERO and QA - End ----------
 
 
 qahm.processSeparateData = function( separateData ) {

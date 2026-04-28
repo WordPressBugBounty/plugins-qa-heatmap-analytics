@@ -1,11 +1,12 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  *
  *
  * @package analytics_backup_by_qa
  */
 
-$qahm_admin_page_goals = new QAHM_Admin_Page_Goals();
+$GLOBALS['qahm_admin_page_goals'] = new QAHM_Admin_Page_Goals();
 
 class QAHM_Admin_Page_Goals extends QAHM_Admin_Page_Dataviewer {
 
@@ -27,14 +28,14 @@ class QAHM_Admin_Page_Goals extends QAHM_Admin_Page_Dataviewer {
 	 * 初期化
 	 */
 	public function enqueue_scripts( $hook_suffix ) {
-		if( $this->hook_suffix !== $hook_suffix ||
+		if ( $this->hook_suffix !== $hook_suffix ||
 			! $this->is_enqueue_jquery()
 		) {
 			return;
 		}
 
-		$css_dir_url  = $this->get_css_dir_url();
-		$js_dir_url   = $this->get_js_dir_url();
+		$css_dir_url = $this->get_css_dir_url();
+		$js_dir_url  = $this->get_js_dir_url();
 
 		// enqueue style
 		$this->common_enqueue_style();
@@ -64,28 +65,41 @@ class QAHM_Admin_Page_Goals extends QAHM_Admin_Page_Dataviewer {
 	 * ページの表示
 	 */
 	public function create_html() {
-		if( ! $this->is_enqueue_jquery() ) {
+		if ( ! $this->is_enqueue_jquery() ) {
 			$this->print_not_enqueue_jquery_html();
 			return;
 		}
 
-		if( $this->is_maintenance() ) {
+		if ( $this->is_maintenance() ) {
 			$this->print_maintenance_html();
 			return;
 		}
 
 		global $qahm_data_api;
-		$lang_set    = get_bloginfo('language');
+		$lang_set = get_bloginfo( 'language' );
 		// tracking_id is used only for display switching (no state changes). wp_unslash() and sanitize_text_field() are applied inside sanitize_tracking_id().
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 		$tracking_id_raw = isset( $_GET['tracking_id'] ) ? $this->sanitize_tracking_id( wp_unslash( $_GET['tracking_id'] ) ) : 'all';
 		$tracking_id     = $this->get_safe_tracking_id( $tracking_id_raw );
 
-		$goals_ary    = $qahm_data_api->get_goals_preferences($tracking_id);
+		// ALL選択時は個別のtracking_id選択を促す
+		if ( $tracking_id === 'all' ) {
+			?>
+			<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>">
+				<div class="qa-zero-content">
+					<?php $this->create_header( __( 'Goals', 'qa-heatmap-analytics' ) ); ?>
+					<?php $this->print_select_tracking_id_message( __( 'Goals', 'qa-heatmap-analytics' ) ); ?>
+				</div>
+			</div>
+			<?php
+			return;
+		}
+
+		$goals_ary    = $qahm_data_api->get_goals_preferences( $tracking_id );
 		$gcomplete    = esc_html__( 'Goal Completions', 'qa-heatmap-analytics' );
 		$gvalue       = esc_html__( 'Goal Value', 'qa-heatmap-analytics' );
 		$goalrate     = esc_html__( 'Goal Conversion Rate', 'qa-heatmap-analytics' );
-		$goals_ary[0] = ['gtitle' => esc_html__( 'All Goals', 'qa-heatmap-analytics' )];
+		$goals_ary[0] = array( 'gtitle' => esc_html__( 'All Goals', 'qa-heatmap-analytics' ) );
 		?>
 
 		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>">
@@ -268,7 +282,6 @@ class QAHM_Admin_Page_Goals extends QAHM_Admin_Page_Dataviewer {
 				<?php $this->create_footer_follow(); ?>
 			</div>
 		</div>
-<?php
+		<?php
 	}
-
 } // end of class

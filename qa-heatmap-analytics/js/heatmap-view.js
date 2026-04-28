@@ -3,6 +3,7 @@ var qahm = qahm || {};
 qahm.docHeight             = -1;
 qahm.docWidth              = -1;
 qahm.prevDocWidth          = -1;
+qahm.lastAppliedHeight     = -1;
 qahm.heatMapCreateY        = -1;
 qahm.isCreateScrollMap     = false;
 qahm.isCreateAttentionMap  = false;
@@ -138,17 +139,17 @@ qahm.checkUpdateMap = function(){
 		qahm.updateHeatmapBarHeight();
 	}
 	
-	if( jQuery( '#heatmap-content' ).height() !== qahm.docHeight ||
-		qahm.prevDocWidth !== qahm.docWidth ||
-		jQuery( '#heatmap-iframe-container' ).height() !== qahm.docHeight ||
-		jQuery( '#heatmap-iframe' ).height() !== qahm.docHeight ) {
+	// ページ高さまたは幅が変更された場合のみ再構築
+	if( qahm.docHeight !== qahm.lastAppliedHeight ||
+		qahm.prevDocWidth !== qahm.docWidth ) {
 		
 		// すべてのコンテナ要素に正しい高さを設定 
 		jQuery( '#heatmap-iframe-container' ).css( 'height', qahm.docHeight );
 		jQuery( '#heatmap-iframe' ).css( 'height', qahm.docHeight );
 		jQuery( '#heatmap-content' ).css( 'height', qahm.docHeight );
-		
-		// ヒートマップの再構築 
+		qahm.lastAppliedHeight = qahm.docHeight;
+
+		// ヒートマップの再構築
 		qahm.createBlockArray();
 		qahm.createClickCountMap();
 		qahm.createClickHeatMap();

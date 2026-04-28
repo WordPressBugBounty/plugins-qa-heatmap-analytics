@@ -23,12 +23,12 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 set_time_limit( 60 * 30 );
 
-require_once dirname( __FILE__ ) . '/qahm-const.php';
+require_once __DIR__ . '/qahm-const.php';
 
 // テーブル存在チェック用の関数
-function table_exists( $table_name ) {
+function qahm_table_exists( $table_name ) {
 	global $wpdb;
-	$result = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) );
+	$result = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
 	return $result === $table_name;
 }
 
@@ -47,9 +47,9 @@ foreach ( QAHM_UNINSTALL_OPTIONS as $key ) {
 
 // qa関連のuser_meta削除
 $users = get_users( array( 'fields' => array( 'ID' ) ) );
-foreach( $users as $user ){
+foreach ( $users as $user ) {
 	$user_meta_ary = get_user_meta( $user->ID );
-	foreach( $user_meta_ary as $meta_key => $meta_value ){
+	foreach ( $user_meta_ary as $meta_key => $meta_value ) {
 		if ( strncmp( $meta_key, QAHM_OPTION_PREFIX, strlen( QAHM_OPTION_PREFIX ) ) === 0 ) {
 			delete_user_meta( $user->ID, $meta_key );
 		}
@@ -73,47 +73,46 @@ $tables_to_delete = array(
 	$wpdb->prefix . 'qa_utm_media',
 	$wpdb->prefix . 'qa_utm_sources',
 	$wpdb->prefix . 'qa_utm_content',
-	$wpdb->prefix . 'qa_sitemanage'
+	$wpdb->prefix . 'qa_sitemanage',
 );
 
 foreach ( $tables_to_delete as $table_name ) {
-	if ( table_exists( $table_name ) ) {
+	if ( qahm_table_exists( $table_name ) ) {
 		$wpdb->query( "DROP TABLE {$table_name}" );
 	}
 }
 
 // GSCテーブルの削除（存在チェック付き）
-$gsc_tables = $wpdb->get_results("SHOW TABLES LIKE '".$wpdb->prefix."qa_gsc%'", ARRAY_N);
-foreach ($gsc_tables as $table) {
+$gsc_tables = $wpdb->get_results( "SHOW TABLES LIKE '" . $wpdb->prefix . "qa_gsc%'", ARRAY_N );
+foreach ( $gsc_tables as $table ) {
 	$table_name = $table[0];
-	if ( table_exists( $table_name ) ) {
-		$wpdb->query("DROP TABLE {$table_name}");
+	if ( qahm_table_exists( $table_name ) ) {
+		$wpdb->query( "DROP TABLE {$table_name}" );
 	}
 }
 
 // dataディレクトリの削除
 global $wp_filesystem;
 $data_path = $wp_filesystem->wp_content_dir() . 'qa-zero-data/';
-if( $wp_filesystem->exists( $data_path ) ) {
-	remove_dir( $data_path );
+if ( $wp_filesystem->exists( $data_path ) ) {
+	qahm_remove_dir( $data_path );
 }
 $data_path = $wp_filesystem->wp_content_dir() . 'qa-heatmap-analytics-data/';
-if( $wp_filesystem->exists( $data_path ) ) {
-	remove_dir( $data_path );
+if ( $wp_filesystem->exists( $data_path ) ) {
+	qahm_remove_dir( $data_path );
 }
 
-function remove_dir( $dir ) {
+function qahm_remove_dir( $dir ) {
 	global $wp_filesystem;
 
 	$list = $wp_filesystem->dirlist( $dir );
-	foreach( $list as $item ) {
+	foreach ( $list as $item ) {
 		$path = $dir . DIRECTORY_SEPARATOR . $item['name'];
 
 		if ( $wp_filesystem->is_dir( $path ) ) {
 			// 再帰
-			remove_dir( $path );
-		}
-		else {
+			qahm_remove_dir( $path );
+		} else {
 			// ファイルを削除
 			$wp_filesystem->delete( $path );
 		}

@@ -233,7 +233,12 @@ qahm.loadScreen.promise().then(
 			qahm.correctScroll();
 			//qahm.addFilterPopupEvent();
 
-			setInterval( qahm.checkUpdateMap, 1000 );
+			(function scheduleCheck() {
+				setTimeout( function() {
+					qahm.checkUpdateMap();
+					scheduleCheck();
+				}, 1000 );
+			})();
 		}
 
         // 共通処理 

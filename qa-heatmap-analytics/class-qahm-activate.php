@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * プラグインを有効化
  * DBのテーブルに関しては自前のクラス内でアクティベート処理を実行している
@@ -41,15 +42,15 @@ class QAHM_Activate extends QAHM_File_Base {
 		// 自分のプラグインが有効化された場合のみ処理
 		$our_plugins = array(
 			'qa-zero/qahm.php',
-			'qa-heatmap-analytics/qahm.php'
+			'qa-heatmap-analytics/qahm.php',
 		);
 
-		if (!$this->wrap_in_array($plugin, $our_plugins)) {
+		if ( ! $this->wrap_in_array( $plugin, $our_plugins ) ) {
 			return; // 自分のプラグインでない場合は何もしない
 		}
 
 		// 念のため
-		$this->deactivation($plugin);
+		$this->deactivation( $plugin );
 
 		$this->wrap_mkdir( $this->get_data_dir_path( 'readers' ) );
 		$this->wrap_mkdir( $this->get_data_dir_path( 'heatmap-view-work' ) );
@@ -63,7 +64,7 @@ class QAHM_Activate extends QAHM_File_Base {
 		// 権限の追加
 		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
 			$capabilities = array(
-				'read' => true, // WordPress のデフォルト権限、ダッシュボードへのアクセスを許可
+				'read'                     => true, // WordPress のデフォルト権限、ダッシュボードへのアクセスを許可
 				'qazero_admin_page_access' => true, // カスタム権限
 			);
 			add_role( 'qazero-admin', 'QA Zero Admin', $capabilities );
@@ -73,7 +74,7 @@ class QAHM_Activate extends QAHM_File_Base {
 
 		$this->setup_config_file();
 	}
-	
+
 	/**
 	 * プラグイン無効化時の処理
 	 */
@@ -81,13 +82,13 @@ class QAHM_Activate extends QAHM_File_Base {
 		// 自分のプラグインが無効化された場合のみ処理
 		$our_plugins = array(
 			'qa-zero/qahm.php',
-			'qa-heatmap-analytics/qahm.php'
+			'qa-heatmap-analytics/qahm.php',
 		);
-		
-		if (!$this->wrap_in_array($plugin, $our_plugins)) {
+
+		if ( ! $this->wrap_in_array( $plugin, $our_plugins ) ) {
 			return; // 自分のプラグインでない場合は何もしない
 		}
-		
+
 		// Specific to ZERO - Start ---------------
 		// 権限の削除
 		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
@@ -142,7 +143,7 @@ class QAHM_Activate extends QAHM_File_Base {
 	private function set_schedule_event( $recurrence, $hook ) {
 		if ( ! wp_next_scheduled( $hook ) ) {
 			// WordPressのタイムゾーンを考慮してスケジュールイベントを登録
-			$gmt_timestamp = current_time( 'timestamp', true );
+			$gmt_timestamp = time();
 
 			// スケジュールイベントを登録
 			wp_schedule_event( $gmt_timestamp, $recurrence, $hook );
@@ -160,8 +161,42 @@ class QAHM_Activate extends QAHM_File_Base {
 		// sitemanageに登録
 		if ( QAHM_TYPE === QAHM_TYPE_WP ) {
 			// 既に登録されているなら登録しない
-			if ( ! $this->wrap_get_option( 'qahm_sitemanage_domainurl' ) ) {
-				$qahm_admin_page_entire->set_sitemanage_domainurl( get_site_url() );
+			if ( ! $this->wrap_get_option( 'sitemanage' ) ) {
+				// 通常パス（qtag 生成含む）
+				if ( $qahm_admin_page_entire ) {
+					try {
+						$qahm_admin_page_entire->set_sitemanage_domainurl( get_site_url() );
+					} catch ( Exception $e ) {
+						// WP_Filesystem 失敗等で例外が発生した場合はフォールバック
+					}
+				}
+
+				// フォールバック: 上記が失敗しても DB 登録だけは確実に行う
+				if ( ! $this->wrap_get_option( 'sitemanage' ) ) {
+					$parse_url = wp_parse_url( get_site_url() );
+					if ( $parse_url && isset( $parse_url['host'] ) ) {
+						$domain_url  = $parse_url['host'] . ( isset( $parse_url['path'] ) ? $parse_url['path'] : '/' );
+						$tracking_id = substr( md5( uniqid( wp_rand(), true ) ), 0, 16 );
+						$sitemanage  = array(
+							array(
+								'site_id'                => 0,
+								'url'                    => $domain_url,
+								'domain'                 => $parse_url['host'],
+								'tracking_id'            => $tracking_id,
+								'memo'                   => '',
+								'status'                 => 0,
+								'ignore_params'          => '',
+								'search_params'          => '',
+								'ignore_ips'             => '',
+								'url_case_sensitivity'   => 0,
+								'get_base_html_periodic' => 0,
+								'anontrack'              => 1,
+								'insert_datetime'        => current_time( 'mysql' ),
+							),
+						);
+						$this->wrap_update_option( 'sitemanage', $sitemanage );
+					}
+				}
 			}
 		}
 		// Specific to QA - End -----------------
@@ -173,9 +208,14 @@ class QAHM_Activate extends QAHM_File_Base {
 	 */
 	public function setup_config_file() {
 		global $wp_filesystem;
-		
+
 		if ( empty( $wp_filesystem ) ) {
 			$this->init_wp_filesystem();
+		}
+
+		// WP_Filesystem の初期化に失敗した場合はスキップ（次回管理画面アクセス時にリトライ）
+		if ( empty( $wp_filesystem ) ) {
+			return false;
 		}
 
 		$wp_load_path = ABSPATH;
@@ -183,15 +223,15 @@ class QAHM_Activate extends QAHM_File_Base {
 			return false;
 		}
 
-		if ( file_exists( dirname( __FILE__ ) . '/qa-config.php' ) ) {
-			$source_config = dirname( __FILE__ ) . '/qa-config.php';
+		if ( file_exists( __DIR__ . '/qa-config.php' ) ) {
+			$source_config = __DIR__ . '/qa-config.php';
 		} else {
-			$source_config = dirname( __FILE__, 2 ) . '/' . QAHM_TEXT_DOMAIN . '/qa-config.php';
+			$source_config = dirname( __DIR__, 1 ) . '/' . QAHM_TEXT_DOMAIN . '/qa-config.php';
 		}
 
-		$config_file_path = WP_CONTENT_DIR;
+		$config_file_path  = WP_CONTENT_DIR;
 		$config_file_path .= '/qa-zero-data/qa-config.php';
-		
+
 		// ディレクトリが存在しない場合は作成
 		$config_dir = dirname( $config_file_path );
 		if ( ! $wp_filesystem->exists( $config_dir ) ) {
@@ -208,7 +248,7 @@ class QAHM_Activate extends QAHM_File_Base {
 
 		if ( $wp_filesystem->exists( $config_file_path ) ) {
 			$existing_content = $wp_filesystem->get_contents( $config_file_path );
-			if ( $existing_content && strpos( $existing_content, 'QAHM_CONFIG_WP_ROOT_PATH' ) !== false ) {
+			if ( $existing_content && $this->wrap_strpos( $existing_content, 'QAHM_CONFIG_WP_ROOT_PATH' ) !== false ) {
 				return true;
 			}
 			if ( $existing_content && empty( $config_content ) ) {
@@ -217,12 +257,12 @@ class QAHM_Activate extends QAHM_File_Base {
 		}
 
 		if ( empty( $config_content ) ) {
-			$config_content = "<?php\n";
+			$config_content  = "<?php\n";
 			$config_content .= "// QA Platform Configuration File\n";
 			$config_content .= "// Auto-generated during plugin activation\n\n";
 		}
 
-		if ( strpos( $config_content, 'QAHM_CONFIG_WP_ROOT_PATH' ) === false ) {
+		if ( $this->wrap_strpos( $config_content, 'QAHM_CONFIG_WP_ROOT_PATH' ) === false ) {
 			$config_content .= "\n";
 			$config_content .= "define('QAHM_CONFIG_WP_ROOT_PATH', '" . addslashes( $wp_load_path ) . "');\n";
 		}

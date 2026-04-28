@@ -12,13 +12,64 @@
             el_loadings[iii].style.display = "none";
         }
 //mkdummy
-        let tab_item = document.getElementsByClassName('qahm-config__tab-item');
-        for ( let iii = 0; iii < tab_item.length; iii++ ) {
-            tab_item[iii].addEventListener( 'click',  (e) => {
-                let idname = e.target.htmlFor;
-                window.location.hash = idname;
+        let tab_items = document.getElementsByClassName('qa-zero-tab__item');
+        for ( let iii = 0; iii < tab_items.length; iii++ ) {
+            tab_items[iii].addEventListener( 'click',  function() {
+                let targetId = this.getAttribute('data-tab');
+                if ( ! targetId ) return;
+
+                // Hide all tab contents
+                let allContents = document.getElementsByClassName('qahm-config__tab-content');
+                for ( let jjj = 0; jjj < allContents.length; jjj++ ) {
+                    allContents[jjj].classList.remove('qahm-config__tab-content--active');
+                }
+
+                // Deactivate all tab items
+                for ( let jjj = 0; jjj < tab_items.length; jjj++ ) {
+                    tab_items[jjj].classList.remove('qa-zero-tab__item--active');
+                }
+
+                // Show target content and activate tab
+                let targetContent = document.getElementById( targetId );
+                if ( targetContent ) {
+                    targetContent.classList.add('qahm-config__tab-content--active');
+                }
+                this.classList.add('qa-zero-tab__item--active');
+
+                // Save to hash (without scrolling)
+                history.replaceState( null, '', '#' + targetId );
             } );
         }
+        // Iframe width slider: update iframe width and apply scale
+        document.querySelectorAll( '.qahm-config__iframe-width-slider' ).forEach( function( slider ) {
+            slider.addEventListener( 'input', function() {
+                var gid = this.getAttribute( 'data-gid' );
+                var iframeWidth = parseInt( this.value, 10 );
+                var iframe = document.getElementById( 'g' + gid + '_event-iframe' );
+                var label = this.parentElement.querySelector( '.qahm-config__iframe-width-value' );
+
+                if ( iframe ) {
+                    iframe.setAttribute( 'width', iframeWidth );
+                    qahm.applyIframeScale( gid );
+                }
+                if ( label ) {
+                    label.textContent = iframeWidth + 'px';
+                }
+            } );
+        } );
+
+        // Recalculate iframe scale on window resize (e.g. sidebar collapse)
+        var resizeRaf;
+        window.addEventListener( 'resize', function() {
+            if ( resizeRaf ) return;
+            resizeRaf = requestAnimationFrame( function() {
+                document.querySelectorAll( '.qahm-config__iframe-width-slider' ).forEach( function( slider ) {
+                    qahm.applyIframeScale( slider.getAttribute( 'data-gid' ) );
+                } );
+                resizeRaf = null;
+            } );
+        } );
+
 //mkdummy
         let g_clickpage = qahm.g_clickpage;
 
@@ -46,9 +97,12 @@
         let hashtabid = window.location.hash;
         if ( hashtabid ) {
             hashtabid = hashtabid.replace('#', '');
-            let activetab = document.getElementById( hashtabid );
-            if ( activetab ) {
-                activetab.checked = true;
+            // Find the tab item with matching data-tab and click it
+            for ( let iii = 0; iii < tab_items.length; iii++ ) {
+                if ( tab_items[iii].getAttribute('data-tab') === hashtabid ) {
+                    tab_items[iii].click();
+                    break;
+                }
             }
         }
 //mkdummy
@@ -435,6 +489,28 @@
 	 * 目標設定
      * クリック用のiframeを表示
 	 */
+	/**
+	 * Apply scale transform to iframe based on slider value
+	 */
+	qahm.applyIframeScale = function( gid ) {
+		var container = document.getElementById( 'g' + gid + '_event-iframe-containar' );
+		if ( ! container ) return;
+		var iframe = document.getElementById( 'g' + gid + '_event-iframe' );
+		var wrapper = container.querySelector( '.qahm-config__iframe-scale-wrapper' );
+		if ( ! iframe || ! wrapper ) return;
+
+		var iframeWidth = parseInt( iframe.getAttribute( 'width' ), 10 ) || 1200;
+		var iframeHeight = parseInt( iframe.getAttribute( 'height' ), 10 ) || 400;
+		var containerWidth = container.offsetWidth;
+		if ( containerWidth <= 0 ) return;
+
+		var scale = ( iframeWidth > containerWidth ) ? containerWidth / iframeWidth : 1;
+		wrapper.style.transform = 'scale(' + scale + ')';
+		wrapper.style.width = iframeWidth + 'px';
+		wrapper.style.height = iframeHeight + 'px';
+		container.style.height = Math.round( iframeHeight * scale ) + 'px';
+	};
+
 	qahm.showIframeSelector = function( idname ){
         let idsplit  = idname.split('_');
         let gid      = idsplit[0].slice(1);
@@ -488,15 +564,33 @@
                         // iframe内のHTMLを設定する
                         //iframeDocument.find("html").html(baseHtml); //これだとうまくいかない
                         iframeDocument[0].documentElement.innerHTML = baseHtml;
+
+                        // Resolve lazy-loaded images: data-src → src
+                        iframeDocument.find( 'img[data-src]' ).each( function() {
+                            var $img = jQuery( this );
+                            $img.attr( 'src', $img.attr( 'data-src' ) );
+                            $img.removeAttr( 'data-src' );
+                        } );
+                        // Also handle srcset lazy loading
+                        iframeDocument.find( 'img[data-srcset]' ).each( function() {
+                            var $img = jQuery( this );
+                            $img.attr( 'srcset', $img.attr( 'data-srcset' ) );
+                            $img.removeAttr( 'data-srcset' );
+                        } );
+
                         jQuery(`#g${gid}_event-iframe-containar`).css('display', 'block');
-                
+                        qahm.applyIframeScale( gid );
+
                         // ここに、iframe内で実行するJavaScriptコードなどを追加
                         let frameContent = jQuery( 'body', jQuery( `#g${gid}_event-iframe` ).contents() );
                         frameContent.on( 'click', function(e){
                             // セレクタ設定
                             const names   = qahm.getSelectorFromElement( e.target );
                             const selName = names.join( '>' );
-                            jQuery( `#g${gid}_clickselector` ).val( selName );
+                            
+                            // エスケープ処理を適用
+                            const escapedSelName = qahm.escapeSelectorString(selName);
+                            jQuery( `#g${gid}_clickselector` ).val( escapedSelName );
                             jQuery( `#g${gid}_clickselector` ).prop("readonly", true);
 
                             // 吹き出し表示
@@ -583,6 +677,36 @@
 		return names;
 	};
 
+	/**
+	 * セレクタの文字をエスケープ
+	 * @param {string} str セレクタ文字列
+	 * @returns {string} エスケープされたセレクタ文字列
+	 */
+	qahm.escapeSelectorString = function( str ){
+		let strSplitAry = str.split('>');
+		let find = false;
+		for ( let strIdx = 0; strIdx < strSplitAry.length; strIdx++ ) {
+			let deliStr = '.';
+			let deliIdx = strSplitAry[strIdx].indexOf( deliStr );
+			if ( deliIdx === -1 ) {
+				deliStr = '#';
+				deliIdx = strSplitAry[strIdx].indexOf( deliStr );
+			}
+			if ( deliIdx !== -1 ) {
+				let fwdName  = strSplitAry[strIdx].substr( 0, deliIdx );
+				let BackName = strSplitAry[strIdx].substr( deliIdx + 1 );
+				strSplitAry[strIdx] = fwdName + deliStr + CSS.escape( BackName );
+				find = true;
+			}
+		}
+
+		if ( find ) {
+			return strSplitAry.join('>');
+		} else {
+			return str;
+		}
+	};
+
 
     // プラグイン設定の保存処理用のコード
 	jQuery(function() {
@@ -615,6 +739,78 @@
 				AlertMessage.alert(
 					qahml10n['alert_message_failed'],
 					qahml10n['setting_option_failed'], 
+					'error',
+					function() {}
+				);
+			}).always(function() {
+				qahm.hideLoadIcon();
+			});
+		});
+	});
+
+	// 計測設定の保存処理（QA ZERO）
+	jQuery(function() {
+		// HTML定期取得 OFF 時に差分検知モードを disabled にする
+		var $periodicCheckbox = jQuery('#measurement_get_base_html_periodic');
+		var $detectionMode    = jQuery('#measurement_html_diff_detection_mode');
+		$detectionMode.prop('disabled', !$periodicCheckbox.is(':checked'));
+		$periodicCheckbox.on('change', function() {
+			$detectionMode.prop('disabled', !this.checked);
+		});
+
+		jQuery(document).on('click', '#measurement-submit', function() {
+			qahm.showLoadIcon();
+
+			let ignoreParams          = jQuery('#measurement_ignore_params').val().split(/\n/).map(s => s.trim()).filter(s => s).join(',');
+			let searchParams          = jQuery('#measurement_search_params').val().split(/\n/).map(s => s.trim()).filter(s => s).join(',');
+			let ignoreIps             = jQuery('#measurement_ignore_ips').val();
+			let urlCase               = jQuery('#measurement_url_case').is(':checked') ? 1 : 0;
+			let siteId                = jQuery('#measurement_site_id').val();
+			let getBaseHtmlPeriodic   = $periodicCheckbox.is(':checked') ? 1 : 0;
+			let htmlDiffDetectionMode = $detectionMode.val();
+
+			jQuery.ajax({
+				type: 'POST',
+				url: qahm.ajax_url,
+				dataType: 'json',
+				data: {
+					'action': 'qahm_ajax_save_measurement_config',
+					'security': qahml10n['nonce_qahm_options'],
+					'site_id': siteId,
+					'ignore_params': ignoreParams,
+					'search_params': searchParams,
+					'ignore_ips': ignoreIps,
+					'url_case': urlCase,
+					'get_base_html_periodic': getBaseHtmlPeriodic,
+					'html_diff_detection_mode': htmlDiffDetectionMode,
+				}
+			}).done(function(data) {
+				if ( data.success ) {
+					AlertMessage.alert(
+						qahml10n['alert_message_success'],
+						qahml10n['measurement_saved'],
+						'success',
+						function() {
+							location.reload();
+						}
+					);
+				} else {
+					let msg = qahml10n['measurement_save_failed'];
+					if ( data.data === 'invalid_ip' ) {
+						msg = qahml10n['measurement_invalid_ip'];
+					}
+					AlertMessage.alert(
+						qahml10n['alert_message_failed'],
+						msg,
+						'error',
+						function() {}
+					);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				qahm.log_ajax_error(jqXHR, textStatus, errorThrown);
+				AlertMessage.alert(
+					qahml10n['alert_message_failed'],
+					qahml10n['measurement_save_failed'],
 					'error',
 					function() {}
 				);

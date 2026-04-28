@@ -1,9 +1,10 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * Class responsible for encrypting and decrypting data.
  */
 
-$qahm_data_enc = new QAHM_Data_Encryption();
+$GLOBALS['qahm_data_enc'] = new QAHM_Data_Encryption();
 
 class QAHM_Data_Encryption extends QAHM_Base {
 

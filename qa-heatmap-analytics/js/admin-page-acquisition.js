@@ -158,6 +158,20 @@ jQuery(document).on('qahm:dateRangeChanged', function( RangeStart, RangeEnd ) {
 });
 
 
+// 重複するセッションを除外する関数定義
+qahm.removeDuplicateSessions = function(arr) {
+	const seen = new Map();
+
+	return arr.filter(subArray => {
+	  const key = subArray.map(obj => JSON.stringify(obj)).join('|');
+	  if (seen.has(key)) {
+	    return false;
+	  }
+	  seen.set(key, true);
+	  return true;
+	});
+};
+
 qahm.renderAcquisitionData = function(dateBetweenStr) {
     switch (qahm.nowAjaxStep) {
         case 0:
@@ -190,24 +204,15 @@ qahm.renderAcquisitionData = function(dateBetweenStr) {
                 }
             ).done(
                 function( data ){
-					/*
-                    let ary = new Array();
-                    for ( let gid = 1; gid <= Object.keys(data).length; gid++ ) {
-                        ary = ary.concat( data[gid] );
-                    }
-                    for ( let gid = 0; gid <= Object.keys(data).length; gid++ ) {
-                        if ( gid === 0 ) {
-                            qahm.goalsSessionData[0] = ary;
-                        } else {
-                            qahm.goalsSessionData[gid] = data[gid];
-                        }
-                    }
-					*/
 					if (data !== null ) {
 						let ary = new Array();
 						for (let gid = 1; gid <= Object.keys(data).length; gid++) {
 							ary = ary.concat(data[gid]);
 						}
+
+						// 重複するセッションを除外
+						ary = qahm.removeDuplicateSessions(ary);
+
 						for (let gid = 0; gid <= Object.keys(data).length; gid++) {
 							if (gid === 0) {
 								qahm.goalsSessionData[0] = ary;
@@ -278,18 +283,13 @@ qahm.renderAcquisitionData = function(dateBetweenStr) {
 						if ( ! source ) {
 							source = 'direct';
 						}
+						// PHP get_goals_sessions で utm_medium は補完済み（JS側フォールバック不要）
 						let medium  = lp['utm_medium'];
-						if ( ! medium ) {
-							if ( source === 'direct' ) {
-								medium = '(none)';
-							} else {
-								medium = 'referral';
-							}
-						}
 
                         //channel
 						ch_ary[qahml10n['table_total']]++;
 						switch ( medium ) {
+							case '(none)':
 							case 'direct':
 								ch_ary['Direct']++;
 								break;

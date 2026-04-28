@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * 管理画面のページを表示するクラスの基本クラス
  *
@@ -10,7 +11,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 
 	function __construct() {
 	}
-	
+
 	/**
 	 * 共通部分のスタイル
 	 */
@@ -31,20 +32,20 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		}
 		// Differs between ZERO and QA - End ----------
 	}
-	
+
 	/**
 	 * 共通部分のスクリプト
 	 */
 	protected function common_enqueue_script() {
 		$js_dir_url = $this->get_js_dir_url();
 		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( QAHM_NAME . '-qa-table',  $js_dir_url . 'lib/qa-table/qa-table.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-font-awesome',  $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2',  $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-alert-message',  $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-common',  $js_dir_url . 'common.js', array( 'jquery', QAHM_NAME . '-qa-table' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-load-screen',  $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION );
-		wp_enqueue_script( QAHM_NAME . '-effect',  $js_dir_url . 'effect.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-qa-table', $js_dir_url . 'lib/qa-table/qa-table.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-font-awesome', $js_dir_url . 'lib/font-awesome/all.min.js', null, QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-sweet-alert-2', $js_dir_url . 'lib/sweet-alert-2/sweetalert2.min.js', array( 'jquery' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-alert-message', $js_dir_url . 'alert-message.js', array( QAHM_NAME . '-sweet-alert-2' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-common', $js_dir_url . 'common.js', array( 'jquery', QAHM_NAME . '-qa-table' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-load-screen', $js_dir_url . 'load-screen.js', array( QAHM_NAME . '-common' ), QAHM_PLUGIN_VERSION );
+		wp_enqueue_script( QAHM_NAME . '-effect', $js_dir_url . 'effect.js', array( QAHM_NAME . '-load-screen' ), QAHM_PLUGIN_VERSION );
 	}
 
 	/**
@@ -58,28 +59,28 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		$timezone = $qahm_time->timezone_obj->getName();
 
 		$scripts = array(
-			'nonce_api'            => wp_create_nonce( QAHM_Data_Api::NONCE_API ),
-			'ajax_url'             => admin_url( 'admin-ajax.php' ),
-			'debug_level'          => QAHM_DEBUG_LEVEL,
-			'debug'                => QAHM_DEBUG,
-			'type'                 => QAHM_TYPE,
-			'type_zero'            => QAHM_TYPE_ZERO,
-			'type_wp'              => QAHM_TYPE_WP,
+			'nonce_api'      => wp_create_nonce( QAHM_Data_Api::NONCE_API ),
+			'ajax_url'       => admin_url( 'admin-ajax.php' ),
+			'debug_level'    => QAHM_DEBUG_LEVEL,
+			'debug'          => QAHM_DEBUG,
+			'type'           => QAHM_TYPE,
+			'type_zero'      => QAHM_TYPE_ZERO,
+			'type_wp'        => QAHM_TYPE_WP,
 			//'license_plan'         => $this->wrap_get_option( 'license_plan' ),
 			//'license_plans'        => $this->get_plan(),
-			'site_url'             => get_site_url(),
-			'plugin_dir_url'       => plugin_dir_url( __FILE__ ),
-			'plugin_version'       => QAHM_PLUGIN_VERSION,
-			'data_dir_url'         => $this->get_data_dir_url(),
-			'devices'              => QAHM_DEVICES,
-			'dev001'               => $dev001,
-			'dev002'               => $dev002,
-			'dev003'               => $dev003,
+			'site_url'       => get_site_url(),
+			'plugin_dir_url' => plugin_dir_url( __FILE__ ),
+			'plugin_version' => QAHM_PLUGIN_VERSION,
+			'data_dir_url'   => $this->get_data_dir_url(),
+			'devices'        => QAHM_DEVICES,
+			'dev001'         => $dev001,
+			'dev002'         => $dev002,
+			'dev003'         => $dev003,
 			// common variables
-			'wp_gmt_offset' 	  	=> get_option( 'gmt_offset' ),
-			'wp_timezone'	  		=> $timezone,
-			'wp_lang'		  		=> get_option( 'WPLANG' ),
-			'wp_user_locale'	  	=> get_user_locale(),
+			'wp_gmt_offset'  => get_option( 'gmt_offset' ),
+			'wp_timezone'    => $timezone,
+			'wp_lang'        => get_option( 'WPLANG' ),
+			'wp_user_locale' => get_user_locale(),
 		);
 
 		return $scripts;
@@ -90,7 +91,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	 */
 	protected function get_common_localize_script() {
 		$localize = array(
-		//	'test' => esc_html__( 'ここに共通ローカライズ単語を書いていく。このメッセージは翻訳不要', 'qa-heatmap-analytics' ),
+		//  'test' => esc_html__( 'ここに共通ローカライズ単語を書いていく。このメッセージは翻訳不要', 'qa-heatmap-analytics' ),
 		);
 
 		return $localize;
@@ -105,40 +106,40 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	protected function normalize_locale( $locale ) {
 		$locale_map = array(
 			// 日本語
-			'ja' => 'ja_JP',
+			'ja'      => 'ja_JP',
 
 			// 英語（アメリカ）
-			'en' => 'en_US',
+			'en'      => 'en_US',
 
 			// 英語（イギリス）など追加も可能
-			'en_GB' => 'en_GB',
+			'en_GB'   => 'en_GB',
 
 			// 中国語
-			'zh' => 'zh_CN',
+			'zh'      => 'zh_CN',
 			'zh-hans' => 'zh_CN', // 簡体字
 			'zh-hant' => 'zh_TW', // 繁体字
 
 			// フランス語
-			'fr' => 'fr_FR',
+			'fr'      => 'fr_FR',
 
 			// ドイツ語
-			'de' => 'de_DE',
+			'de'      => 'de_DE',
 
 			// スペイン語
-			'es' => 'es_ES',
+			'es'      => 'es_ES',
 
 			// 韓国語
-			'ko' => 'ko_KR',
+			'ko'      => 'ko_KR',
 
 			// イタリア語
-			'it' => 'it_IT',
+			'it'      => 'it_IT',
 
 			// ロシア語
-			'ru' => 'ru_RU',
+			'ru'      => 'ru_RU',
 
 			// ポルトガル語
-			'pt' => 'pt_PT',
-			'pt-br' => 'pt_BR',
+			'pt'      => 'pt_PT',
+			'pt-br'   => 'pt_BR',
 
 			// その他必要に応じて追加
 		);
@@ -161,7 +162,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	 * jQueryが存在しない時のメッセージを表示
 	 */
 	protected function view_not_enqueue_jquery_html() {
-		$msg = '<div id="qahm-error" class="error notice is-dismissible"><p>';		
+		$msg  = '<div id="qahm-error" class="error notice is-dismissible"><p>';
 		$msg .= sprintf(
 			/* translators: %s is the plugin name */
 			esc_html__( 'jQuery is not loaded, so %s cannot function properly.', 'qa-heatmap-analytics' ),
@@ -185,22 +186,22 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 	 */
 	protected function view_maintenance_html() {
 		$style = '<style>' .
-				 '.mainteqa {' .
-				 'width: 800px;' .
-				 'background-color: #fcfcfc;' .
-				 'padding: 24px;' .
-				 '}' .
-				 '.mainteqa h1 {' .
-				 'border-bottom: solid 2px #f9cdc5;' .
-				 'margin-bottom: 32px;' .
-				 'font-size: 1.2rem;' .
-				 'line-height: 2;' .
-				 '}' .
-				 '.mainteqa p {' .
-				 'line-height: 1.8;' .
-				 'margin-bottom: 1em;' .
-				 '}' .
-				 '</style>';
+				'.mainteqa {' .
+				'width: 800px;' .
+				'background-color: #fcfcfc;' .
+				'padding: 24px;' .
+				'}' .
+				'.mainteqa h1 {' .
+				'border-bottom: solid 2px #f9cdc5;' .
+				'margin-bottom: 32px;' .
+				'font-size: 1.2rem;' .
+				'line-height: 2;' .
+				'}' .
+				'.mainteqa p {' .
+				'line-height: 1.8;' .
+				'margin-bottom: 1em;' .
+				'}' .
+				'</style>';
 
 		$mes  = '<div class="mainteqa">';
 		$mes .= '<h1>' . esc_html__( 'Maintenance Notice', 'qa-heatmap-analytics' ) . '</h1>';
@@ -212,10 +213,10 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 			'<a href="https://mem.quarka.org/en/manual/keep-getting-data-is-under-maintenance/" target="_blank" rel="noopener">',
 			'</a>'
 		) . '</p>';
-		
-		$mes .= '<hr>';
+
+		$mes   .= '<hr>';
 		$locale = get_locale();
-		if ( strpos( $locale, 'ja' ) === 0 ) {
+		if ( $this->wrap_strpos( $locale, 'ja' ) === 0 ) {
 			$mes .= '<p><strong>QA Analytics から更新された方へ</strong><br>';
 			$mes .= 'これまでの計測データは、QA Assistants で利用できるよう引き継ぎ準備中です。<br>';
 			$mes .= 'しばらくすると通常の画面に戻りますが、夜間処理が完了するまでレポートは「データがありません」と表示されます。<br>';
@@ -224,7 +225,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 			$mes .= '<p><strong>' . esc_html__( 'For users updating from QA Analytics', 'qa-heatmap-analytics' ) . '</strong><br>';
 			$mes .= esc_html__( 'Your past analytics data is being carried over and prepared for use in QA Assistants.', 'qa-heatmap-analytics' ) . '<br>';
 			$mes .= esc_html__( 'The normal screen will return shortly, but reports will show "No data available" until the nightly process is finished.', 'qa-heatmap-analytics' ) . '<br>';
-			$mes .= esc_html__( 'Tracking continues as usual, so please look forward to seeing your data reflected tomorrow.', 'qa-heatmap-analytics' ) . '</p>';	
+			$mes .= esc_html__( 'Tracking continues as usual, so please look forward to seeing your data reflected tomorrow.', 'qa-heatmap-analytics' ) . '</p>';
 		}
 		$mes .= '</div>';
 
@@ -239,21 +240,148 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		$this->view_maintenance_html();
 	}
 
+	/**
+	 * tracking_id選択を促すメッセージを表示
+	 *
+	 * @param string $page_title ページタイトル
+	 */
+	protected function print_select_tracking_id_message( $page_title = '' ) {
+		$style = '<style>' .
+				'.qa-select-tracking-id {' .
+				'width: 800px;' .
+				'background-color: #fcfcfc;' .
+				'padding: 24px;' .
+				'margin: 20px 0;' .
+				'}' .
+				'.qa-select-tracking-id h2 {' .
+				'border-bottom: solid 2px #f9cdc5;' .
+				'margin-bottom: 32px;' .
+				'font-size: 1.2rem;' .
+				'line-height: 2;' .
+				'}' .
+				'.qa-select-tracking-id p {' .
+				'line-height: 1.8;' .
+				'margin-bottom: 1em;' .
+				'}' .
+				'</style>';
+
+		$mes  = '<div class="qa-select-tracking-id">';
+		$mes .= '<h2>' . esc_html( $page_title ) . '</h2>';
+		$mes .= '<p>' . esc_html__( 'This page does not support viewing all sites at once.', 'qa-heatmap-analytics' ) . '</p>';
+		$mes .= '<p>' . esc_html__( 'Please select a specific site from the menu above.', 'qa-heatmap-analytics' ) . '</p>';
+		$mes .= '</div>';
+
+		echo wp_kses( $style, array( 'style' => array() ) );
+		echo wp_kses_post( $mes );
+	}
+
+
+	/**
+	 * ヘッダーを展開
+	 *
+	 * @since #925 Base に移動（dataviewer / assistant のオーバーライドを統合）
+	 *
+	 * @param string $title         ページタイトル
+	 * @param bool   $show_selector サイトセレクターを表示するか
+	 */
+	protected function create_header( $title, $show_selector = true ) {
+		?>
+		<div class="qa-zero-header">
+			<h1 class="qa-zero-header__title"><?php echo esc_html( $title ); ?></h1>
+			<?php
+			if ( $show_selector ) {
+				$this->render_site_selector();
+			}
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * サイトセレクターを表示（QA ZERO のみ）
+	 *
+	 * ページヘッダー内（タイトル横）にサイト切替セレクトボックスを表示する。
+	 * 登録サイトが1つだけの場合は非表示。QA Assistants では何も出力しない。
+	 *
+	 * @since #901 Step 2
+	 * @since #914 ヘッダー内統合、ラベル削除、1サイト時非表示
+	 */
+	protected function render_site_selector() {
+		if ( QAHM_TYPE !== QAHM_TYPE_ZERO ) {
+			return;
+		}
+
+		// 複数回呼び出し防止
+		static $rendered = false;
+		if ( $rendered ) {
+			return;
+		}
+		$rendered = true;
+
+		global $qahm_data_api;
+		$sitemanage = $qahm_data_api->get_sitemanage();
+
+		if ( empty( $sitemanage ) ) {
+			return;
+		}
+
+		// 現在の tracking_id を取得
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$current_tracking_id = isset( $_GET['tracking_id'] )
+			? $this->sanitize_tracking_id( wp_unslash( $_GET['tracking_id'] ) )
+			: '';
+
+		// status=255（削除済み）のサイトを除外
+		$active_sites = array();
+		foreach ( $sitemanage as $site ) {
+			if ( 255 === (int) $site['status'] ) {
+				continue;
+			}
+			$active_sites[] = $site;
+		}
+
+		$site_count = count( $active_sites );
+
+		if ( 0 === $site_count ) {
+			return;
+		}
+		?>
+		<select class="qa-zero-header__site-select" id="qa-zero-site-select">
+			<?php if ( $site_count > 1 ) : ?>
+			<option value="all"<?php selected( $current_tracking_id, 'all' ); ?>>
+				<?php esc_html_e( 'すべてのサイト', 'qa-heatmap-analytics' ); ?>
+			</option>
+			<?php endif; ?>
+			<?php foreach ( $active_sites as $site ) : ?>
+				<option value="<?php echo esc_attr( $site['tracking_id'] ); ?>"<?php selected( $current_tracking_id, $site['tracking_id'] ); ?>>
+					<?php echo esc_html( $site['url'] ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<script>
+			document.getElementById( 'qa-zero-site-select' ).addEventListener( 'change', function() {
+				var url = new URL( window.location.href );
+				url.searchParams.set( 'tracking_id', this.value );
+				window.location.href = url.toString();
+			} );
+		</script>
+		<?php
+	}
 
 	/**
 	 * RSSを表示
 	 */
-	protected function view_rss_feed() {
+	protected function view_rss_feed( $wrap_in_container = true ) {
 		$wp_lang_set = get_bloginfo( 'language' );
 
 		// 日本語環境以外では表示しない
-		if ( strpos( $wp_lang_set, 'ja' ) !== 0 ) {
+		if ( $this->wrap_strpos( $wp_lang_set, 'ja' ) !== 0 ) {
 			return;
 		}
 
 		include_once ABSPATH . WPINC . '/feed.php';
 
-		// プラグイン種別に応じてRSS情報を設定		
+		// プラグイン種別に応じてRSS情報を設定
 		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
 			$rss_url      = 'https://qazero.com/blog/feed/';
 			$heading_text = __( 'QA ZERO ブログ', 'qa-heatmap-analytics' );
@@ -280,6 +408,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		$date_format = 'Y年n月j日'; // 日本語前提で固定
 		?>
 
+		<?php if ( $wrap_in_container ) : ?>
 		<div id="qa-zero-rss" class="qa-zero-data-container">
 			<div class="qa-zero-data">
 				<div class="qa-zero-data__title">
@@ -293,6 +422,9 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 					</svg>
 					<?php echo esc_html( $heading_text ); ?>
 				</div>
+		<?php else : ?>
+				<h3 class="qahm-help__rss-title"><?php echo esc_html( $heading_text ); ?></h3>
+		<?php endif; ?>
 
 				<div class="rss-widget">
 					<ul>
@@ -308,8 +440,10 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 						<?php endforeach; ?>
 					</ul>
 				</div>
+		<?php if ( $wrap_in_container ) : ?>
 			</div>
 		</div>
+		<?php endif; ?>
 
 		<?php
 	}
@@ -321,49 +455,48 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 		$this->view_rss_feed();
 	}
 
-    /**  
-     * フッターにXフォローボタンを表示（QA Assistantsのみ）  
-     */  
-    protected function create_footer_follow() {  
-        // Specific to QA - Start ---------------  
-        if ( QAHM_TYPE !== QAHM_TYPE_WP ) {  
-            return;  
-        }  
-        // Specific to QA - End ---------------  
-    
-        $locale = get_locale();  
-        $is_japanese = strpos( $locale, 'ja' ) === 0;  
-    
-        $message = __( 'Get the latest updates on QA Assistants on X (@QAAssistantsEN)', 'qa-heatmap-analytics' ) . ' - ';  
-        $link_text = __( 'Follow us for updates', 'qa-heatmap-analytics' );   
-    
-        if ( $is_japanese ) {  
-            $link = 'https://x.com/QAAssistants';  
-        } else {  
-            $link = 'https://x.com/QAAssistantsEN';  
-        }  
-    
-        $footer_html = '<div style="' .  
-            'margin-top:36px;' .  
-            'margin-bottom:48px;' .  
-            'padding:14px 18px;' .  
-            'border-top:1px solid #eaf5ff;' .  
-            'border-bottom:1px solid #eaf5ff;' .  
-            'background:#ffffff;' .  
-            'font-size:13px;' .  
-            'line-height:1.5;' .  
-            'color:#1d1d1d;' .  
-            '">' .  
-            esc_html( $message ) .  
-            '<a href="' . esc_url( $link ) . '"' .  // $link変数を適用  
-            ' target="_blank"' .  
-            ' rel="noopener noreferrer"' .  
-            ' style="font-weight:600; color:#1d9bf0; text-decoration:none; margin-left:2px;">' .  
-            esc_html( $link_text ) .  
-            '</a>' .  
-            '</div>';  
-    
-        echo wp_kses_post( $footer_html );  
-    }
+	/**
+	 * フッターにXフォローボタンを表示（QA Assistantsのみ）
+	 */
+	protected function create_footer_follow() {
+		// Specific to QA - Start ---------------
+		if ( QAHM_TYPE !== QAHM_TYPE_WP ) {
+			return;
+		}
+		// Specific to QA - End ---------------
 
+		$locale      = get_locale();
+		$is_japanese = $this->wrap_strpos( $locale, 'ja' ) === 0;
+
+		$message   = __( 'Get the latest updates on QA Assistants on X (@QAAssistantsEN)', 'qa-heatmap-analytics' ) . ' - ';
+		$link_text = __( 'Follow us for updates', 'qa-heatmap-analytics' );
+
+		if ( $is_japanese ) {
+			$link = 'https://x.com/QAAssistants';
+		} else {
+			$link = 'https://x.com/QAAssistantsEN';
+		}
+
+		$footer_html = '<div style="' .
+			'margin-top:36px;' .
+			'margin-bottom:48px;' .
+			'padding:14px 18px;' .
+			'border-top:1px solid #eaf5ff;' .
+			'border-bottom:1px solid #eaf5ff;' .
+			'background:#ffffff;' .
+			'font-size:13px;' .
+			'line-height:1.5;' .
+			'color:#1d1d1d;' .
+			'">' .
+			esc_html( $message ) .
+			'<a href="' . esc_url( $link ) . '"' . // $link変数を適用
+			' target="_blank"' .
+			' rel="noopener noreferrer"' .
+			' style="font-weight:600; color:#1d9bf0; text-decoration:none; margin-left:2px;">' .
+			esc_html( $link_text ) .
+			'</a>' .
+			'</div>';
+
+		echo wp_kses_post( $footer_html );
+	}
 } // end of class

@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * ヒートマップビューやリプレイビューに共通する処理を書く基本クラス
  *
@@ -16,8 +17,8 @@ class QAHM_View_Base extends QAHM_File_Data {
 		$url = ( $option ) ? './' : '';
 
 		// 構成要素を '/' で分解
-		$base_abs_path   = explode( '/', $base_abs_path );
-		$tar_abs_path = explode( '/', $tar_abs_path );
+		$base_abs_path = $this->wrap_explode( '/', $base_abs_path );
+		$tar_abs_path  = $this->wrap_explode( '/', $tar_abs_path );
 
 		// 要素をはじめから順番に比較し同じ要素は排除
 		do {
@@ -43,7 +44,7 @@ class QAHM_View_Base extends QAHM_File_Data {
 				$url = str_repeat( '../', $bcount - 1 );
 			}
 			// $tar_abs_path のパスを '/' で連結して $url に格納
-			$url .= implode( '/', $tar_abs_path );
+			$url .= $this->wrap_implode( '/', $tar_abs_path );
 		}
 
 		// 出来上がったところで出力
@@ -75,18 +76,11 @@ class QAHM_View_Base extends QAHM_File_Data {
 		}
 
 		// 正規表現で<head>タグを正確に検出し、<base>タグを追加する
-		$pattern = '/<head\b([^>]*)>/i'; // \bは単語境界を表し、headのみをマッチさせる
+		$pattern     = '/<head\b([^>]*)>/i'; // \bは単語境界を表し、headのみをマッチさせる
 		$replacement = '<head$1>' . "\n" . '<base href="' . $base_url . '">';
 
 		// 置き換えを実行
-		$html = preg_replace($pattern, $replacement, $html);
-
-		// 計測タグを削除
-		$html = preg_replace(
-			'/<script[^>]*(?:qtag\.php|qtag\.js|cookie-consent-qtag\.php)[^>]*><\/script>/i',
-			'',
-			$html
-		);
+		$html = preg_replace( $pattern, $replacement, $html );
 
 		return $html;
 	}
@@ -102,8 +96,8 @@ class QAHM_View_Base extends QAHM_File_Data {
 			$html_user_b = strstr( $html, $target, false );
 			if ( $html_user_f && $html_user_b ) {
 				$pos_user_f  = strrpos( $html_user_f, '<' . $tag );
-				$pos_user_b  = strpos( $html_user_b, '/' . $tag . '>' ) + $this->wrap_strlen( '/' . $tag . '>' );
-				$pos_user_b += strpos( $html, $target );
+				$pos_user_b  = $this->wrap_strpos( $html_user_b, '/' . $tag . '>' ) + $this->wrap_strlen( '/' . $tag . '>' );
+				$pos_user_b += $this->wrap_strpos( $html, $target );
 				$str_user    = $this->wrap_substr( $html, $pos_user_f, $pos_user_b - $pos_user_f );
 				$html        = str_replace( $str_user, '', $html );
 			} else {
@@ -116,15 +110,14 @@ class QAHM_View_Base extends QAHM_File_Data {
 	/**
 	 * 連想配列に指定したキーが存在し、値が空でない場合、配列の中身を返す
 	 * 存在しない場合、または値が空であれば第三引数を返す
-	 */ 
+	 */
 	protected function array_key_exists_val( $key, $ary, $not_val = '' ) {
 		if ( ! $this->wrap_array_key_exists( $key, $ary ) ) {
 			return $not_val;
 		}
-		if ( $ary[$key] === '' ) {
+		if ( $ary[ $key ] === '' ) {
 			return $not_val;
 		}
-		return $ary[$key];
+		return $ary[ $key ];
 	}
 } // end of class
-

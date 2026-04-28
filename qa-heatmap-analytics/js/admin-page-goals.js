@@ -92,9 +92,9 @@ window.addEventListener('DOMContentLoaded', function() {
 		{ key: 'session', label: qahml10n['table_session'], width: 10, type: 'integer' },
 		{ key: 'heatmap', label: qahml10n['table_heatmap'], width: 10, sortable: false, exportable: false, filtering: false, formatter: function(value, row) {
 			return `<div class="qa-table-heatmap-container">
-					<span class="dashicons dashicons-desktop" data-device_name="dsk" data-page_id="${row.page_id}" data-is_landing_page="1"></span>
-					<span class="dashicons dashicons-tablet" data-device_name="tab" data-page_id="${row.page_id}" data-is_landing_page="1"></span>
-					<span class="dashicons dashicons-smartphone" data-device_name="smp" data-page_id="${row.page_id}" data-is_landing_page="1"></span>
+					<span class="dashicons dashicons-desktop" data-device_name="dsk" data-page_id="${row.page_id}" data-is_landing_page="1" data-is_goal="1"></span>
+					<span class="dashicons dashicons-tablet" data-device_name="tab" data-page_id="${row.page_id}" data-is_landing_page="1" data-is_goal="1"></span>
+					<span class="dashicons dashicons-smartphone" data-device_name="smp" data-page_id="${row.page_id}" data-is_landing_page="1" data-is_goal="1"></span>
 				</div>`;
     	} }
 	];
@@ -154,6 +154,8 @@ window.addEventListener('DOMContentLoaded', function() {
 			}
 			return ret;
     	} },
+		// #964: メディア列（utm_medium — 参照元の右）
+		{ key: 'media', label: qahml10n['table_media'] || 'Medium', width: 8 },
 		{ key: 'pv', label: qahml10n['table_pv'], width: 7, type: 'integer' },
 		{ key: 'site_taizaijikan', label: qahml10n['table_site_taizaijikan'], width: 10, type: 'duration' },
 		{ key: 'access_time', hidden: true },
@@ -269,7 +271,7 @@ qahm.renderGoalsData = function(dateBetweenStr, dateYmdAry) {
 				}
             ).done(
                 function( data ){
-                    let ary = data;
+                    let ary = data || [];
 
 					// graph用にsessions配列を作成
 					let graphDataAry = {
@@ -623,10 +625,13 @@ qahm.renderGoalsData = function(dateBetweenStr, dateYmdAry) {
                                     }],
                                     yAxes: [{
                                         stacked: true, //積み上げ棒グラフにする設定
-                                        ticks: {     // 目盛り
-                                            min: 0,      // 最小値
-                                            // beginAtZero: true でも同じ
-                                            stepSize: 1  // 間隔
+                                        ticks: {
+                                            beginAtZero: true
+                                        },
+                                        beforeBuildTicks: function( axis ) {
+                                            if ( axis.max < 10 ) {
+                                                axis.options.ticks.stepSize = 1;
+                                            }
                                         }
                                     }]
                                 }
@@ -1221,7 +1226,7 @@ qahm.createSmArray = function( vr_sessions_ary ) {
 	let lastTitle = '';
 	let lastTitleEl = '';
 	let lastUrl   = '';
-	let device = 'pc';
+	let device = 'desktop';
 	let reader_id = 0;
 	let pvcnt  = 0;
 	let is_bounce = 0;
@@ -1320,7 +1325,7 @@ qahm.createLpArray = function( vr_sessions_ary ) {
 	let lastTitleEl = '';
 	let lastUrl   = '';
 	let wp_page_id = 0;
-	let device = 'pc';
+	let device = 'desktop';
 	let reader_id = 0;
 	let pvcnt  = 0;
 	let last_exit_time = 0;
@@ -1427,7 +1432,7 @@ qahm.createSessionArray = function( vr_view_ary ) {
 	let lastTitle = '';
 	let lastTitleEl = '';
 	let lastUrl   = '';
-	let device = 'pc';
+	let device = 'desktop';
 	let reader_id = 0;
 	let pvcnt  = 0;
 	let last_exit_time = 0;
@@ -1448,14 +1453,14 @@ qahm.createSessionArray = function( vr_view_ary ) {
 					reader_id = vr_view_ary[iii][jjj].reader_id;
 					switch (Number(vr_view_ary[iii][jjj].device_id)) {
 						case 2:
-							device = 'tab';
+							device = 'tablet';
 							break;
 						case 3:
-							device = 'smp';
+							device = 'mobile';
 							break;
 						case 1:
 						default:
-							device = 'pc';
+							device = 'desktop';
 							break;
 					}
 					pvcnt = 1;
@@ -1494,9 +1499,11 @@ qahm.createSessionArray = function( vr_view_ary ) {
 						*/
 						last_exit_time   = vr_view_ary[iii][jjj].access_time;
 						source_domain = vr_view_ary[iii][jjj].source_domain;
+						// #964: メディア列（PHP側で補完済み）
+						let utm_medium = vr_view_ary[iii][jjj].utm_medium || '';
 
 						//make array
-						let sessionAry = [device, last_exit_time, reader_id, firstUrl, firstTitleEl, lastUrl, lastTitleEl, source_domain, pvcnt, sec_on_site, firstAccessTime, ''];
+						let sessionAry = [device, last_exit_time, reader_id, firstUrl, firstTitleEl, lastUrl, lastTitleEl, source_domain, utm_medium, pvcnt, sec_on_site, firstAccessTime, ''];
 						allSessionAry.push(sessionAry);
 					}
 				}
@@ -1660,8 +1667,9 @@ qahm.createHeatmapList = function( startDate, endDate ) {
 			let pageId        = jQuery( this ).data( 'page_id' );
 			let deviceName    = jQuery( this ).data( 'device_name' );
 			let isLandingPage = jQuery( this ).data( 'is_landing_page' );
+			let isGoal        = jQuery( this ).data( 'is_goal' );
 
-			qahm.createCap( startDate, endDate, pageId, deviceName, isLandingPage, null, trackingId );
+			qahm.createCap( startDate, endDate, pageId, deviceName, isLandingPage, null, trackingId, isGoal );
 		}
 	);
 	//});

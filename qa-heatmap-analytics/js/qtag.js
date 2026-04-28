@@ -7,7 +7,8 @@ qahmz.rawName          = null;
 qahmz.speedMsec        = 0;
 qahmz.qa_id            = null;
 
-qahmz.isFailAjax = false;
+qahmz.isFailAjax    = false;
+qahmz.isExcludedIp  = false;
 qahmz.initWinW   = window.innerWidth;
 qahmz.initWinH   = window.innerHeight;
 
@@ -78,14 +79,9 @@ qahmz.log_ajax_error = function ( jqXHR, textStatus, errorThrown ) {
 };
 
 
-// cookieが有効か判定
+// cookieが有効か判定（navigator.cookieEnabled を使用）
 qahmz.isEnableCookie = function(){
-	document.cookie = 'y';
-	if ( document.cookie === '' ) {
-		return false;
-	} else {
-		return true;
-	}
+	return navigator.cookieEnabled;
 };
 
 // cookie値を連想配列として取得する
@@ -204,9 +200,14 @@ qahmz.updateQaidCookie();
 //init処理
 qahmz.init = function() {
 
+	// ビューモードなら計測をスキップ
+	if (window.location.search.indexOf('qahm_view_mode=1') !== -1) {
+		return;
+	}
+
 	try {
 		
-		if ( ! qahmz.isEnableCookie() && ! qahmz.cookieMode ) {
+		if ( ! qahmz.cookieMode && ! qahmz.isEnableCookie() ) {
 			throw new Error( 'qa: Measurement failed because cookie is invalid.' );
 		}
 
@@ -231,7 +232,17 @@ qahmz.init = function() {
 		qahmz.xhr.open( 'POST', qahmz.ajaxurl, true );
 
 		qahmz.xhr.onload = function () {
-			let data = JSON.parse( qahmz.xhr.response );
+			let data;
+			try {
+				data = JSON.parse( qahmz.xhr.response );
+			} catch ( e ) {
+				return;
+			}
+			if ( data && data.excluded ) {
+				qahmz.isExcludedIp = true;
+				console.log( 'qa: Measurement is disabled because your IP address is in the exclusion list.' );
+				return;
+			}
 			if ( data && data.readers_name ) {
 				qahmz.readersName      = data.readers_name;
 				qahmz.readersBodyIndex = data.readers_body_index;
@@ -359,6 +370,35 @@ qahmz.getSelectorFromElement = function( el ) {
 	return names;
 };
 
+/**
+ * セレクタの文字をエスケープ
+ * @param {string} str セレクタ文字列
+ * @returns {string} エスケープされたセレクタ文字列
+ */
+qahmz.escapeSelectorString = function( str ){
+	let strSplitAry = str.split('>');
+	let find = false;
+	for ( let strIdx = 0; strIdx < strSplitAry.length; strIdx++ ) {
+		let deliStr = '.';
+		let deliIdx = strSplitAry[strIdx].indexOf( deliStr );
+		if ( deliIdx === -1 ) {
+			deliStr = '#';
+			deliIdx = strSplitAry[strIdx].indexOf( deliStr );
+		}
+		if ( deliIdx !== -1 ) {
+			let fwdName  = strSplitAry[strIdx].substr( 0, deliIdx );
+			let BackName = strSplitAry[strIdx].substr( deliIdx + 1 );
+			strSplitAry[strIdx] = fwdName + deliStr + CSS.escape( BackName );
+			find = true;
+		}
+	}
+
+	if ( find ) {
+		return strSplitAry.join('>');
+	} else {
+		return str;
+	}
+};
 
 /**
  * エレメントから遷移先を取得
@@ -405,6 +445,10 @@ qahmz.trackingStart = function (){
 
 	// QAの初期化が完了したらmoveBehavioralDataを起動
 	qahmz.startMoveBehavioralData = function() {
+		if ( qahmz.isExcludedIp ) {
+			clearInterval( qahmz.startMoveIntervalId );
+			return;
+		}
 		if ( qahmz.initBehData ) {
 			qahmz.updateMsec();
 			qahmz.moveBehavioralData();
@@ -679,7 +723,8 @@ qahmz.checkClickEvent = function(e) {
 	//qahmz.log( 'selector:' + selName );
 
 	// セレクタ左上
-	const element = document.querySelector(selName);
+	const escapedSelName = qahmz.escapeSelectorString(selName);
+	const element = document.querySelector(escapedSelName);
 	const rect = element.getBoundingClientRect();
 
 	const selPos = {
@@ -1100,6 +1145,8 @@ try {
 if (qahmz.supportsBeforeUnloadAndSendBeacon) {
     // beforeunload イベントでデータを送信
     window.addEventListener("beforeunload", function() {
+
+		if ( qahmz.isExcludedIp ) { return; }
 
 		if ( qahmz.updateMsecFailed ){
 

@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * 国コード変換クラス
  * ISO 3166-1 alpha-2国コードから国名に変換する

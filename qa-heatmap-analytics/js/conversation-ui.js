@@ -190,7 +190,7 @@ qahm.conversationUI = {
      * @param {HTMLElement} container - Container element
      * @param {boolean} isUser - Whether this is a user message
      * @param {Object} config - Configuration options
-     * @returns {Promise<void>}
+     * @returns {Promise<HTMLElement>}
      * @private
      */
     _displayText: async function(html, container, isUser, config) {
@@ -222,6 +222,8 @@ qahm.conversationUI = {
                     ? config.enableTypewriter 
                     : this.defaults.enableTypewriter;
 
+                const autoScroll = config.autoScroll !== undefined ? config.autoScroll : true;
+
                 if (!enableTypewriter) {
                     const messageDiv = document.createElement('div');
                     messageDiv.classList.add('qahm-conversation-message');
@@ -230,7 +232,9 @@ qahm.conversationUI = {
                     }
                     messageDiv.innerHTML = htmlString;
                     container.appendChild(messageDiv);
-                    container.scrollTop = container.scrollHeight;
+                    if (autoScroll) {
+                        container.scrollTop = container.scrollHeight;
+                    }
                     
                     if (config.onMessageRendered && typeof config.onMessageRendered === 'function') {
                         try {
@@ -313,7 +317,9 @@ qahm.conversationUI = {
                             nodeIndex++;
                         }
 
-                        container.scrollTop = container.scrollHeight;
+                        if (autoScroll) {
+                            container.scrollTop = container.scrollHeight;
+                        }
 
                     } catch (error) {
                         clearInterval(intervalId);
@@ -428,7 +434,9 @@ qahm.conversationUI = {
                 commandBox._listeners = listeners;
 
                 container.appendChild(commandBox);
-                container.scrollTop = container.scrollHeight;
+                if (config.autoScroll === undefined || config.autoScroll) {
+                    container.scrollTop = container.scrollHeight;
+                }
 
                 if (config.onMessageRendered && typeof config.onMessageRendered === 'function') {
                     try {
@@ -514,7 +522,7 @@ qahm.conversationUI = {
                 if (config.tableRenderer && typeof config.tableRenderer === 'function') {
                     config.tableRenderer(processedData, dataContainer);
                 } else {
-                    this._renderBasicTable(processedData, dataContainer);
+                    this._renderBasicTable(processedData, dataContainer, config);
                 }
 
                 container.appendChild(dataContainer);
@@ -594,9 +602,11 @@ qahm.conversationUI = {
      * 
      * @param {Object} data - Processed table data
      * @param {HTMLElement} container - Container element
+     * @param {Object} [config] - Configuration options
      * @private
      */
-    _renderBasicTable: function(data, container) {
+    _renderBasicTable: function(data, container, config) {
+        config = config || {};
         const tableContainer = document.createElement('div');
         tableContainer.classList.add('qahm-conversation-data-container');
 
@@ -655,7 +665,9 @@ qahm.conversationUI = {
 
         tableContainer.appendChild(table);
         container.appendChild(tableContainer);
-        container.scrollTop = container.scrollHeight;
+        if (config.autoScroll === undefined || config.autoScroll) {
+            container.scrollTop = container.scrollHeight;
+        }
     },
 
     /**

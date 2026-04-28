@@ -1,14 +1,15 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * QA ZERO のオプション関数クラス
- * 
+ *
  * WordPressオプションに保存されたQA関連の値を取得するための関数を提供します。
  * このクラスは読み取り専用で、更新や削除操作は含みません。
- * 
+ *
  * @package qa_heatmap
  */
 
-$qahm_options_functions = new QAHM_Options_Functions();
+$GLOBALS['qahm_options_functions'] = new QAHM_Options_Functions();
 class QAHM_Options_Functions extends QAHM_Base {
 
 	/**
@@ -103,7 +104,7 @@ class QAHM_Options_Functions extends QAHM_Base {
 	 * @param string $option オプション名（通常は'siteinfo'）
 	 * @param mixed $default デフォルト値
 	 * @return array|null 全tracking_idのZEROオプション配列
-	 * 
+	 *
 	 * 返される配列の構造:
 	 * array(
 	 *     'tracking_id_1' => array(
@@ -128,7 +129,7 @@ class QAHM_Options_Functions extends QAHM_Base {
 	 * @param string $option オプション名（通常は'goals'）
 	 * @param mixed $default デフォルト値
 	 * @return array|null 全tracking_idのゴール設定配列
-	 * 
+	 *
 	 * 返される配列の構造:
 	 * array(
 	 *     'tracking_id_1' => array(

@@ -846,11 +846,11 @@ qahm.downloadAudienceCsv = function( fromDate, toDate, reportNumPvs ) {
 					case 'device_id':
 						switch (d[key]) {
 							case '1':
-								return 'pc';
+								return 'desktop';
 							case '2':
-								return 'tab';
+								return 'tablet';
 							case '3':
-								return 'smp';
+								return 'mobile';
 							default:
 								return '';
 						}
@@ -1048,14 +1048,14 @@ qahm.createSessionArray = function( vr_view_ary ) {
 	let lastTitle = '';
 	let lastTitleEl = '';
 	let lastUrl   = '';
-	let device = 'pc';
+	let device = 'desktop';
 	let reader_id = 0;
 	let pvcnt  = 0;
 	let last_exit_time = 0;
 	let source_domain = '';
 	let sec_on_site = 0;
 	let firstAccessTime = null;
- 
+
 	if ( vr_view_ary[0] ) { //ym wrote
 		for ( let iii = 0; iii < vr_view_ary.length; iii++ ) {
 			//sessin start?
@@ -1068,14 +1068,14 @@ qahm.createSessionArray = function( vr_view_ary ) {
 					reader_id = vr_view_ary[iii][jjj].reader_id;
 					switch (Number(vr_view_ary[iii][jjj].device_id)) {
 						case 2:
-							device = 'tab';
+							device = 'tablet';
 							break;
 						case 3:
-							device = 'smp';
+							device = 'mobile';
 							break;
 						case 1:
 						default:
-							device = 'pc';
+							device = 'desktop';
 							break;
 					}
 					pvcnt = 1;

@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * IP地理的位置特定クラス
  * IPアドレスから国コード（ISO 3166-1 alpha-2）を取得する
@@ -117,7 +118,7 @@ class QAHM_IP_Geolocation extends QAHM_Base {
                 $csv_data[] = [
                     'start' => (int)$data[0],
                     'end' => (int)$data[1],
-                    'country_code' => trim($data[2])
+                    'country_code' => static::wrap_trim_static($data[2])
                 ];
             }
         }
@@ -192,7 +193,7 @@ class QAHM_IP_Geolocation extends QAHM_Base {
      * @return bool 範囲内かどうか
      */
     private static function ip_in_cidr($ip, $cidr) {
-        list($subnet, $mask) = explode('/', $cidr);
+        list($subnet, $mask) = static::wrap_explode_static('/', $cidr);
         
         $ip_long = ip2long($ip);
         $subnet_long = ip2long($subnet);

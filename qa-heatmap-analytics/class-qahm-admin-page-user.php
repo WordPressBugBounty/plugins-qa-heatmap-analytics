@@ -1,11 +1,12 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  *
  *
  * @package analytics_backup_by_qa
  */
 
-$qahm_admin_page_user = new QAHM_Admin_Page_User();
+$GLOBALS['qahm_admin_page_user'] = new QAHM_Admin_Page_User();
 
 class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 
@@ -27,14 +28,14 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 	 * 初期化
 	 */
 	public function enqueue_scripts( $hook_suffix ) {
-		if( $this->hook_suffix !== $hook_suffix ||
+		if ( $this->hook_suffix !== $hook_suffix ||
 			! $this->is_enqueue_jquery()
 		) {
 			return;
 		}
 
-		$css_dir_url  = $this->get_css_dir_url();
-		$js_dir_url   = $this->get_js_dir_url();
+		$css_dir_url = $this->get_css_dir_url();
+		$js_dir_url  = $this->get_js_dir_url();
 
 		// enqueue style
 		$this->common_enqueue_style();
@@ -64,12 +65,12 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 	 * ページの表示
 	 */
 	public function create_html() {
-		if( ! $this->is_enqueue_jquery() ) {
+		if ( ! $this->is_enqueue_jquery() ) {
 			$this->print_not_enqueue_jquery_html();
 			return;
 		}
 
-		if( $this->is_maintenance() ) {
+		if ( $this->is_maintenance() ) {
 			$this->print_maintenance_html();
 			return;
 		}
@@ -79,7 +80,7 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 		$tracking_id_raw = isset( $_GET['tracking_id'] ) ? $this->sanitize_tracking_id( wp_unslash( $_GET['tracking_id'] ) ) : 'all';
 		$tracking_id     = $this->get_safe_tracking_id( $tracking_id_raw );
-		$goals_ary   = $qahm_data_api->get_goals_preferences($tracking_id);
+		$goals_ary       = $qahm_data_api->get_goals_preferences( $tracking_id );
 		?>
 
 		<div id="<?php echo esc_attr( basename( __FILE__, '.php' ) ); ?>">
@@ -87,15 +88,15 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 				<!-- ヘッダー -->
 				<?php $this->create_header( __( 'Audience', 'qa-heatmap-analytics' ) ); ?>
 
-				<?php 
+				<?php
 				if ( QAHM_TYPE === QAHM_TYPE_WP ) {
 					$is_advanced_mode = $this->wrap_get_option( 'advanced_mode', false );
 					if ( ! $is_advanced_mode ) {
-				?>
+						?>
 						<p class="qahm-mode-hint" style="margin:2px 10px 10px;color:#666;font-size:12.5px;line-height:1.4;display:block">
 						<?php esc_html_e( 'Viewing in Simple Mode. Additional reports are available in Advanced Mode.', 'qa-heatmap-analytics' ); ?>
 						</p>
-				<?php
+						<?php
 					}
 				}
 
@@ -166,10 +167,10 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 						</div>
 						<div class="qa-zero-radio-button">
 						<?php
-							echo '<label for="js_nrdGoals_0"><input type="radio" id="js_nrdGoals_0" class="qa-zero-radio-button--item" name="js_nrdGoals" checked>'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
-							foreach ( $goals_ary as $gid => $goal ) {
-								echo '<label for="js_nrdGoals_'. esc_attr( $gid ) . '"><input type="radio" id="js_nrdGoals_'. esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_nrdGoals">'. esc_html( urldecode( $goal["gtitle"]) ) . '</label>';
-							}
+							echo '<label for="js_nrdGoals_0"><input type="radio" id="js_nrdGoals_0" class="qa-zero-radio-button--item" name="js_nrdGoals" checked>' . esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
+						foreach ( $goals_ary as $gid => $goal ) {
+							echo '<label for="js_nrdGoals_' . esc_attr( $gid ) . '"><input type="radio" id="js_nrdGoals_' . esc_attr( $gid ) . '" class="qa-zero-radio-button--item" name="js_nrdGoals">' . esc_html( urldecode( $goal['gtitle'] ) ) . '</label>';
+						}
 						?>
 						</div>
 						<div id="tb_audienceDevice"></div>
@@ -194,14 +195,14 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 						</div>
 						<div class="qa-zero-radio-button">
 						<?php
-							echo '<label for="js_sesRec_0"><input type="radio" id="js_sesRec_0" class="qa-zero-radio-button--item" name="js_sesRec" checked><span id="all_session">'. esc_html__( 'All Sessions', 'qa-heatmap-analytics' ) . '</span></label>';
-							if ( $goals_ary ) {
-								echo '<label for="js_sesRec_1"><input type="radio" id="js_sesRec_1" class="qa-zero-radio-button--item" name="js_sesRec">'. esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
-							}
-							
-							foreach ( $goals_ary as $gid => $goal ) {
-								echo '<label for="js_sesRec_'. esc_attr($gid+1) . '"><input type="radio" id="js_sesRec_'. esc_attr($gid+1) . '" class="qa-zero-radio-button--item" name="js_sesRec">'. esc_html( urldecode( $goal["gtitle"]) ) . '</label>';
-							}
+							echo '<label for="js_sesRec_0"><input type="radio" id="js_sesRec_0" class="qa-zero-radio-button--item" name="js_sesRec" checked><span id="all_session">' . esc_html__( 'All Sessions', 'qa-heatmap-analytics' ) . '</span></label>';
+						if ( $goals_ary ) {
+							echo '<label for="js_sesRec_1"><input type="radio" id="js_sesRec_1" class="qa-zero-radio-button--item" name="js_sesRec">' . esc_html__( 'All Goals', 'qa-heatmap-analytics' ) . '</label>';
+						}
+
+						foreach ( $goals_ary as $gid => $goal ) {
+							echo '<label for="js_sesRec_' . esc_attr( $gid + 1 ) . '"><input type="radio" id="js_sesRec_' . esc_attr( $gid + 1 ) . '" class="qa-zero-radio-button--item" name="js_sesRec">' . esc_html( urldecode( $goal['gtitle'] ) ) . '</label>';
+						}
 						?>
 						</div>
 						<div id="sday_table"></div>
@@ -224,15 +225,15 @@ class QAHM_Admin_Page_User extends QAHM_Admin_Page_Dataviewer {
 							<?php echo esc_html( __( 'Advanced Export', 'qa-heatmap-analytics' ) ); ?>
 						</div>
 						<div class="qa-zero-download">
-                            <input type="button" id="csv-download-btn" class="qa-zero-download__button" value="<?php esc_attr_e( 'Download Pageview-Level Data (TSV)', 'qa-heatmap-analytics' ); ?>">
-                            reader_id, UAos, UAbrowser, url, title, device_id, utm_source, source_domain, utm_medium, utm_campaign, session_no, access_time, pv, speed_msec, browse_sec, is_last, is_newuser
-                        </div>
+							<input type="button" id="csv-download-btn" class="qa-zero-download__button" value="<?php esc_attr_e( 'Download Pageview-Level Data (TSV)', 'qa-heatmap-analytics' ); ?>">
+							reader_id, UAos, UAbrowser, url, title, device_id, utm_source, source_domain, utm_medium, utm_campaign, session_no, access_time, pv, speed_msec, browse_sec, is_last, is_newuser
+						</div>
 					</div>
 				</div>
 
 				<?php $this->create_footer_follow(); ?>
 			</div>
 		</div>
-<?php
+		<?php
 	}
 } // end of class

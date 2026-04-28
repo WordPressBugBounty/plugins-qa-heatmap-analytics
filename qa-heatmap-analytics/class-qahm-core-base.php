@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * QAHM Core Base Class
  *
@@ -65,6 +66,88 @@ abstract class QAHM_Core_Base {
 		return static::wrap_count_static( $value );
 	}
 
+
+	/**
+	 * 安全な array_filter() ラッパー（本体／static）
+	 *
+	 * - 配列でない値が来ても fatal / warning を起こさず、空配列を返す。
+	 * - callback が未指定（null）なら、PHP標準の「falsy を除外」挙動に従う。
+	 * - callback が指定されていても callable でない場合は、callback 無しとして扱う。
+	 *
+	 * @param mixed         $array    フィルタ対象の配列.
+	 * @param callable|null $callback フィルタ関数（省略可）.
+	 * @param int           $mode     フラグ（ARRAY_FILTER_USE_KEY など）.
+	 * @return array フィルタ後の配列.
+	 */
+	protected static function wrap_array_filter_static( $array, $callback = null, $mode = 0 ) {
+		if ( ! is_array( $array ) ) {
+			return array();
+		}
+
+		if ( $callback !== null && ! is_callable( $callback ) ) {
+			$callback = null;
+		}
+
+		// $mode は PHP 標準 array_filter の第3引数に渡す（未指定時は 0）.
+		return array_filter( $array, $callback, (int) $mode );
+	}
+
+	/**
+	 * 安全な array_filter() ラッパー（インスタンス用）
+	 *
+	 * @param mixed         $array    フィルタ対象の配列.
+	 * @param callable|null $callback フィルタ関数（省略可）.
+	 * @param int           $mode     フラグ（ARRAY_FILTER_USE_KEY など）.
+	 * @return array
+	 */
+	protected function wrap_array_filter( $array, $callback = null, $mode = 0 ) {
+		return static::wrap_array_filter_static( $array, $callback, $mode );
+	}
+
+	/**
+	 * 安全な array_map() ラッパー（本体／static）
+	 *
+	 * - 配列でない値を渡すと PHP8 では TypeError になり得るため、配列以外は空配列扱いにする。
+	 * - callback が null の場合は PHP 標準 array_map の仕様に従う（複数配列の結合用途など）。
+	 * - callback が指定されていても callable でない場合は null として扱う。
+	 *
+	 * @param callable|null $callback 適用する関数（省略可）.
+	 * @param mixed         $array    対象配列.
+	 * @param mixed         ...$arrays 追加の配列（省略可）.
+	 * @return array マップ後の配列.
+	 */
+	protected static function wrap_array_map_static( $callback, $array, ...$arrays ) {
+		if ( ! is_array( $array ) ) {
+			return array();
+		}
+
+		$target_arrays = array( $array );
+
+		foreach ( $arrays as $arr ) {
+			if ( is_array( $arr ) ) {
+				$target_arrays[] = $arr;
+			}
+		}
+
+		if ( $callback !== null && ! is_callable( $callback ) ) {
+			$callback = null;
+		}
+
+		return array_map( $callback, ...$target_arrays );
+	}
+
+	/**
+	 * 安全な array_map() ラッパー（インスタンス用）
+	 *
+	 * @param callable|null $callback 適用する関数（省略可）.
+	 * @param mixed         $array    対象配列.
+	 * @param mixed         ...$arrays 追加の配列（省略可）.
+	 * @return array
+	 */
+	protected function wrap_array_map( $callback, $array, ...$arrays ) {
+		return static::wrap_array_map_static( $callback, $array, ...$arrays );
+	}
+
 	/**
 	 * 安全な array_merge() ラッパー（本体／static）
 	 *
@@ -106,6 +189,11 @@ abstract class QAHM_Core_Base {
 	 */
 	protected static function wrap_explode_static( $delimiter, $string, $limit = PHP_INT_MAX ) {
 		$string = (string) ( $string ?? '' );
+
+		// PHP8 では区切り文字が空文字だと ValueError になるためガードする.
+		if ( $delimiter === null || $delimiter === '' ) {
+			return array( $string );
+		}
 
 		return explode( $delimiter, $string, $limit );
 	}
@@ -339,6 +427,124 @@ abstract class QAHM_Core_Base {
 		return static::wrap_substr_static( $str, $start, $length );
 	}
 
+
+	/**
+	 * 安全な strpos() ラッパー（本体／static）
+	 *
+	 * PHP8 では needle（検索文字列）が空文字の場合に ValueError になるためガードする。
+	 *
+	 * @param mixed $haystack 対象文字列.
+	 * @param mixed $needle   検索文字列（空文字は許可しない）.
+	 * @param int   $offset   開始位置.
+	 * @return int|false 見つかった位置（0以上）または false.
+	 */
+	protected static function wrap_strpos_static( $haystack, $needle, $offset = 0 ) {
+		$haystack = (string) ( $haystack ?? '' );
+		$needle   = (string) ( $needle ?? '' );
+
+		if ( $needle === '' ) {
+			return false;
+		}
+
+		return strpos( $haystack, $needle, (int) $offset );
+	}
+
+	/**
+	 * 安全な strpos() ラッパー（インスタンス用）
+	 *
+	 * @param mixed $haystack 対象文字列.
+	 * @param mixed $needle   検索文字列（空文字は許可しない）.
+	 * @param int   $offset   開始位置.
+	 * @return int|false
+	 */
+	protected function wrap_strpos( $haystack, $needle, $offset = 0 ) {
+		return static::wrap_strpos_static( $haystack, $needle, $offset );
+	}
+
+	/**
+	 * 安全な trim() ラッパー（本体／static）
+	 *
+	 * @param mixed      $str        対象文字列.
+	 * @param string|nil $characters 削除する文字群（省略可）.
+	 * @return string トリム後文字列.
+	 */
+	protected static function wrap_trim_static( $str, $characters = null ) {
+		$str = (string) ( $str ?? '' );
+
+		if ( $characters === null ) {
+			return trim( $str );
+		}
+
+		return trim( $str, (string) $characters );
+	}
+
+	/**
+	 * 安全な trim() ラッパー（インスタンス用）
+	 *
+	 * @param mixed      $str        対象文字列.
+	 * @param string|nil $characters 削除する文字群（省略可）.
+	 * @return string
+	 */
+	protected function wrap_trim( $str, $characters = null ) {
+		return static::wrap_trim_static( $str, $characters );
+	}
+
+	/**
+	 * 安全な ltrim() ラッパー（本体／static）
+	 *
+	 * @param mixed      $str
+	 * @param string|nil $characters
+	 * @return string
+	 */
+	protected static function wrap_ltrim_static( $str, $characters = null ) {
+		$str = (string) ( $str ?? '' );
+
+		if ( $characters === null ) {
+			return ltrim( $str );
+		}
+
+		return ltrim( $str, (string) $characters );
+	}
+
+	/**
+	 * 安全な ltrim() ラッパー（インスタンス用）
+	 *
+	 * @param mixed      $str
+	 * @param string|nil $characters
+	 * @return string
+	 */
+	protected function wrap_ltrim( $str, $characters = null ) {
+		return static::wrap_ltrim_static( $str, $characters );
+	}
+
+	/**
+	 * 安全な rtrim() ラッパー（本体／static）
+	 *
+	 * @param mixed      $str
+	 * @param string|nil $characters
+	 * @return string
+	 */
+	protected static function wrap_rtrim_static( $str, $characters = null ) {
+		$str = (string) ( $str ?? '' );
+
+		if ( $characters === null ) {
+			return rtrim( $str );
+		}
+
+		return rtrim( $str, (string) $characters );
+	}
+
+	/**
+	 * 安全な rtrim() ラッパー（インスタンス用）
+	 *
+	 * @param mixed      $str
+	 * @param string|nil $characters
+	 * @return string
+	 */
+	protected function wrap_rtrim( $str, $characters = null ) {
+		return static::wrap_rtrim_static( $str, $characters );
+	}
+
 	/**
 	 * 安全な str_replace() ラッパー（本体／static）
 	 *
@@ -483,9 +689,10 @@ abstract class QAHM_Core_Base {
 	 * シリアライズデータを検出した場合は wrap_unserialize_static() を呼び出す。
 	 *
 	 * @param string|null $data JSON 文字列またはシリアライズデータ.
+	 * @param bool        $assoc true の場合、連想配列として返す。false の場合、stdClass オブジェクトとして返す。
 	 * @return mixed デコード結果（エラー時は null）.
 	 */
-	protected static function wrap_json_decode_static( $data ) {
+	protected static function wrap_json_decode_static( $data, $assoc = false ) {
 		if ( $data === null || $data === '' ) {
 			return null;
 		}
@@ -497,7 +704,7 @@ abstract class QAHM_Core_Base {
 			return static::wrap_unserialize_static( $data );
 		}
 
-		$result = json_decode( $data, false ); // 既存仕様に合わせてオブジェクトとして返却.
+		$result = json_decode( $data, $assoc );
 
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
 			return null;
@@ -510,10 +717,11 @@ abstract class QAHM_Core_Base {
 	 * 安全な json_decode() ラッパー（インスタンス用）
 	 *
 	 * @param string|null $data JSON 文字列またはシリアライズデータ.
+	 * @param bool        $assoc true の場合、連想配列として返す。false の場合、stdClass オブジェクトとして返す。
 	 * @return mixed
 	 */
-	protected function wrap_json_decode( $data ) {
-		return static::wrap_json_decode_static( $data );
+	protected function wrap_json_decode( $data, $assoc = false ) {
+		return static::wrap_json_decode_static( $data, $assoc );
 	}
 
 	/**

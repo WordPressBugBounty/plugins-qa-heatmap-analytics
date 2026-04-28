@@ -74,10 +74,6 @@ qahm.makeGrowthPageTable = function (ary) {
 		newAry[iii][8]  = ary[iii][9];
 		newAry[iii][9]  = ary[iii][10];
 
-        let media       = ary[iii][3];
-		if ( media === '' ) {
-			media = '(not set)';
-		}
         //ヒートマップリンク
         newAry[iii][10] = '';
     }

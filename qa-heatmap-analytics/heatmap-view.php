@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	// Standalone SHORTINIT file: loaded directly, bootstraps WordPress internally. Do not exit.
+}
 try {
 	// URLパラメータの格納
 	$version_id      = (int) filter_input( INPUT_GET, 'version_id' );
@@ -11,13 +14,13 @@ try {
 	$campaign        = filter_input( INPUT_GET, 'campaign' );
 	$goal            = filter_input( INPUT_GET, 'goal' );
 
-	$config_path = dirname(dirname(dirname(__DIR__))) . '/wp-content/qa-zero-data/qa-config.php';
+	$config_path = dirname( __DIR__, 3 ) . '/wp-content/qa-zero-data/qa-config.php';
 
-	if (file_exists($config_path)) {
+	if ( file_exists( $config_path ) ) {
 		require_once $config_path;
 	}
 
-	if (defined('QAHM_CONFIG_WP_ROOT_PATH') && file_exists(QAHM_CONFIG_WP_ROOT_PATH . 'wp-load.php')) {
+	if ( defined( 'QAHM_CONFIG_WP_ROOT_PATH' ) && file_exists( QAHM_CONFIG_WP_ROOT_PATH . 'wp-load.php' ) ) {
 		require_once QAHM_CONFIG_WP_ROOT_PATH . 'wp-load.php';
 		require_once QAHM_CONFIG_WP_ROOT_PATH . 'wp-settings.php';
 	} else {
@@ -26,12 +29,12 @@ try {
 	}
 
 	$page_id = null;
-	if ($version_id) {
+	if ( $version_id ) {
 		global $qahm_db;
 		$table_name = 'view_page_version_hist';
-		$query = 'SELECT page_id FROM ' . $qahm_db->prefix . $table_name . ' WHERE version_id = %d';
-		$result = $qahm_db->get_results( $qahm_db->prepare( $query, $version_id ), ARRAY_A );
-		if ($result && !empty($result[0]['page_id'])) {
+		$query      = 'SELECT page_id FROM ' . $qahm_db->prefix . $table_name . ' WHERE version_id = %d';
+		$result     = $qahm_db->get_results( $qahm_db->prepare( $query, $version_id ), ARRAY_A );
+		if ( $result && ! empty( $result[0]['page_id'] ) ) {
 			$page_id = (int) $result[0]['page_id'];
 		}
 	}
@@ -40,7 +43,7 @@ try {
 	if ( ! $version_id || ! $start_date || ! $end_date || ! $tracking_id ) {
 		throw new Exception( 'The required URL parameters are missing.' );
 	}
-	$file_base_name = $version_id . '_' . preg_replace("/[\s:-]+/", "", $start_date ) . '_' . preg_replace("/[\s:-]+/", "", $end_date ) . '_' . $is_landing_page . '_' . $tracking_id;
+	$file_base_name = $version_id . '_' . preg_replace( '/[\s:-]+/', '', $start_date ) . '_' . preg_replace( '/[\s:-]+/', '', $end_date ) . '_' . $is_landing_page . '_' . $tracking_id;
 
 	global $qahm_time;
 	global $wp_filesystem;
@@ -53,8 +56,9 @@ try {
 			$qahm_view_heatmap->create_heatmap_file( $start_date, $end_date, $version_id, $is_landing_page, $tracking_id );
 
 			// 現在のURLを取得
-			$host  = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
-			$uri   = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+			$uri  = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Comparison only, value not stored.
 			$https = ( isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ) ? 'https' : 'http';
 
 			$current_url = esc_url( "{$https}://{$host}{$uri}" );
@@ -68,21 +72,21 @@ try {
 			);
 
 			// 現在のURLから既存のクエリパラメータを取得
-			$url_parts = wp_parse_url($current_url);
-			$query_params = [];
-			if (isset($url_parts['query'])) {
-				parse_str($url_parts['query'], $query_params);
+			$url_parts    = wp_parse_url( $current_url );
+			$query_params = array();
+			if ( isset( $url_parts['query'] ) ) {
+				parse_str( $url_parts['query'], $query_params );
 			}
 
 			// 新しいパラメータをマージ（既存のパラメータは上書きされる）
-			$query_params = array_merge($query_params, $new_params);
+			$query_params = array_merge( $query_params, $new_params );
 
 			// 新しいURLを構築
-			$new_query_string = http_build_query($query_params);
-			$new_url = $url_parts['scheme'] . '://' . $url_parts['host'] . $url_parts['path'] . '?' . $new_query_string;
+			$new_query_string = http_build_query( $query_params );
+			$new_url          = $url_parts['scheme'] . '://' . $url_parts['host'] . $url_parts['path'] . '?' . $new_query_string;
 
 			// リダイレクト
-			header("Location: $new_url");
+			header( "Location: $new_url" );
 			exit;
 
 		} else {
@@ -114,7 +118,7 @@ try {
 			case 'time_on_page':
 				$time_on_page = (float) trim( $exp_info[1] );
 				$time_on_page = $qahm_time->seconds_to_timestr( $time_on_page );
-				$time_on_page = substr( $time_on_page, strlen('00:') );
+				$time_on_page = substr( $time_on_page, strlen( '00:' ) );
 				break;
 			case 'separate_data_num':
 				$separate_data_num = trim( $exp_info[1] );
@@ -129,12 +133,12 @@ try {
 			case 'device_version_ary':
 				$device_version_ary = trim( $exp_info[1] );
 				$device_version_ary = json_decode( $device_version_ary, true );
-			break;
+				break;
 		}
 	}
 
 	if ( $source || $media || $campaign || $goal ) {
-		$data_num = '--';
+		$data_num     = '--';
 		$time_on_page = '--:--';
 	}
 
@@ -146,25 +150,25 @@ try {
 
 	// 翻訳ファイルの読み込みはここでしなくてもプラグイン全体で読み込まれている
 	//load_plugin_textdomain( 'qa-heatmap-analytics', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
-	
-	$ajax_url       = admin_url( 'admin-ajax.php' );
-    //mkdummy for brainsai
-    $nonce_api      = wp_create_nonce( QAHM_Data_Api::NONCE_API );
+
+	$ajax_url = admin_url( 'admin-ajax.php' );
+	//mkdummy for brainsai
+	$nonce_api      = wp_create_nonce( QAHM_Data_Api::NONCE_API );
 	$plugin_dir_url = plugin_dir_url( __FILE__ );
 
-	$pvterm_start_date  = $qahm_view_heatmap->get_pvterm_start_date($tracking_id);
-	$pvterm_latest_date = $qahm_view_heatmap->get_pvterm_latest_date($tracking_id);
+	$pvterm_start_date  = $qahm_view_heatmap->get_pvterm_start_date( $tracking_id );
+	$pvterm_latest_date = $qahm_view_heatmap->get_pvterm_latest_date( $tracking_id );
 
-/*
+	/*
 	$text_data_num = esc_html__( 'Number of data', 'qa-heatmap-analytics' );
 	$text_data_num = '<i class="fas fa-users"></i> ' . $text_data_num . ': ' . $data_num;
 	$text_data_num = '<span class="qahm-tooltip-bottom" data-qahm-tooltip="' . $qahm_view_heatmap->qa_langesc_attr__( 'このページでヒートマップデータを記録した数です。PV数に近い値になりますが、数秒で直帰した場合などは記録されません。', 'qa-heatmap-analytics' ) . '">' . $text_data_num . '</span>';
-*/
+	*/
 	// データ数
 	$data_num_title   = esc_html__( 'Valid Data', 'qa-heatmap-analytics' );
 	$data_num_tooltip = esc_attr__( 'The amount of valid data currently available for heatmap analysis. Older data may be deleted based on your retention settings.', 'qa-heatmap-analytics' );
 	$data_num_icon    = '<i class="fas fa-users"></i>';
-		
+
 	// ヘルプ
 	$help_title   = esc_html__( 'Help', 'qa-heatmap-analytics' );
 	$help_tooltip = esc_attr__( 'Click to open Help page for heatmap view.', 'qa-heatmap-analytics' );
@@ -209,36 +213,36 @@ try {
 	$date_range_icon    = '<i class="far fa-calendar-alt"></i>';
 
 	// デバイス
-	$device_version_title = '';
+	$device_version_title     = '';
 	$device_version_selectbox = '<select id="heatmap-bar-device-version-selectbox" class="heatmap-bar-selectbox">';
-	foreach ($device_version_ary as $key => $value) {
+	foreach ( $device_version_ary as $key => $value ) {
 		$selected = '';
-		$name = '';
+		$name     = '';
 		if ( $device_name === $key ) {
 			$selected = ' selected';
 		}
 		switch ( $key ) {
 			case 'dsk':
-				$name = __( 'Desktop', 'qa-heatmap-analytics' );
+				$name = 'desktop';
 				break;
 			case 'tab':
-				$name = __( 'Tablet', 'qa-heatmap-analytics' );
+				$name = 'tablet';
 				break;
 			case 'smp':
-				$name = __( 'Mobile', 'qa-heatmap-analytics' );
+				$name = 'mobile';
 				break;
 		}
-		$device_version_selectbox .= '<option value="' . $value . '" ' . $selected . '>' . esc_html($name) . '</option>';
+		$device_version_selectbox .= '<option value="' . $value . '" ' . $selected . '>' . esc_html( $name ) . '</option>';
 	}
 	$device_version_selectbox .= '</select>';
-	$device_version_tooltip = esc_attr__( 'Displays the heatmap data for the selected device.', 'qa-heatmap-analytics' );
-	$device_version_icon = '<i class="fas fa-network-wired"></i>';
+	$device_version_tooltip    = esc_attr__( 'Displays the heatmap data for the selected device.', 'qa-heatmap-analytics' );
+	$device_version_icon       = '<i class="fas fa-network-wired"></i>';
 
 	// ページバージョン
-	$page_version_title = '';
+	$page_version_title     = '';
 	$page_version_selectbox = '<select id="heatmap-bar-page-version-selectbox" class="heatmap-bar-selectbox">';
-	for ($i = 0; $i < count($all_version_ary); $i++) {
-		$version = $all_version_ary[$i];
+	for ( $i = 0; $i < count( $all_version_ary ); $i++ ) {
+		$version  = $all_version_ary[ $i ];
 		$selected = '';
 		if ( $version['version_id'] == $version_id ) {
 			$selected = ' selected';
@@ -246,20 +250,23 @@ try {
 		$page_version_selectbox .= '<option value="' . $version['version_id'] . '" ' . $selected . '>Ver.' . $version['version_no'] . ': ' . $version['version_period'] . '</option>';
 	}
 	$page_version_selectbox .= '</select>';
-	$page_version_tooltip = esc_attr__( 'Displays the heatmap data based on the HTML during the selected period.
-', 'qa-heatmap-analytics' );
-	$page_version_icon = '<i class="fas fa-layer-group"></i>';
+	$page_version_tooltip    = esc_attr__(
+		'Displays the heatmap data based on the HTML during the selected period.
+',
+		'qa-heatmap-analytics'
+	);
+	$page_version_icon       = '<i class="fas fa-layer-group"></i>';
 
 	// BrainsAI- mkdummy
-	$brains_title   = esc_html__( 'Brains', 'qa-heatmap-analytics' );
-	$brains_icon    = '<img src="' . $qahm_view_heatmap->get_img_dir_url() . 'menu_brains.svg" width="20px" id="brain_heatmap_top">';
+	$brains_title = esc_html__( 'Brains', 'qa-heatmap-analytics' );
+	$brains_icon  = '<img src="' . $qahm_view_heatmap->get_img_dir_url() . 'menu_brains.svg" width="20px" id="brain_heatmap_top">';
 
 
 	// html構築
-	if ( ! isset($_COOKIE['qa_heatmap_bar_scroll']) &&
-		! isset($_COOKIE['qa_heatmap_bar_scroll']) &&
-		! isset($_COOKIE['qa_heatmap_bar_scroll']) &&
-		! isset($_COOKIE['qa_heatmap_bar_scroll']) ) {
+	if ( ! isset( $_COOKIE['qa_heatmap_bar_scroll'] ) &&
+		! isset( $_COOKIE['qa_heatmap_bar_scroll'] ) &&
+		! isset( $_COOKIE['qa_heatmap_bar_scroll'] ) &&
+		! isset( $_COOKIE['qa_heatmap_bar_scroll'] ) ) {
 		$cfg_scroll      = false;
 		$cfg_attention   = true;
 		$cfg_click_heat  = true;
@@ -278,27 +285,30 @@ try {
 		$cfg_click_count = filter_input( INPUT_COOKIE, 'qa_heatmap_bar_click_count' );
 		$cfg_click_count = $cfg_click_count === 'true' ? true : false;
 	}
-	$html_bar = '<div class="heatmap-bar__row heatmap-bar__row--1">';
+	$html_bar  = '<div class="heatmap-bar__row heatmap-bar__row--1">';
 	$html_bar .= '<div class="heatmap-bar__controls-left">';
 	$html_bar .= '<ul class="heatmap-bar__items">';
-    // フィルター機能は一時的に無効化
-	//$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-filter', $filter_icon . $filter_title, $filter_tooltip );
+	// Differs between ZERO and QA - Start ----------
+	if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
+		$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-filter', $filter_icon . $filter_title, $filter_tooltip );
+	}
+	// Differs between ZERO and QA - End ----------
 	$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-date-range', $date_range_icon . $date_range_title . $date_range_textbox, $date_range_tooltip, false, '' );
 	$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-device-version', $device_version_icon . $device_version_title . $device_version_selectbox, $device_version_tooltip );
 	$html_bar .= '</ul>';
 	$html_bar .= '</div>';
 
-	$html_bar .= '<div class="heatmap-bar__controls-right">';
-	$html_bar .= '<ul class="heatmap-bar__items">';
-	$version_update_title = '<button id="heatmap-bar-version-update-button" class="heatmap-bar-button heatmap-bar-button--secondary">' . esc_html__( 'Create Heatmap Version', 'qa-heatmap-analytics' ) . '</button>';
+	$html_bar              .= '<div class="heatmap-bar__controls-right">';
+	$html_bar              .= '<ul class="heatmap-bar__items">';
+	$version_update_title   = '<button id="heatmap-bar-version-update-button" class="heatmap-bar-button heatmap-bar-button--secondary">' . esc_html__( 'Create Heatmap Version', 'qa-heatmap-analytics' ) . '</button>';
 	$version_update_tooltip = esc_attr__( 'Changed this page’s content or layout? Create a new heatmap version.', 'qa-heatmap-analytics' );
-	$version_update_icon = '<i class="fas fa-sync-alt"></i>';
-	$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-version-update', $version_update_icon . $version_update_title, $version_update_tooltip );
-	$html_bar .= '</ul>';
-	$html_bar .= '</div>';
+	$version_update_icon    = '<i class="fas fa-sync-alt"></i>';
+	$html_bar              .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-version-update', $version_update_icon . $version_update_title, $version_update_tooltip );
+	$html_bar              .= '</ul>';
+	$html_bar              .= '</div>';
 
 	$html_bar .= '</div>';
-	
+
 	$html_bar .= '<div class="heatmap-bar__row heatmap-bar__row--2">';
 	$html_bar .= '<div class="heatmap-bar__display">';
 	$html_bar .= '<ul class="heatmap-bar__items">';
@@ -316,12 +326,12 @@ try {
 	$html_bar .= '</ul>';
 	$html_bar .= '</div>';
 	$html_bar .= '</div>';
-	
+
 	//$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-page-version', $page_version_icon . $page_version_title . $page_version_selectbox, $page_version_tooltip );
 	//mkdummy
 	//$html_bar .= $qahm_view_heatmap->get_html_bar_text( 'heatmap-bar-brains', $brains_icon . $brains_title ,  "Boot Brains", false, '' );
-	$plugin_version   = QAHM_PLUGIN_VERSION;
-	$scroll_data_num  = '0' . ' ' . esc_html_x( 'users', 'user count label', 'qa-heatmap-analytics' );
+	$plugin_version  = QAHM_PLUGIN_VERSION;
+	$scroll_data_num = '0' . ' ' . esc_html_x( 'users', 'user count label', 'qa-heatmap-analytics' );
 
 } catch ( Exception $e ) {
 	echo '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>';
@@ -348,9 +358,9 @@ try {
 		<link rel="stylesheet" type="text/css" href="./css/common.css?ver=<?php echo esc_attr( $plugin_version ); ?>">
 		<?php
 		// プロダクト別のヒートマップビューCSSを読み込み
-		$heatmap_css_file = (QAHM_TYPE === QAHM_TYPE_ZERO) ? 'heatmap-view-zero.css' : 'heatmap-view-wp.css';
+		$heatmap_css_file = ( QAHM_TYPE === QAHM_TYPE_ZERO ) ? 'heatmap-view-zero.css' : 'heatmap-view-wp.css';
 		?>
-		<link rel="stylesheet" type="text/css" href="./css/<?php echo esc_attr($heatmap_css_file); ?>?ver=<?php echo esc_attr( $plugin_version ); ?>">
+		<link rel="stylesheet" type="text/css" href="./css/<?php echo esc_attr( $heatmap_css_file ); ?>?ver=<?php echo esc_attr( $plugin_version ); ?>">
 		<?php // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet ?>
 
 		<?php // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- This script is safely loaded internally for admin use and does not impact the frontend or the original WordPress site. ?>
@@ -363,9 +373,9 @@ try {
 		<script>
 			var qahm = qahm || {};
 			let qahmObj = {
-				'nonce_api':'<?php echo wp_json_encode($nonce_api); ?>',
-				'ajax_url':'<?php echo esc_js(esc_url($ajax_url)); ?>',
-				'wp_lang_set':'<?php echo esc_js(get_bloginfo('language')); ?>',
+				'nonce_api':'<?php echo wp_json_encode( $nonce_api ); ?>',
+				'ajax_url':'<?php echo esc_js( esc_url( $ajax_url ) ); ?>',
+				'wp_lang_set':'<?php echo esc_js( get_bloginfo( 'language' ) ); ?>',
 				'type':'<?php echo esc_js( $wp_qa_type ); ?>',
 				'id':<?php echo intval( $wp_qa_id ); ?>,
 				'page_id':<?php echo intval( $page_id ); ?>,
@@ -380,9 +390,9 @@ try {
 				'campaign':'<?php echo esc_js( $campaign ); ?>',
 				'goal':'<?php echo esc_js( $goal ); ?>',
 				'attention_limit_time':<?php echo intval( QAHM_View_Heatmap::ATTENTION_LIMIT_TIME ); ?>,
-				'plugin_dir_url':'<?php echo esc_js(esc_url(plugin_dir_url(__FILE__))); ?>',
-				'separate_data_num':'<?php echo intval( $separate_data_num ); ?>',
-				'separate_total_stay_time':'<?php echo intval( $separate_total_stay_time ); ?>',
+				'plugin_dir_url':'<?php echo esc_js( esc_url( plugin_dir_url( __FILE__ ) ) ); ?>',
+				'separate_data_num':<?php echo wp_json_encode( $separate_data_num ); ?>,
+				'separate_total_stay_time':<?php echo wp_json_encode( $separate_total_stay_time ); ?>,
 				'dataNum':<?php echo intval( $data_num ); ?>,
 				'hasShownNoDataAlert': false,
 				'pvterm_start_date':'<?php echo esc_js( $pvterm_start_date ); ?>',
@@ -443,7 +453,7 @@ try {
 					'</div>' .
 					'<div id="heatmap-iframe-container" class="frame">' .
 					'<div class="frame-inner">' .
-					'<iframe id="heatmap-iframe" src="' . $heatmap_view_work_url . $file_base_name . '-cap.php" width="100%" height="100%"></iframe>' .
+					'<iframe id="heatmap-iframe" src="' . $heatmap_view_work_url . $file_base_name . '-cap.php?qahm_view_mode=1" width="100%" height="100%"></iframe>' .
 					'</div>' .
 					'</div>' .
 					'<div id="heatmap-container" class="frame">' .
@@ -471,16 +481,20 @@ try {
 					'<div id="heatmap-attention-0"></div>' .
 					'<div id="heatmap-attention-1"></div>' .
 					'</div>' .
+				'</div>' .
 					'</div>' .
-					'</div>' .
-					'</div>' .
-					'</div>' .
-					'<div id="filter-overlay" class="filter-overlay">' .
-					'<div id="filter-container">' .
-					'<div id="filter-container-title">' . $filter_icon . ' ' . esc_html__( 'Filter', 'qa-heatmap-analytics' ) . '</div>' .
-					'<div class="filter-item-container"></div>' .
 					'</div>' .
 					'</div>';
+			// Differs between ZERO and QA - Start ----------
+		if ( QAHM_TYPE === QAHM_TYPE_ZERO ) {
+			$html .= '<div id="filter-overlay" class="filter-overlay">' .
+				'<div id="filter-container">' .
+				'<div id="filter-container-title">' . $filter_icon . ' ' . esc_html__( 'Filter', 'qa-heatmap-analytics' ) . '</div>' .
+				'<div class="filter-item-container"></div>' .
+				'</div>' .
+				'</div>';
+		}
+			// Differs between ZERO and QA - End ----------
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe internal HTML generation for heatmap rendering.
 			echo $html;
 		?>

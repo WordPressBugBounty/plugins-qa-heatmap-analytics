@@ -5,6 +5,9 @@ qahm.dashParamDeferred = new jQuery.Deferred();
 window.addEventListener('DOMContentLoaded', function() {
 	qahm.initDateSetting();
 
+	qahm.initDashboardCollapsible();
+	qahm.initDashboardTemplateCards();
+
     // 表示するグラフの期間を取得
     // --- Using Dayjs Start ------
 	// ダッシュボード　180日固定
@@ -287,3 +290,41 @@ jQuery(
 		}
     }
 );
+
+qahm.initDashboardCollapsible = function() {
+	var collapsibles = document.querySelectorAll('.qahm-dashboard-collapsible');
+	
+	collapsibles.forEach(function(collapsible) {
+		var header = collapsible.querySelector('.qahm-dashboard-collapsible__header');
+		
+		if (header) {
+			header.addEventListener('click', function() {
+				var isCollapsed = collapsible.getAttribute('data-collapsed') === 'true';
+				var isExpanded = !isCollapsed;
+				
+				collapsible.setAttribute('data-collapsed', isExpanded ? 'true' : 'false');
+				header.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
+			});
+		}
+	});
+};
+
+qahm.initDashboardTemplateCards = function() {
+	var templateButtons = document.querySelectorAll('.qahm-dashboard-template-card__button');
+	
+	templateButtons.forEach(function(button) {
+		button.addEventListener('click', function() {
+			var template = button.getAttribute('data-template');
+			
+			if (template) {
+				qahm.handleTemplateCardClick(template);
+			}
+		});
+	});
+};
+
+qahm.handleTemplateCardClick = function(template) {
+	if (typeof console !== 'undefined') {
+		console.log('AI Report template selected:', template);
+	}
+};

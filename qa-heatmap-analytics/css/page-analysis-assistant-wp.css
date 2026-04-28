@@ -268,12 +268,9 @@
   font-size: 14px;
 }
 #qahm-page-analysis-assistant-window .qahm-conversation-data-table th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #333;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background-color: #3d7b99;
+  color: #fff;
+  font-weight: normal;
 }
 #qahm-page-analysis-assistant-window .qahm-conversation-data-table tbody tr:last-child td {
   border-bottom: none;
