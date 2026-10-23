@@ -93,7 +93,6 @@ qahm.loadScreen.promise()
 			qahm.eventPlayMilliSec        = 0;
 			qahm.eventState               = qahm.EVENTSTATE.PAUSE;
 			qahm.eventPrevVisibilityState = 'visible';
-			qahm.event_ary                 = JSON.parse( qahm.event_ary );
 			qahm.eventIdx                 = qahm.data_col_body;
 			qahm.eventPlayMilliSec        = 0;
 			qahm.eventEndMilliSec         = parseInt( qahm.event_ary[qahm.event_ary.length-1][qahm.data_row_time] );

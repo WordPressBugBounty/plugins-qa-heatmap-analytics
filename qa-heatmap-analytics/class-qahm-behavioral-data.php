@@ -803,63 +803,47 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 					throw new Exception( 'The value of $init_window_h is invalid.' );
 				}
 
-				for ( $i = 0, $event_ary_cnt = $this->wrap_count( $event_ary ); $i < $event_ary_cnt; $i++ ) {
-					$event_type = $event_ary[$i][self::DATA_EVENT_1['TYPE']];
-					if ( $this->wrap_strlen( $event_type ) !== 1 ) {
+				// #1731: 受け取った行はそのまま保存せず、検証した値だけで行を作り直す。
+				// 種別ごとに時刻の後ろに続く列（固定）。余分な列は捨てる。
+				// p・a は現行の計測タグが送らず、リプレイも扱わないため受け付けない。
+				$event_body_cols = array(
+					'c' => array( self::DATA_EVENT_1['CLICK_X'], self::DATA_EVENT_1['CLICK_Y'] ),
+					's' => array( self::DATA_EVENT_1['SCROLL_Y'] ),
+					'm' => array( self::DATA_EVENT_1['MOUSE_X'], self::DATA_EVENT_1['MOUSE_Y'] ),
+					'r' => array( self::DATA_EVENT_1['RESIZE_X'], self::DATA_EVENT_1['RESIZE_Y'] ),
+				);
+
+				if ( null !== $event_ary && ! is_array( $event_ary ) ) {
+					throw new Exception( 'The value of $event_ary is invalid.' );
+				}
+
+				$validated_event_ary = array();
+				foreach ( (array) $event_ary as $event ) {
+					if ( ! is_array( $event ) ) {
 						throw new Exception( 'The value of $event_ary is invalid.' );
 					}
 
-					if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['TIME']] ) ) {
+					$event_type = isset( $event[ self::DATA_EVENT_1['TYPE'] ] ) ? $event[ self::DATA_EVENT_1['TYPE'] ] : null;
+					if ( ! is_string( $event_type ) || ! isset( $event_body_cols[ $event_type ] ) ) {
 						throw new Exception( 'The value of $event_ary is invalid.' );
 					}
 
-					switch ( $event_type ) {
-						case 'c':
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['CLICK_X']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
+					$event_time = isset( $event[ self::DATA_EVENT_1['TIME'] ] ) ? $event[ self::DATA_EVENT_1['TIME'] ] : null;
+					if ( ! $this->validate_number( $event_time ) ) {
+						throw new Exception( 'The value of $event_ary is invalid.' );
+					}
 
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['CLICK_Y']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-							break;
-
-						case 's':
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['SCROLL_Y']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-							break;
-
-						case 'm':
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['MOUSE_X']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['MOUSE_Y']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-							break;
-
-						case 'r':
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['RESIZE_X']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-
-							if ( ! $this->validate_number( $event_ary[$i][self::DATA_EVENT_1['RESIZE_Y']] ) ) {
-								throw new Exception( 'The value of $event_ary is invalid.' );
-							}
-							break;
-
-						// videoタグのセレクタはこの時点では文字列で格納
-						case 'p':
-							break;
-
-						case 'a':
-							break;
-
-						default:
+					$validated_event = array(
+						self::DATA_EVENT_1['TYPE'] => $event_type,
+						self::DATA_EVENT_1['TIME'] => (int) $event_time,
+					);
+					foreach ( $event_body_cols[ $event_type ] as $col ) {
+						if ( ! isset( $event[ $col ] ) || ! $this->validate_number( $event[ $col ] ) ) {
 							throw new Exception( 'The value of $event_ary is invalid.' );
+						}
+						$validated_event[ $col ] = (int) $event[ $col ];
 					}
+					$validated_event_ary[] = $validated_event;
 				}
 
 				$event_head = array(
@@ -869,7 +853,7 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 						self::DATA_EVENT_1['WINDOW_INNER_H'] => (int) $init_window_h,
 					)
 				);
-				$event_ary = $this->wrap_array_merge( $event_head, $event_ary );
+				$event_ary = $this->wrap_array_merge( $event_head, $validated_event_ary );
 				$event_tsv = $this->convert_array_to_tsv( $event_ary );
 				$this->wrap_put_contents( $event_path, $event_tsv );
 				$output .= ' e /';

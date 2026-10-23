@@ -390,7 +390,8 @@ try {
 				'type':<?php echo intval( QAHM_TYPE ); ?>,
 				'type_zero':<?php echo intval( QAHM_TYPE_ZERO ); ?>,
 				'type_wp':<?php echo intval( QAHM_TYPE_WP ); ?>,
-				'event_ary':'<?php echo wp_json_encode( $event_ary ); ?>',
+				// #1731: 文字列で囲まず JS の値として出力する。' < > & " は \uXXXX になる
+				'event_ary':<?php echo wp_json_encode( $event_ary, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>,
 				'work_base_name':'<?php echo esc_js( $work_base_name ); ?>',
 				'access_time':'<?php echo esc_js( $user_access_time ); ?>',
 				'reader_id':'<?php echo esc_js( $info_ary['reader_id'] ); ?>',
