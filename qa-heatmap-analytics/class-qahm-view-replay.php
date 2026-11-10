@@ -219,7 +219,7 @@ class QAHM_View_Replay extends QAHM_View_Base {
 		$readers_dir_path = $this->get_data_dir_path( 'readers' );
 		$replay_dir_path  = $this->get_data_dir_path( 'replay-view-work' );
 		$info_path        = $replay_dir_path . $work_file_name . '-info.php';
-		$cap_path         = $replay_dir_path . $work_file_name . '-cap.php';
+		$cap_path         = $replay_dir_path . $work_file_name . '-cap.html'; // T143b: 純粋な HTML。配信は cap-view.php
 		// 作業ファイルは -info / -cap / -p / -e と接尾辞が違うだけなので、代表の -info で保存先を確認する
 		if ( ! $this->build_data_file_path( $replay_dir_path, $work_file_name . '-info.php' ) ) {
 			throw new Exception( 'The value of $work_base_name is invalid.' );
@@ -369,11 +369,13 @@ class QAHM_View_Replay extends QAHM_View_Base {
 		}
 
 		// base_html取得
-		$response      = $this->wrap_remote_get( $base_url, $dev_name );
-		$response_code = isset( $response['response']['code'] ) ? intval( $response['response']['code'] ) : 0;
+		// #1761: page_url は計測で受け取った値。登録サイト以外（リダイレクト先を含む）は取りに行かない
+		$response = $this->wrap_remote_get_site_page( $base_url, $dev_name );
+		// WP_Error を配列として読むと Error（致命的エラー）になるので、先に判定する
 		if ( is_wp_error( $response ) ) {
 			throw new Exception( 'wp_remote_get failed.' );
 		}
+		$response_code = isset( $response['response']['code'] ) ? intval( $response['response']['code'] ) : 0;
 		if ( ! ( $response_code === 200 || $response_code === 404 ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message is internal, not user-facing output.
 			throw new Exception( 'wp_remote_get status error. status: ' . $response_code );
@@ -576,7 +578,7 @@ class QAHM_View_Replay extends QAHM_View_Base {
 
 		$replay_dir_path = $this->get_data_dir_path( 'replay-view-work' );
 		$info_path       = $replay_dir_path . $work_file_name . '-info.php';
-		$cap_path        = $replay_dir_path . $work_file_name . '-cap.php';
+		$cap_path        = $replay_dir_path . $work_file_name . '-cap.html'; // T143b: 純粋な HTML。配信は cap-view.php
 		$raw_p_path      = $replay_dir_path . $work_file_name . '-p.php';
 		$raw_e_path      = $replay_dir_path . $work_file_name . '-e.php';
 
@@ -623,9 +625,15 @@ class QAHM_View_Replay extends QAHM_View_Base {
 					$qa_readers = $qa_readers_ary[0];
 				}
 
+				// #1761: qa_pages.url は計測で受け取った値。登録サイト以外の URL では cap を作らない。
+				// 保存済みの base_html も、この修正より前に登録外の URL から取得されたものでありうるので、同じく使わない。
+				if ( ! $this->is_registered_site_url( $base_url ) ) {
+					throw new Exception( 'The page URL is not a registered site.' );
+				}
+
 				// base_html取得
 				if ( ! $base_html ) {
-					$response = $this->wrap_remote_get( $base_url, $dev_name );
+					$response = $this->wrap_remote_get_site_page( $base_url, $dev_name );
 					if ( is_wp_error( $response ) ) {
 						throw new Exception( 'wp_remote_get failed.' );
 					}
@@ -923,7 +931,13 @@ class QAHM_View_Replay extends QAHM_View_Base {
 	 * @return string|null|false 画像URL／サムネイルが取れないと確定した場合は null／一過性の失敗は false。
 	 */
 	private function get_ogp_image( $url ) {
-		$response = $this->wrap_remote_get( $url, 'dsk', self::OGP_FETCH_TIMEOUT_SEC );
+		// #1761: ページ側の URL は画面から送られる値。登録サイト以外（リダイレクト先を含む）は取りに行かない。
+		// 登録外は時間をおいても変わらないので、「サムネイルが取れないと確定」（null）として返す。
+		// og:image の画像そのもの（CDN など別ホストにあるのがふつう）は、従来どおり wrap_remote_get() で取る。
+		if ( ! $this->is_registered_site_url( $url ) ) {
+			return null;
+		}
+		$response = $this->wrap_remote_get_site_page( $url, 'dsk', self::OGP_FETCH_TIMEOUT_SEC );
 		if ( $this->is_transient_fetch_failure( $response ) ) {
 			// 一過性の失敗と「サムネイルが無い」を呼び出し側が区別できるよう false で返す。
 			return false;

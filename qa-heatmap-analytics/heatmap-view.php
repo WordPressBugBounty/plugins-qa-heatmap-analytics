@@ -69,9 +69,10 @@ try {
 	global $qahm_time;
 	global $wp_filesystem;
 	$heatmap_view_work_dir = $qahm_view_heatmap->get_data_dir_path( 'heatmap-view-work' );
-	$heatmap_view_work_url = $qahm_view_heatmap->get_heatmap_view_work_dir_url();
 	$file_info             = $heatmap_view_work_dir . $file_base_name . '-info.php';
-	if ( ! $wp_filesystem->exists( $file_info ) ) {
+	// T143b: cap は `-cap.html`。旧版（-cap.php）だけがある作業ディレクトリは作り直す
+	$file_cap              = $heatmap_view_work_dir . $file_base_name . '-cap.html';
+	if ( ! $wp_filesystem->exists( $file_info ) || ! $wp_filesystem->exists( $file_cap ) ) {
 		if ( $version_id && $start_date && $end_date && $tracking_id ) {
 			echo '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>Generating data...</body></html>';
 			$qahm_view_heatmap->create_heatmap_file( $start_date, $end_date, $version_id, $is_landing_page, $tracking_id );
@@ -551,7 +552,7 @@ try {
 					'</div>' .
 					'<div id="heatmap-iframe-container" class="frame">' .
 					'<div class="frame-inner">' .
-					'<iframe id="heatmap-iframe" src="' . $heatmap_view_work_url . $file_base_name . '-cap.php?qahm_view_mode=1" width="100%" height="100%"></iframe>' .
+					'<iframe id="heatmap-iframe" src="' . esc_url( $plugin_dir_url . 'cap-view.php?kind=heatmap&file_base_name=' . rawurlencode( $file_base_name ) . '&qahm_view_mode=1' ) . '" width="100%" height="100%"></iframe>' .
 					'</div>' .
 					'</div>' .
 					'<div id="heatmap-container" class="frame">' .

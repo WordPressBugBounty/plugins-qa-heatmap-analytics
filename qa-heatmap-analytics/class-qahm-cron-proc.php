@@ -1474,6 +1474,10 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 										$newref        = $referer;
 										parse_str( $param_url, $param_ary );
 										foreach ( $param_ary as $key => $param ) {
+											// 配列形式のパラメータ（foo[]=…）は parse_str が配列で返す＝長さ判定の対象外
+											if ( ! is_string( $param ) ) {
+												continue;
+											}
 											if ( self::URL_PARAMETER_MAX < mb_strlen( $param ) ) {
 												$orgparam   = urlencode( $param );
 												$shortparam = $this->wrap_substr( $orgparam, 0, self::URL_PARAMETER_MAX );
@@ -1522,7 +1526,8 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
 									foreach ($search_keywords as $keyword) {
 										if ($this->wrap_array_key_exists($keyword, $query_params)) {
 											// キーワードに対応する値を取り出し、配列に追加
-											$keyword_values[] = urldecode($query_params[$keyword]);
+											// 配列形式（s[]=…）は parse_str が配列で返す＝空として扱う（PHP 7 の null と同じ結果）
+											$keyword_values[] = is_string( $query_params[$keyword] ) ? urldecode( $query_params[$keyword] ) : '';
 											// キーワードの値を空にする
 											$query_params[$keyword] = '';
 										}
@@ -1953,7 +1958,8 @@ class QAHM_Cron_Proc extends QAHM_File_Data {
                                                 foreach ( $keyword_perm_ary as $keyword ) {
                                                     if ( ! empty( $perm_ary[ $keyword ] ) ) {
                                                         $source    = $se['NAME'];
-                                                        $keyword   = urldecode( $perm_ary[ $keyword ] );
+                                                        // 配列形式（q[]=…）は parse_str が配列で返す＝空として扱う（PHP 7 の null と同じ結果）
+                                                        $keyword   = is_string( $perm_ary[ $keyword ] ) ? urldecode( $perm_ary[ $keyword ] ) : '';
                                                         $medium_id = UTM_MEDIUM_ID['ORGANIC']; // organic
                                                         break 2;
 

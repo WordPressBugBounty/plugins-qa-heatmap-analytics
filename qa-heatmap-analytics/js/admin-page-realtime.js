@@ -134,6 +134,7 @@ window.addEventListener('DOMContentLoaded', function() {
 				return y + '/' + m + '/' + d + ' ' + h + ':' + min + ':' + s;
 			}
 		},
+		// #1799: 応答は PHP（class-qahm-admin-page-realtime.php 387〜400）で esc_html／esc_url 済み＝表示側で qahm.escHtml を重ねない（重ねると & が &amp; と見え、URL の & が壊れる）
 		{ key: 'landing_page_url', hidden: true },
 		{ key: 'landing_page', label: qahml10n['table_1page_me'], width: 18,
 			formatter: function(value, row) {

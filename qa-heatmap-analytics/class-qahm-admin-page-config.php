@@ -904,7 +904,8 @@ class QAHM_Admin_Page_Config extends QAHM_Admin_Page_Base {
 										</label>
 									</div>
 									<div class="qahm-config__iframe-scale-wrapper">
-										<iframe id="<?php echo esc_attr( 'g' . $iii . '_event-iframe' ); ?>" class="event-iframe" src="" frameborder="0" width="1200" height="400" scrolling="yes"></iframe>
+										<?php // #1761: 取得ページの HTML を innerHTML で入れるので、HTML に紛れた onerror 等が管理画面で動かないようスクリプトを止める（allow-scripts は付けない）。親画面からのクリック取得は同じオリジンのまま使える ?>
+										<iframe id="<?php echo esc_attr( 'g' . $iii . '_event-iframe' ); ?>" class="event-iframe" src="" sandbox="allow-same-origin" frameborder="0" width="1200" height="400" scrolling="yes"></iframe>
 									</div>
 								</div>
 								</form>
@@ -1528,6 +1529,10 @@ if ( is_array( $this->ga4_notice ) && ! empty( $this->ga4_notice['message'] ) ) 
 	 */
 	public function ajax_get_ga4_properties() {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		// #1770: nonce は認可ではない＝この画面（設定）を開ける人（qahm_settings）だけ
+		if ( ! $this->check_access_role( 'qahm_settings' ) ) {
+			wp_send_json_error( array( 'message' => 'Permission denied' ) );
+		}
 
 		global $qahm_google_api, $qahm_data_api;
 
@@ -1580,12 +1585,12 @@ if ( is_array( $this->ga4_notice ) && ! empty( $this->ga4_notice['message'] ) ) 
 			wp_send_json_error( 'Invalid nonce' );
 			wp_die();
 		}
-		/*
-		if (!$this->check_qahm_access_cap('qahm_manage_settings')) {
-			wp_send_json_error('Permission denied');
+		// #1770: コメントアウトされていた権限の確認を戻す（check_qahm_access_cap は存在しない＝#1277 の check_access_role・
+		// この画面〔設定〕を開ける cap の qahm_settings で見る）
+		if ( ! $this->check_access_role( 'qahm_settings' ) ) {
+			wp_send_json_error( 'Permission denied' );
 			wp_die();
 		}
-		*/
 
 		$advanced_mode = $this->wrap_filter_input( INPUT_POST, 'advanced_mode' );
 		if ( $advanced_mode === 'true' ) {
@@ -1612,6 +1617,11 @@ if ( is_array( $this->ga4_notice ) && ! empty( $this->ga4_notice['message'] ) ) 
 	public function ajax_save_measurement_config() {
 		if ( ! check_ajax_referer( 'qahm-config-nonce-action-qahm-options', 'security', false ) ) {
 			wp_send_json_error( 'Invalid nonce' );
+			wp_die();
+		}
+		// #1770: nonce は認可ではない＝この画面（設定）を開ける人（qahm_settings）だけ
+		if ( ! $this->check_access_role( 'qahm_settings' ) ) {
+			wp_send_json_error( 'Permission denied' );
 			wp_die();
 		}
 

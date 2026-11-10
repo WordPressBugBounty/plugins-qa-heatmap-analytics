@@ -55,29 +55,26 @@ class QAHM_View_Base extends QAHM_File_Data {
 	 * base_htmlをqahm用に最適化
 	 * サイトの状態を保つためにviewportの書き換えは現在行っていないが、今後する可能性はある
 	 * 上記の理由により、dev_nameは現在使用していない
+	 *
+	 * T143b: 以前は先頭に権限チェックの PHP 1 行を付けて `-cap.php` として保存し、
+	 * データ領域で PHP を実行させていた。いまは純粋な HTML（`-cap.html`）を返し、
+	 * 権限チェックと配信は cap-view.php（プラグイン領域）が行う。
+	 * $current_path は互換のため残している（未使用）。
 	 */
 	protected function opt_base_html( $current_path, $base_html, $base_url, $dev_name ) {
-		// サイトの言語
-		//$locale = get_locale();
-
 		// htmlファイルは最低限しか書き換えないようにする方針
 		// あまり書き換えすぎると、html構成をバージョンアップした際に支障が出るため
-
-		// php部分
-		// セキュリティ
-		$php = '<?php ' .
-			'require_once("' . $this->get_relative_path( $current_path, ABSPATH . 'wp-load.php' ) . '");' .
-			'$qahm_base = new QAHM_Base();if(!$qahm_base->check_access_role("qahm_analytics")){http_response_code(404);exit;}' .
-			'?>';
-
-		$html = $php;
+		$html = '';
 		if ( $base_html ) {
 			$html .= $base_html;
 		}
 
 		// 正規表現で<head>タグを正確に検出し、<base>タグを追加する
 		$pattern     = '/<head\b([^>]*)>/i'; // \bは単語境界を表し、headのみをマッチさせる
-		$replacement = '<head$1>' . "\n" . '<base href="' . $base_url . '">';
+		// #1761: $base_url は計測で受け取った URL。属性から抜け出せないようにエスケープする。
+		// preg_replace の置換文字列では \ と $ が特別な意味を持つので、esc_url した後にさらに逃がす。
+		$base_href   = str_replace( array( '\\', '$' ), array( '\\\\', '\\$' ), esc_url( $base_url ) );
+		$replacement = '<head$1>' . "\n" . '<base href="' . $base_href . '">';
 
 		// 置き換えを実行
 		$html = preg_replace( $pattern, $replacement, $html );

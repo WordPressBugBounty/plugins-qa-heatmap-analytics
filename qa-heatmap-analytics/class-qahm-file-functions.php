@@ -2626,7 +2626,8 @@ class QAHM_File_Functions extends QAHM_File_Base {
 					$device_name = $this->device_id_to_device_name( $version_info->device_id );
 				}
 
-				$response = $this->wrap_remote_get( $page_data['url'], $device_name );
+				// #1761: 登録サイト以外（リダイレクト先を含む）は取りに行かない
+				$response = $this->wrap_remote_get_site_page( $page_data['url'], $device_name );
 				if ( ! is_wp_error( $response ) &&
 					( $response['response']['code'] === 200 || $response['response']['code'] === 404 ) ) {
 					$html_source = $response['body'];

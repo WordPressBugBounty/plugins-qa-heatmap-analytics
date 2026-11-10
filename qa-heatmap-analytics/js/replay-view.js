@@ -15,6 +15,40 @@ qahm.setLoadAllCallback = function( elems, callback ) {
 }
 
 
+// #1761: cap は sandbox="allow-scripts"（別オリジン）の iframe で表示するので、中は直接さわれない。
+// スクロールは iframe の中の cap-bridge.js にメッセージで頼む。
+// 中のオリジンは「どこでもない」扱いなので宛先は '*' になる（送るのは位置と時間の数値だけ）
+qahm.capScrollEndTime = 0;
+qahm.capScrollTo = function( top, duration ) {
+	let iframe = document.getElementById( 'screen-iframe' );
+	if ( ! iframe || ! iframe.contentWindow ) {
+		return;
+	}
+	iframe.contentWindow.postMessage( { qahmCap: 1, type: 'scroll-to', top: top, duration: duration }, '*' );
+	// 以前の jQuery の :animated 判定の代わり。動いている間は次のスクロールを頼まない
+	qahm.capScrollEndTime = Date.now() + duration;
+};
+qahm.isCapScrolling = function() {
+	return Date.now() < qahm.capScrollEndTime;
+};
+
+// cap-bridge.js の準備ができたら、今の位置に合わせ直す（準備の前に頼んだスクロールは届かないため）。
+// 中のページのスクリプトも同じウィンドウから送れるので、受け取った内容は信用せず、合図としてだけ使う
+window.addEventListener( 'message', function( e ) {
+	let iframe = document.getElementById( 'screen-iframe' );
+	if ( ! iframe || e.source !== iframe.contentWindow ) {
+		return;
+	}
+	let d = e.data;
+	if ( ! d || typeof d !== 'object' || d.qahmCap !== 1 ) {
+		return;
+	}
+	if ( d.type === 'ready' && typeof qahm.eventScrollTop === 'number' ) {
+		qahm.capScrollTo( qahm.eventScrollTop, 0 );
+	}
+} );
+
+
 qahm.initPlayList = function() {
 	let scrTop = ( 50 + 6 + 6 ) * ( qahm.replay_id - 1 ) + 'px';
 	jQuery( '#playlist' ).mCustomScrollbar({
@@ -302,8 +336,7 @@ qahm.calcEventProgress = function( isChangeAuto ) {
 		qahm.log( 's:' + winScroll );
 	}
 	
-	let frameContent = jQuery( 'body,html', jQuery( '#screen-iframe' ).contents() );
-	if ( ! frameContent.is( ':animated' ) ) {
+	if ( ! qahm.isCapScrolling() ) {
 		if ( qahm.nowScrollTop !== qahm.eventScrollTop ) {
 			qahm.eventScrollTop = qahm.nowScrollTop;
 
@@ -312,9 +345,9 @@ qahm.calcEventProgress = function( isChangeAuto ) {
 				if ( scrSpeed < 0 ) {
 					scrSpeed = 0;
 				}
-				frameContent.animate( { scrollTop: qahm.eventScrollTop }, scrSpeed, 'swing' );
+				qahm.capScrollTo( qahm.eventScrollTop, scrSpeed );
 			} else {
-				frameContent.scrollTop( qahm.eventScrollTop );
+				qahm.capScrollTo( qahm.eventScrollTop, 0 );
 			}
 		}
 	}

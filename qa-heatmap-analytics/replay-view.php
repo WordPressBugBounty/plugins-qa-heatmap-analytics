@@ -39,7 +39,6 @@ try {
 		throw new Exception( 'The URL parameters are invalid.' );
 	}
 	$replay_view_work_dir = $qahm_view_replay->get_data_dir_path( 'replay-view-work' );
-	$replay_view_work_url = $qahm_view_replay->get_work_dir_url();
 
 	// ファイル読み込み
 	$event_ary = $qahm_view_replay->get_event_array( $work_base_name, $replay_id );
@@ -58,7 +57,8 @@ try {
 	$plugin_version = QAHM_PLUGIN_VERSION;
 	$debug_level    = wp_json_encode( QAHM_DEBUG_LEVEL );
 	$debug          = QAHM_DEBUG;
-	$cap_url        = $replay_view_work_url . $work_base_name . '_' . $replay_id . '-cap.php';
+	// T143b: cap はデータ領域の .php ではなく、プラグイン領域の cap-view.php が権限チェックして配信する
+	$cap_url        = plugin_dir_url( __FILE__ ) . 'cap-view.php?kind=replay&work_base_name=' . rawurlencode( $work_base_name ) . '&replay_id=' . (int) $replay_id . '&qahm_view_mode=1';
 	$img_dir_url    = $qahm_view_replay->get_img_dir_url();
 
 	$data_col_head     = $qahm_view_replay::DATA_COLUMN_HEADER;
@@ -326,7 +326,8 @@ try {
 				<div id="screen-overlay"></div>
 				<div id="screen-container-inner">
 					<canvas id="screen-canvas"></canvas>
-					<iframe id="screen-iframe" src="<?php echo esc_url( $cap_url ); ?>?qahm_view_mode=1" scrolling="no" frameborder="0"></iframe>
+					<?php // #1761: 取得ページは別オリジンに閉じ込める（allow-same-origin は付けない）。親画面とのやり取りは cap-bridge.js ?>
+					<iframe id="screen-iframe" src="<?php echo esc_url( $cap_url ); ?>" sandbox="allow-scripts" scrolling="no" frameborder="0"></iframe>
 				</div>
 				<div id="next-replay-container" style="display:none;"><?php echo wp_kses_post( $html_next_replay ); ?></div>
 			</div>

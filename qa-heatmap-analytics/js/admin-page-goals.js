@@ -25,12 +25,11 @@ window.addEventListener('DOMContentLoaded', function() {
     //goal table
 	sourceMediumHeader = [
 		{ key: 'referrer', label: qahml10n['table_referrer'], width: 20, formatter: function(value, row) {
+			// #1799: 参照元は訪問者由来＝エスケープしてから入れる（href は //ドメイン の形のまま）
 			if ( value !== 'direct' && value !== qahml10n['table_total'] ) {
-				ret = `<a href="//${value}" target="_blank" rel="noopener">${value}</a>`;
-			} else {
-				ret = value;
+				return `<a href="//${qahm.escHtml( value )}" target="_blank" rel="noopener">${qahm.escHtml( value )}</a>`;
 			}
-			return ret;
+			return qahm.escHtml( value );
     	} },
 		{ key: 'media', label: qahml10n['table_media'], width: 20, },
 		{ key: 'user', label: qahml10n['table_user'], width: 10, type: 'integer' },
@@ -89,7 +88,7 @@ window.addEventListener('DOMContentLoaded', function() {
 		{ key: 'page_id', hidden: true },
 		{ key: 'url', hidden: true },
 		{ key: 'title', label: qahml10n['table_title'], width: 80, formatter: function(value, row) {
-			return `<a href="${row.url}" target="_blank" rel="noopener">${value}</a>`;
+			return qahm.pageLink( row.url, value ); // #1799
     	} },
 		{ key: 'session', label: qahml10n['table_session'], width: 10, type: 'integer' },
 		{ key: 'heatmap', label: qahml10n['table_heatmap'], width: 10, sortable: false, exportable: false, filtering: false, formatter: function(value, row) {
@@ -140,22 +139,21 @@ window.addEventListener('DOMContentLoaded', function() {
 		{ key: 'landing_page_url', hidden: true },
 		{ key: 'landing_page', label: qahml10n['table_1page_me'], width: 18,
 			formatter: function(value, row) {
-				return `<a href="${row.landing_page_url}" target="_blank" rel="noopener">${value}</a>`;
+				return qahm.pageLink( row.landing_page_url, value ); // #1799: 題名はエスケープ・http(s) の URL だけリンク
 			}
 		},
 		{ key: 'ridatsu_page_url', hidden: true },
 		{ key: 'ridatsu_page', label: qahml10n['table_ridatsu_page'], width: 18,
 			formatter: function(value, row) {
-				return `<a href="${row.ridatsu_page_url}" target="_blank" rel="noopener">${value}</a>`;
+				return qahm.pageLink( row.ridatsu_page_url, value ); // #1799
 			}
 		},
 		{ key: 'referrer', label: qahml10n['table_referrer'], width: 11, formatter: function(value, row) {
+			// #1799: 参照元は訪問者由来＝エスケープしてから入れる（href は //ドメイン の形のまま）
 			if ( value !== 'direct' && value !== qahml10n['table_total'] ) {
-				ret = `<a href="//${value}" target="_blank" rel="noopener">${value}</a>`;
-			} else {
-				ret = value;
+				return `<a href="//${qahm.escHtml( value )}" target="_blank" rel="noopener">${qahm.escHtml( value )}</a>`;
 			}
-			return ret;
+			return qahm.escHtml( value );
     	} },
 		// #964: メディア列（utm_medium — 参照元の右）
 		{ key: 'media', label: qahml10n['table_media'] || 'Medium', width: 8 },
@@ -164,7 +162,7 @@ window.addEventListener('DOMContentLoaded', function() {
 		{ key: 'access_time', hidden: true },
 		{ key: 'saisei', label: qahml10n['table_saisei'], width: 7, sortable: false, exportable: false, filtering: false, formatter: function(value, row) {
 			return `<div class="qa-table-replay-container">
-					<span class="icon-replay" data-reader_id="${row.reader_id}" data-replay_id="1" data-access_time="${row.access_time}"><span class="dashicons dashicons-format-video"></span></span>
+					<span class="icon-replay" data-reader_id="${qahm.escHtml( row.reader_id )}" data-replay_id="1" data-access_time="${qahm.escHtml( row.access_time )}"><span class="dashicons dashicons-format-video"></span></span>
 				</div>`;
 		} },
 	];

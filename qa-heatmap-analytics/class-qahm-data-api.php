@@ -244,7 +244,8 @@ class QAHM_Data_Api extends QAHM_Db {
 			if ( ! $device_name ) {
 				$device_name = 'dsk'; // デフォルト値
 			}
-			$response = $this->wrap_remote_get( $pageurl, $device_name );
+			// #1761: 登録サイト以外（リダイレクト先を含む）は取りに行かない
+			$response = $this->wrap_remote_get_site_page( $pageurl, $device_name );
 
 			if ( is_wp_error( $response ) ) {
 				return null;
@@ -261,7 +262,8 @@ class QAHM_Data_Api extends QAHM_Db {
 
 		if ( $add_basehref ) {
 			$base_url      = $pageurl;
-			$new_base_html = str_replace( '<head>', '<head>' . '<base href="' . $base_url . '">', $base_html );
+			// #1761: $pageurl は計測で受け取った URL。属性から抜け出せないようにエスケープする
+			$new_base_html = str_replace( '<head>', '<head>' . '<base href="' . esc_url( $base_url ) . '">', $base_html );
 			return $new_base_html;
 		} else {
 			return $base_html;

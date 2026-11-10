@@ -147,3 +147,22 @@ qahm.truncateStr = function( str, num ) {
 	}
 	return str.slice(0, num) + '...';
 };
+
+
+// #1799: qa-table は formatter の戻りを innerHTML に入れる。ページの題名・URL・参照元・メディア（訪問者のブラウザから来る値）を
+// formatter で HTML に入れるときは必ずこれを通す（& < > " ' をエスケープ・null／undefined は空）
+qahm.escHtml = function( v ) {
+	return String( null == v ? '' : v ).replace( /[&<>"']/g, function( c ) {
+		return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ];
+	} );
+};
+
+// #1799: ページのリンク＝http(s) の URL だけリンクにする（javascript: などは文字だけ）。訪問レポートの pageLink（PR #1787）と同じ形
+qahm.pageLink = function( url, text ) {
+	var label = qahm.escHtml( text );
+	var href  = String( null == url ? '' : url ).trim();
+	if ( ! /^https?:\/\//i.test( href ) ) {
+		return label;
+	}
+	return '<a href="' + qahm.escHtml( href ) + '" target="_blank" rel="noopener">' + label + '</a>';
+};

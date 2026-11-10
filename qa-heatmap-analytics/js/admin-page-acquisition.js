@@ -49,12 +49,11 @@ window.addEventListener('DOMContentLoaded', function() {
 	sourceMediumHeader = [
 		{ key: 'graph', label: qahml10n['table_graph'], type: 'check', width: 7, typeOptions: { maxSelections: 5 }, exportable: false, filtering: false },
 		{ key: 'referrer', label: qahml10n['table_referrer'], width: 11, formatter: function(value, row) {
+			// #1799: 参照元は訪問者由来＝エスケープしてから入れる（href は //ドメイン の形のまま）
 			if ( value !== 'direct' && value !== qahml10n['table_total'] ) {
-				ret = `<a href="//${value}" target="_blank" rel="noopener">${value}</a>`;
-			} else {
-				ret = value;
+				return `<a href="//${qahm.escHtml( value )}" target="_blank" rel="noopener">${qahm.escHtml( value )}</a>`;
 			}
-			return ret;
+			return qahm.escHtml( value );
     	} },
 		{ key: 'media', label: qahml10n['table_media'], width: 10, },
 		{ key: 'user', label: qahml10n['table_user'], width: 8, type: 'integer' },

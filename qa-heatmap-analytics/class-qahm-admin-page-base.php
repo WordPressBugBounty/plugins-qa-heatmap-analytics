@@ -432,7 +432,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 			$heading_text = __( "What's New", 'qa-heatmap-analytics' );
 
 			// Release Notes: ドキュメントサイトのリリース告知。
-			// - 日本語: 1 件（下に quarka.org のブログ 3 件が並ぶ）
+			// - 日本語: 2 件（下に quarka.org のブログ 3 件が並ぶ。セキュリティ修正の告知が続いても、ひとつ前の版まで見えるように）
 			// - 英語 : 3 件（英語では Blog グループを出さないため、単独で 3 件表示）
 			$feed_groups = array(
 				array(
@@ -440,7 +440,7 @@ class QAHM_Admin_Page_Base extends QAHM_File_Data {
 					'url'         => $is_japanese
 						? 'https://docs.quarka.org/ja/blog/rss.xml'
 						: 'https://docs.quarka.org/blog/rss.xml',
-					'post_number' => $is_japanese ? 1 : 3,
+					'post_number' => $is_japanese ? 2 : 3,
 					'filter_tag'  => 'release',
 				),
 			);

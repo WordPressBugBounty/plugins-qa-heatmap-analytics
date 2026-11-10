@@ -997,14 +997,21 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 			//QA ZERO END
 		}
 
+		// #1761: qa_pages.url は計測で受け取った値。登録サイト以外の URL では cap を作らない。
+		// 保存済みの base_html も、この修正より前に登録外の URL から取得されたものでありうるので、同じく使わない。
+		if ( ! $this->is_registered_site_url( $base_url ) ) {
+			throw new Exception( 'The page URL is not a registered site.' );
+		}
+
 		// dbにbase_htmlが存在しない場合は作る
 		if ( ! $base_html ) {
 			$http_response_header = null;
-			$response = $this->wrap_remote_get( $base_url, $device_name );
-			$response_code = isset( $response['response']['code'] ) ? intval( $response['response']['code'] ) : 0;
+			$response = $this->wrap_remote_get_site_page( $base_url, $device_name );
+			// WP_Error を配列として読むと Error（致命的エラー）になるので、先に判定する
 			if ( is_wp_error( $response ) ) {
 				throw new Exception( 'wp_remote_get failed.' );
 			}
+			$response_code = isset( $response['response']['code'] ) ? intval( $response['response']['code'] ) : 0;
 			if ( ! ( $response_code === 200 || $response_code === 404 ) ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message is internal, not user-facing output.
 				throw new Exception( 'wp_remote_get status error. status: ' . $response_code );
@@ -1018,15 +1025,15 @@ class QAHM_View_Heatmap extends QAHM_View_base {
 			}
 		}
 
-		// baseが存在した場合、cap.phpを作成する
+		// baseが存在した場合、cap.htmlを作成する
 		if ( $base_html ) {
 			// capはbaseを加工
-			$cap_path    = $heatmap_view_work_dir . $file_base_name . '-cap.php';
-			//$cap_content = $this->opt_html( $cap_path, $base_html, $type, $id, $ver, $device_name );
+			// T143b: 純粋な HTML として保存し、cap-view.php が権限チェックして配信する（データ領域で PHP を実行させない）
+			$cap_path    = $heatmap_view_work_dir . $file_base_name . '-cap.html';
 			$cap_content = $this->opt_base_html( $cap_path, $base_html, $base_url, $device_name );
 
 			if ( $cap_content ) {
-				// cap
+				// cap（.html はそのまま iframe に出すので、PHP ヘッダを付ける wrap_put_contents は使わない）
 				$wp_filesystem->put_contents( $cap_path, $cap_content );
 				
 				// マージファイル

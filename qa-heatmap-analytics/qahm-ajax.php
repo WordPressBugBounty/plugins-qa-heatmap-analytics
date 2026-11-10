@@ -99,6 +99,22 @@ $other_domains = qahm_get_domains_with_cache();
 $allowed_origin = array_merge( $allowed_origin, $other_domains );
 //QA ZERO end
 
+// #1761: QA Assistants の登録サイトは「WordPress アドレス」（siteurl）から作られるが、
+// 訪問者が見るページは「サイトアドレス」（home）側にある。両者のホストが違う設定でも計測できるよう、
+// サイトアドレスのホストも Origin と url の照合の相手に加える（管理者が設定する値なので外からは変えられない）。
+// QA ZERO は加えない（サイトアドレスは ZERO サーバー自身で計測対象ではない）。
+// 取得側の QAHM_WP_Base::get_registered_site_hosts() と同じ扱い。
+$qahm_home_host = '';
+if ( defined( 'QAHM_TYPE' ) && QAHM_TYPE === QAHM_TYPE_WP ) {
+    // Plugin Check exclusion: wp_parse_url() not available in SHORTINIT context; safe fallback to parse_url()
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+    $qahm_home_host = parse_url( (string) get_option( 'home' ), PHP_URL_HOST );
+    $qahm_home_host = is_string( $qahm_home_host ) ? mb_strtolower( $qahm_home_host, 'UTF-8' ) : '';
+    if ( '' !== $qahm_home_host ) {
+        $allowed_origin[] = $qahm_home_host;
+    }
+}
+
 // external_healthcheck は Origin/tracking_id/hash 全てスキップ（Lambda A-01 用）
 // TODO: Phase 2 で共有シークレットによる認証を追加予定
 $get_action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
@@ -203,6 +219,30 @@ if ( !$url ){
 // Plugin Check exclusion: wp_parse_url() not available before WordPress is fully loaded; safe fallback
 // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
 $parse_url      = parse_url( $url );
+
+// #1761: url のホストが登録サイトかを、Origin ヘッダーの有無に関係なく必ず確かめる。
+// url はセッションの page_url として保存され、リプレイ・ヒートマップの表示用にサーバーが取りに行く先になる。
+// Origin の照合（上）は Origin ヘッダーがあるときだけで、見ているのも url ではない。
+// 照合の相手は登録サイトの domain と、QA Assistants のサイトアドレスのホスト（$owndomain は Host ヘッダー由来になりうるので含めない）。
+// healthcheck は自サーバーのホストを url に入れて送ってくる（qahm-healthcheck.php）うえ、何も保存しないので対象外。
+if ( 'healthcheck' !== $action ) {
+    $url_scheme = isset( $parse_url['scheme'] ) ? strtolower( $parse_url['scheme'] ) : '';
+    $url_host   = isset( $parse_url['host'] ) ? mb_strtolower( $parse_url['host'], 'UTF-8' ) : '';
+    $registered_hosts = array_map( function ( $domain ) {
+        return mb_strtolower( (string) $domain, 'UTF-8' );
+    }, $other_domains );
+    // QA Assistants のサイトアドレスのホスト（上で $allowed_origin にも加えたもの）
+    if ( '' !== $qahm_home_host ) {
+        $registered_hosts[] = $qahm_home_host;
+    }
+    if ( ( 'http' !== $url_scheme && 'https' !== $url_scheme )
+        || isset( $parse_url['user'] ) || isset( $parse_url['pass'] )
+        || ! in_array( $url_host, $registered_hosts, true ) ) {
+        http_response_code(404);
+        exit;
+    }
+}
+
 $tracking_id    = $base->wrap_filter_input( INPUT_POST, 'tracking_id' );
 
 //IPアドレスのチェック

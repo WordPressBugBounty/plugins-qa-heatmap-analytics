@@ -336,6 +336,7 @@ class QAHM_Base extends QAHM_WP_Base {
 		if ( ! $wp_filesystem->exists( $path ) ) {
 			$wp_filesystem->mkdir( $path );
 		}
+		$this->ensure_data_dir_no_exec( $path );
 
 		if ( $data_rel_path ) {
 			$path .= $data_rel_path;
@@ -349,6 +350,54 @@ class QAHM_Base extends QAHM_WP_Base {
 		}
 
 		return $path;
+	}
+
+	/**
+	 * データ領域（qa-zero-data/）で PHP を実行させない .htaccess を置く。T143b
+	 *
+	 * データファイルは拡張子 .php で、実行を止めているのは wrap_put_contents が付ける
+	 * 先頭行だけだった。platform #1516（QA Assistants 5.2.0.0 の未認証 RCE）は、この規律が
+	 * cron の集約で破れて起きた。Apache ではこの .htaccess が二重目の防波堤になる。
+	 * nginx は設定ファイル側で同じ拒否を入れる（docs/infra/data-dir-no-exec.md）。
+	 *
+	 * - 1 リクエストにつき 1 回だけ確認する（get_data_dir_path は cron で大量に呼ばれる）
+	 * - 先頭のバージョン行が違えば書き直す（ルールを変えたら v を上げる）
+	 * - .htaccess に PHP ヘッダを付けてはいけないので wrap_put_contents は使わない
+	 */
+	public function ensure_data_dir_no_exec( $data_dir ) {
+		static $checked = false;
+		if ( $checked ) {
+			return;
+		}
+		$checked = true;
+
+		global $wp_filesystem;
+		$htaccess = $data_dir . '.htaccess';
+		$marker   = '# qa-zero-data no-exec v2';
+
+		if ( $wp_filesystem->exists( $htaccess ) ) {
+			$current = $wp_filesystem->get_contents( $htaccess );
+			if ( is_string( $current ) && 0 === strpos( $current, $marker ) ) {
+				return;
+			}
+		}
+
+		$rules = $marker . "\n"
+			. "# QA ZERO / QA Assistants のデータ領域。ここに置かれる .php はデータであり、実行させない。\n# .html（取得ページの cap）は cap-view.php が権限チェックして配信するので、直接は読ませない。\n"
+			. "# プラグインが自動生成する。消しても次のリクエストで再生成される。\n"
+			. "<IfModule mod_authz_core.c>\n"
+			. "\t<FilesMatch \"\\.(php|phtml|php[0-9]|html?)\$\">\n"
+			. "\t\tRequire all denied\n"
+			. "\t</FilesMatch>\n"
+			. "</IfModule>\n"
+			. "<IfModule !mod_authz_core.c>\n"
+			. "\t<FilesMatch \"\\.(php|phtml|php[0-9]|html?)\$\">\n"
+			. "\t\tOrder deny,allow\n"
+			. "\t\tDeny from all\n"
+			. "\t</FilesMatch>\n"
+			. "</IfModule>\n";
+
+		$wp_filesystem->put_contents( $htaccess, $rules );
 	}
 
 	/**
@@ -777,40 +826,63 @@ class QAHM_Base extends QAHM_WP_Base {
 		// パースした情報からURL文字列を再構築
 		$url = $this->unparse_url( $parsed_url );
 
-		// Plugin Check exclusion: Uses cURL for internal pre-WordPress HTTP request; wp_remote_get() not available in this context
-		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_close
-		// cURLセッションの初期化とオプション設定
-		$curl = curl_init();
-		curl_setopt( $curl, CURLOPT_URL, $url );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, $connectionTimeout );
-		curl_setopt( $curl, CURLOPT_TIMEOUT, $timeout );
-		curl_setopt( $curl, CURLOPT_USERAGENT, $ua );
-		curl_setopt( $curl, CURLOPT_LOW_SPEED_LIMIT, $speed_limit );
-		curl_setopt( $curl, CURLOPT_LOW_SPEED_TIME, $speed_time );
-		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt( $curl, CURLOPT_FAILONERROR, true );
+		// #1761: 取得先は qa_pages.url（計測で受け取った値）。登録サイト以外は取りに行かない。
+		// リダイレクトも cURL に任せず下のループで1回ずつ追い、行き先ごとに同じ照合をする
+		// （登録サイトのオープンリダイレクトを経由して外へ出ないように）。
+		// 呼び出し元（HTML の定期取得・ヒートマップの手動更新）はどちらも WordPress の読み込み後に動く。
+		$current = $url;
+		for ( $hop = 0; ; $hop++ ) {
+			if ( ! $this->is_registered_site_url( $current ) ) {
+				return false;
+			}
 
-		// HTTPSの場合のSSL検証（必要に応じて設定変更）
-		if ( stripos( $url, 'https://' ) === 0 ) {
-			curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
-			curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, 2 );
+			// Plugin Check exclusion: Uses cURL for internal pre-WordPress HTTP request; wp_remote_get() not available in this context
+			// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
+			// cURLセッションの初期化とオプション設定
+			$curl = curl_init();
+			curl_setopt( $curl, CURLOPT_URL, $current );
+			curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+			curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, $connectionTimeout );
+			curl_setopt( $curl, CURLOPT_TIMEOUT, $timeout );
+			curl_setopt( $curl, CURLOPT_USERAGENT, $ua );
+			curl_setopt( $curl, CURLOPT_LOW_SPEED_LIMIT, $speed_limit );
+			curl_setopt( $curl, CURLOPT_LOW_SPEED_TIME, $speed_time );
+			curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, false );
+			curl_setopt( $curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS );
+			curl_setopt( $curl, CURLOPT_FAILONERROR, true );
+
+			// HTTPSの場合のSSL検証（必要に応じて設定変更）
+			if ( stripos( $current, 'https://' ) === 0 ) {
+				curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
+				curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, 2 );
+			}
+
+			// URLにアクセスしてレスポンスを取得
+			$response = curl_exec( $curl );
+
+			// エラー発生時はfalseを返す
+			if ( curl_errno( $curl ) ) {
+				$response = false;
+			}
+
+			// 3xx のときの行き先（相対指定は cURL が絶対 URL にしてくれる）。リダイレクトでなければ空
+			$code     = (int) curl_getinfo( $curl, CURLINFO_RESPONSE_CODE );
+			$redirect = curl_getinfo( $curl, CURLINFO_REDIRECT_URL );
+
+			// セッションを閉じる
+			curl_close( $curl );
+
+			// phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
+
+			if ( false === $response || $code < 300 || $code >= 400 || ! is_string( $redirect ) || '' === $redirect ) {
+				return $response;
+			}
+
+			if ( $hop >= self::SITE_PAGE_MAX_REDIRECTS ) {
+				return false;
+			}
+			$current = $redirect;
 		}
-
-		// URLにアクセスしてレスポンスを取得
-		$response = curl_exec( $curl );
-
-		// エラー発生時はfalseを返す
-		if ( curl_errno( $curl ) ) {
-			$response = false;
-		}
-
-		// セッションを閉じる
-		curl_close( $curl );
-
-		// phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_errno, WordPress.WP.AlternativeFunctions.curl_curl_close
-
-		return $response;
 	}
 
 	/**

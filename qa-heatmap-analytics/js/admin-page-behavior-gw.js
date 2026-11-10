@@ -23,10 +23,13 @@ window.addEventListener('DOMContentLoaded', function() {
 		{ key: 'goal_value', label: qahml10n['table_goal_value'], width: 8, type: 'integer' },
 		{ key: 'heatmap', label: qahml10n['table_heatmap'], width: 8, sortable: false, exportable: false, filtering: false, formatter: function(value, row) {
 			if ( row._isTotal ) return ''; // Issue #1445: 合計行は特定 URL を持たない＝ヒートマップを開けないため空白
+			// #1799: メディア（utm_medium）は訪問者由来＝属性に入れる前にエスケープ（data-media の読み手には元の文字のまま届く）
+			const pid = qahm.escHtml( row.page_id );
+			const media = qahm.escHtml( row.media );
 			return `<div class="qa-table-heatmap-container">
-					<span class="dashicons dashicons-desktop" data-device_name="dsk" data-page_id="${row.page_id}" data-is_landing_page="1" data-media="${row.media}"></span>
-					<span class="dashicons dashicons-tablet" data-device_name="tab" data-page_id="${row.page_id}" data-is_landing_page="1" data-media="${row.media}"></span>
-					<span class="dashicons dashicons-smartphone" data-device_name="smp" data-page_id="${row.page_id}" data-is_landing_page="1" data-media="${row.media}"></span>
+					<span class="dashicons dashicons-desktop" data-device_name="dsk" data-page_id="${pid}" data-is_landing_page="1" data-media="${media}"></span>
+					<span class="dashicons dashicons-tablet" data-device_name="tab" data-page_id="${pid}" data-is_landing_page="1" data-media="${media}"></span>
+					<span class="dashicons dashicons-smartphone" data-device_name="smp" data-page_id="${pid}" data-is_landing_page="1" data-media="${media}"></span>
 				</div>`;
     	} }
 	];

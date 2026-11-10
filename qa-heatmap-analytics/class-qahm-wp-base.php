@@ -20,6 +20,11 @@ defined( 'ABSPATH' ) || exit;
 abstract class QAHM_WP_Base extends QAHM_Core_Base {
 
 	/**
+	 * wrap_remote_get_site_page() が追うリダイレクトの上限。wp_remote_get() の既定値と同じ。
+	 */
+	const SITE_PAGE_MAX_REDIRECTS = 5;
+
+	/**
 	 * WordPress 環境用の json_encode ラッパー（static実装）
 	 *
 	 * QAHM_Core_Base 側の instance ラッパー（wrap_json_encode）から呼ばれることを想定。
@@ -174,6 +179,162 @@ abstract class QAHM_WP_Base extends QAHM_Core_Base {
 	 * @return array|\WP_Error WP HTTP API の戻り値。失敗時は WP_Error。
 	 */
 	protected function wrap_remote_get( $url, $dev_name = 'dsk', $timeout = 60 ) {
+		return wp_remote_get( $url, $this->get_remote_get_args( $dev_name, $timeout ) );
+	}
+
+	/**
+	 * 計測対象サイトのページを取得する（#1761）
+	 *
+	 * リプレイ・ヒートマップの表示用 HTML など、取得した本文を画面に出す用途はこちらを使う。
+	 * 取得先の URL は計測で受け取った値（外部から送られうる）なので、wrap_remote_get() とは次の点が違う。
+	 *
+	 * - 登録サイト（is_registered_site_url()）以外の URL は取りに行かない
+	 * - リダイレクトは自分で追い、行き先ごとに同じ照合をする
+	 *   （登録サイトのオープンリダイレクトを経由して外へ出ないように）
+	 * - wp_safe_remote_get() を使う。ただし登録サイトのホストは、内部アドレスに解決されても
+	 *   標準外のポートでも許可する（自社環境で計測対象が内部ネットワークにある場合があるため）
+	 *
+	 * @param string $url      取得URL。
+	 * @param string $dev_name デバイス種別（smp/tab/dsk）。
+	 * @param int    $timeout  応答待ちの秒数。既定 60。
+	 * @return array|\WP_Error WP HTTP API の戻り値。登録サイト以外への取得・リダイレクトは WP_Error。
+	 */
+	protected function wrap_remote_get_site_page( $url, $dev_name = 'dsk', $timeout = 60 ) {
+		$args = $this->get_remote_get_args( $dev_name, $timeout );
+		// リダイレクトは WP に任せず、下のループで1回ずつ照合してから追う
+		$args['redirection'] = 0;
+
+		$hosts = $this->get_registered_site_hosts();
+
+		$allow_host = function ( $is_external, $host ) use ( $hosts ) {
+			if ( in_array( mb_strtolower( (string) $host, 'UTF-8' ), $hosts, true ) ) {
+				return true;
+			}
+			return $is_external;
+		};
+		$allow_port = function ( $ports, $host, $url ) use ( $hosts ) {
+			if ( in_array( mb_strtolower( (string) $host, 'UTF-8' ), $hosts, true ) ) {
+				$port = wp_parse_url( $url, PHP_URL_PORT );
+				if ( $port ) {
+					$ports[] = (int) $port;
+				}
+			}
+			return $ports;
+		};
+		add_filter( 'http_request_host_is_external', $allow_host, 10, 2 );
+		add_filter( 'http_allowed_safe_ports', $allow_port, 10, 3 );
+
+		try {
+			$current = $url;
+			for ( $hop = 0; ; $hop++ ) {
+				if ( ! $this->is_registered_site_url( $current ) ) {
+					return new WP_Error( 'qahm_unregistered_site_url', 'The URL is not a registered site.' );
+				}
+
+				$response = wp_safe_remote_get( $current, $args );
+				if ( is_wp_error( $response ) ) {
+					return $response;
+				}
+
+				$code     = (int) wp_remote_retrieve_response_code( $response );
+				$location = wp_remote_retrieve_header( $response, 'location' );
+				if ( is_array( $location ) ) {
+					$location = end( $location );
+				}
+				if ( $code < 300 || $code >= 400 || ! is_string( $location ) || '' === $location ) {
+					return $response;
+				}
+
+				if ( $hop >= self::SITE_PAGE_MAX_REDIRECTS ) {
+					return new WP_Error( 'qahm_too_many_redirects', 'Too many redirects.' );
+				}
+				$current = WP_Http::make_absolute_url( $location, $current );
+			}
+		} finally {
+			remove_filter( 'http_request_host_is_external', $allow_host, 10 );
+			remove_filter( 'http_allowed_safe_ports', $allow_port, 10 );
+		}
+	}
+
+	/**
+	 * 計測対象として登録されているサイトのホスト名の一覧を返す（#1761）
+	 *
+	 * qahm_sitemanage の domain のうち、削除済み（status 255）を除いたもの。
+	 * domain は登録時に小文字で保存している（#1624）が、比較のためここでもそろえる。
+	 * qahm-ajax.php（受信側）の qahm_get_domains_with_cache() と同じ条件で選ぶ。
+	 *
+	 * @return string[] 小文字のホスト名。登録が無ければ空配列。
+	 */
+	protected function get_registered_site_hosts() {
+		$sitemanage = get_option( 'qahm_sitemanage' );
+		if ( ! is_array( $sitemanage ) ) {
+			return array();
+		}
+
+		$hosts = array();
+		foreach ( $sitemanage as $site ) {
+			if ( ! is_array( $site ) || ! isset( $site['status'] ) || 255 === (int) $site['status'] ) {
+				continue;
+			}
+			if ( ! isset( $site['domain'] ) || ! is_string( $site['domain'] ) || '' === $site['domain'] ) {
+				continue;
+			}
+			$hosts[] = mb_strtolower( $site['domain'], 'UTF-8' );
+		}
+
+		// QA Assistants の登録サイトは「WordPress アドレス」（siteurl）から作られるが、
+		// 訪問者が見るページは「サイトアドレス」（home）側にある。両者のホストが違う設定でも
+		// 計測・表示が成り立つよう、サイトアドレスのホストも加える（管理者が設定する値なので外からは変えられない）。
+		// QA ZERO のサイトアドレスは ZERO サーバー自身で計測対象ではないので加えない。
+		// qahm-ajax.php（受信側）でも同じ扱いにしている。
+		if ( defined( 'QAHM_TYPE' ) && QAHM_TYPE === QAHM_TYPE_WP ) {
+			$home_host = wp_parse_url( (string) get_option( 'home' ), PHP_URL_HOST );
+			if ( is_string( $home_host ) && '' !== $home_host ) {
+				$hosts[] = mb_strtolower( $home_host, 'UTF-8' );
+			}
+		}
+
+		return array_values( array_unique( $hosts ) );
+	}
+
+	/**
+	 * URL が登録サイトのものかを判定する（#1761）
+	 *
+	 * http/https で、ホストが登録サイトの domain と一致するときだけ true。
+	 * 計測で受け取った URL を取得・保存する前の照合に使う。
+	 *
+	 * @param string $url 判定する URL。
+	 * @return bool 登録サイトの URL なら true。
+	 */
+	protected function is_registered_site_url( $url ) {
+		if ( ! is_string( $url ) || '' === $url ) {
+			return false;
+		}
+
+		$parts = wp_parse_url( $url );
+		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+			return false;
+		}
+		$scheme = strtolower( $parts['scheme'] );
+		if ( 'http' !== $scheme && 'https' !== $scheme ) {
+			return false;
+		}
+		// user:pass@host の形は、表示上のホストと実際の接続先を取り違えやすいので受け付けない
+		if ( isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+			return false;
+		}
+
+		return in_array( mb_strtolower( $parts['host'], 'UTF-8' ), $this->get_registered_site_hosts(), true );
+	}
+
+	/**
+	 * wrap_remote_get() / wrap_remote_get_site_page() 共通の取得オプションを作る
+	 *
+	 * @param string $dev_name デバイス種別（smp/tab/dsk）。
+	 * @param int    $timeout  応答待ちの秒数。
+	 * @return array wp_remote_get() に渡す引数。
+	 */
+	private function get_remote_get_args( $dev_name, $timeout ) {
 		$bot = QAHM_NAME . 'bot/' . QAHM_PLUGIN_VERSION;
 
 		// デバイスによるユーザーエージェント指定
@@ -189,13 +350,11 @@ abstract class QAHM_WP_Base extends QAHM_Core_Base {
 				break;
 		}
 
-		$args = array(
+		return array(
 			'user-agent' => $ua,
 			'timeout'    => $timeout,
 			'sslverify'  => false,
 		);
-
-		return wp_remote_get( $url, $args );
 	}
 
 	/**

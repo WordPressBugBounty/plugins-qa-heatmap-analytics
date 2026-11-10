@@ -922,6 +922,10 @@ class QAHM_Behavioral_Data extends QAHM_File_Data {
 	 * @return string エンコード済みのUTMパラメータ
 	 */
 	private function encode_utm_parameter($utm_string) {
+		// 配列形式（utm_source[]=…）は parse_str が配列で返す＝値なしとして扱う
+		if ( ! is_string( $utm_string ) ) {
+			return '';
+		}
 		// UTF-8にエンコードされていない場合はUTF-8に変換
 		if (mb_detect_encoding($utm_string, 'UTF-8', true) === false) {
 			$utm_string = mb_convert_encoding($utm_string, 'UTF-8', 'auto');
